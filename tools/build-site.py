@@ -71,7 +71,7 @@ def main():
         assert manifest["builds"][0]["parts"] == [{"path": "merged.bin", "offset": 0}]
     # HTTPS Pages cannot act as the device's HTTP origin; route this existing workshop link to USB configuration.
     (output / "studio/device.html").write_text('''<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0;url=../#config"><title>Clockwise</title><p><a href="../#config">设备配置 / Device configuration</a></p></html>\n''', encoding="utf-8")
-    for name in ("FLASHING.md", "THIRD_PARTY_NOTICES.md"):
+    for name in ("FLASHING.md", "FLASHING.en.md", "THIRD_PARTY_NOTICES.md"):
         shutil.copyfile(ROOT / name, output / name)
     (output / ".nojekyll").write_text("", encoding="utf-8")
     size = sum(p.stat().st_size for p in output.rglob("*") if p.is_file())

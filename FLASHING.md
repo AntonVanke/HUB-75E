@@ -1,5 +1,7 @@
 # 烧录与配网
 
+简体中文 · [English](FLASHING.en.md)
+
 发行包分为经典 **ESP32 v0.9.3（4 MB Flash）** 与 **ESP32-S3 v0.9.7（N8R8，8 MB Flash + 8 MB OPI PSRAM）**。请选择与开发板芯片一致的版本。S3 v0.9.7 包含 Protomatter 9；经典 ESP32 v0.9.3 是历史实板成品，没有此次新增的驱动菜单。当前主源码为 v0.9.7，不能据此声称经典 v0.9.3 可由当前源码原样重建。
 
 ## USB 在线烧录

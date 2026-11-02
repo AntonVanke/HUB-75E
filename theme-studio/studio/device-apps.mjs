@@ -1,3 +1,4 @@
+import {localizeTheme,registerThemes,onLanguageChange} from './i18n.mjs';
 import {readZip,readFolder,importPackage,devicePackage,exportPackage,normalizeAppManifest,checkAppCompatibility} from './vendor/package.mjs';
 
 const DEFAULT_LIMITS={appBytes:1024*1024,sourceBytes:65536,archiveBytes:524288,archiveExpandedBytes:2*1024*1024};
@@ -91,11 +92,11 @@ export function applicationControls($,getBase,request,upload,message,{local=fals
   }
   function render(){
     const filter=$('app-filter').value,search=$('app-search').value.trim().toLocaleLowerCase();
-    const visible=apps.filter(app=>(app.builtin||app.installed)&&(filter==='all'||(filter==='installed')===!!app.installed)&&(!search||(app.title+' '+app.id+' '+(app.packageName||'')+' '+(app.description||'')).toLocaleLowerCase().includes(search)));
+    const visible=apps.filter(app=>(app.builtin||app.installed)&&(filter==='all'||(filter==='installed')===!!app.installed)&&(!search||(app.title+' '+app.id+' '+(app.packageName||'')+' '+(app.description||'')+' '+localizeTheme(app).title+' '+localizeTheme(app).description).toLocaleLowerCase().includes(search)));
     $('app-list').replaceChildren(...visible.map(app=>{
       const row=document.createElement('tr'),name=document.createElement('td'),state=document.createElement('td'),size=document.createElement('td'),actions=document.createElement('td'),title=document.createElement('strong'),detail=document.createElement('small'),running=document.createElement('span'),badge=document.createElement('small');
       const check=compatibility(app),metadata=document.createElement('details'),summary=document.createElement('summary'),description=document.createElement('p'),requirements=document.createElement('p'),r=app.requirements,legacy=app.installed&&app.metadataSource!=='package';
-      title.textContent=app.title+(!legacy&&app.appVersion?' · v'+app.appVersion:'');detail.textContent=app.packageName||app.id+' · 旧包未声明包名';name.append(title,detail);summary.textContent='简介与设备要求';description.textContent=(legacy?'目录参考（当前旧包版本未知）：':'')+(app.description||'旧应用未携带描述，更新为新版应用包后可显示完整信息。');
+      const localized=localizeTheme(app);title.textContent=localized.title+(!legacy&&app.appVersion?' · v'+app.appVersion:'');detail.textContent=app.packageName||app.id+' · 旧包未声明包名';name.append(title,detail);summary.textContent='简介与设备要求';description.textContent=(legacy?'目录参考（当前旧包版本未知）：':'')+(localized.description||'旧应用未携带描述，更新为新版应用包后可显示完整信息。');
       requirements.textContent=(app.author?'作者：'+app.author+'。':'')+(r?.chips?'设备：'+r.chips.join(' / ')+'；PSRAM '+capacity(r.psramBytes)+'；Lua 加载 / 运行配额 '+capacity(r.luaHeapBytes)+' / '+capacity(r.luaWorkingBytes)+'；图形配额 '+capacity(r.graphicsBytes)+'；目标 '+r.targetFps+' FPS。':'未声明内存与设备要求。')+' 尚未在本机进行完整性能认证。';const measured=document.createElement('p');measured.dataset.appMetrics=app.index;measured.hidden=true;metadata.append(summary,description,requirements,measured);name.append(metadata);
       running.dataset.appState=app.index;running.textContent=app.installed?(Number(app.index)===Number(active)?'运行中':'已安装'):'未安装';badge.textContent=check.status==='incompatible'?'不适用':check.status==='compatible'?'需求匹配':'兼容性未知';badge.title=check.reason||'';badge.className='app-compat '+check.status;state.append(running,badge);if(check.status==='incompatible'){const reason=document.createElement('small');reason.textContent=check.reason;state.append(reason);}
       size.textContent=app.installed?(app.bytes/1024).toFixed(1)+' KiB':'—';actions.className='app-actions';
@@ -112,12 +113,13 @@ export function applicationControls($,getBase,request,upload,message,{local=fals
     measurements();
   }
   async function refresh(){
-    const data=await request('apps');apps=data.apps||[];active=apps.find(app=>app.active)?.index??-1;setLimits(data.limits);installFreeBytes=data.installFreeBytes??data.freeBytes??Infinity;
+    const data=await request('apps');apps=data.apps||[];registerThemes(apps);active=apps.find(app=>app.active)?.index??-1;setLimits(data.limits);installFreeBytes=data.installFreeBytes??data.freeBytes??Infinity;
     $('app-storage').textContent='已安装 '+apps.filter(app=>app.installed).length+' 个应用 · 可用 '+((data.freeBytes||0)/1024).toFixed(1)+' / '+((data.totalBytes||0)/1024).toFixed(1)+' KiB';
     if(local&&!catalog.length){try{const response=await fetch('/themes/apps/catalog.json');if(response.ok){const data=await response.json();catalog=data.apps||data.themes||[];}}catch{}}
     apps=apps.map(app=>app.installed?app:{...catalog.find(item=>item.id===app.id),...app});
     render();
   }
+  onLanguageChange(()=>{setLimits(limits);render();});
   $('app-file').onchange=()=>{$('app-folder').value='';};$('app-folder').onchange=()=>{$('app-file').value='';};
   $('app-filter').onchange=$('app-search').oninput=render;
   $('app-refresh').onclick=()=>perform(async()=>{});

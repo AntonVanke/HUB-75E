@@ -1,7 +1,9 @@
+import {language,localizeTheme,registerThemes,onLanguageChange} from './i18n.mjs';
 const minutes=s=>{if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(s))throw new Error('时间格式为 HH:MM');return Number(s.slice(0,2))*60+Number(s.slice(3));};
 const hhmm=n=>String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0');
 const weekdays='日一二三四五六';
-const dayNames=days=>days===127?'每天':days===62?'工作日':days===65?'周末':Array.from({length:7},(_,i)=>days&(1<<i)?'周'+weekdays[i]:'').filter(Boolean).join('、')||'未选择星期';
+const weekday=i=>language()==='en'?['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][i]:'周'+weekdays[i];
+const dayNames=days=>language()==='en'?(days===127?'Every day':days===62?'Weekdays':days===65?'Weekends':Array.from({length:7},(_,i)=>days&(1<<i)?weekday(i):'').filter(Boolean).join(', ')||'No days selected'):(days===127?'每天':days===62?'工作日':days===65?'周末':Array.from({length:7},(_,i)=>days&(1<<i)?'周'+weekdays[i]:'').filter(Boolean).join('、')||'未选择星期');
 
 export function scheduleCoverage(rules){
   const owner=new Int8Array(7*1440).fill(-1),overlaps=new Set(),fullDays=[];
@@ -41,10 +43,10 @@ export function nextScheduleEvent(plan,clock,remaining,source){
 export function scheduleControls($,getBase,request,message){
   let themes=[],dirty=false,saving=false,loadedBase='',statusBase='',lastStatus={},savedPlan=null;
   const titles=new Map([[-1,'基础时钟']]),inputs=new WeakMap();
-  const title=id=>titles.get(Number(id))||'未安装的主题 '+id;
+  const title=id=>{const theme=themes.find(theme=>Number(theme.index)===Number(id));return theme?localizeTheme(theme).title:titles.get(Number(id))||'未安装的主题 '+id;};
   const menu=()=>themes.find(theme=>theme.title.includes('菜单')||theme.id?.includes('menu'));
   function options(select,current){
-    select.replaceChildren(...themes.map(theme=>new Option(theme.title,theme.index)));
+    select.replaceChildren(...themes.map(theme=>new Option(localizeTheme(theme).title,theme.index)));
     if(current!==undefined&&!themes.some(theme=>Number(theme.index)===Number(current))){const option=new Option(title(current)+'（已卸载，请重新选择）',current);option.disabled=true;select.add(option);}
     select.value=current??themes[0]?.index??'';
   }
@@ -61,7 +63,7 @@ export function scheduleControls($,getBase,request,message){
     $('playback-state').textContent=descriptions[source]||'正在读取播放安排';
     const next=lastStatus.timeValid?nextScheduleEvent(savedPlan,lastStatus.clock,lastStatus.rotationRemainingSeconds,source):null;
     const labels={start:'指定时段开始',end:'指定时段结束',daily:'每日定点切换',interval:'间隔轮换'};
-    if(next){const day=next.dayOffset===0?'今天':next.dayOffset===1?'明天':'周'+weekdays[(lastStatus.clock.weekday+next.dayOffset)%7];$('next-switch').textContent=day+' '+hhmm(next.minute)+' · '+labels[next.kind];}
+    if(next){const day=next.dayOffset===0?'今天':next.dayOffset===1?'明天':weekday((lastStatus.clock.weekday+next.dayOffset)%7);$('next-switch').textContent=day+' '+hhmm(next.minute)+' · '+labels[next.kind];}
     else $('next-switch').textContent=lastStatus.timeValid?(savedPlan?.mode===0?'未安排下一事件，保持固定主题':'查看播放计划'):'校时后显示下一计划事件';
   }
   function update(){
@@ -95,7 +97,7 @@ export function scheduleControls($,getBase,request,message){
     box.className='schedule-rule';box.open=open;summary.className='rule-summary';fields.className='rule-fields';
     const start=document.createElement('input'),end=document.createElement('input'),theme=document.createElement('select'),week=document.createElement('div');
     start.type=end.type='time';start.value=hhmm(a);end.value=hhmm(b);options(theme,t??themes[0].index);week.className='rule-days';
-    for(let day=0;day<7;day++){const label=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.value=day;input.checked=!!(days&(1<<day));input.setAttribute('aria-label','星期'+weekdays[day]);label.append(input,'周'+weekdays[day]);week.append(label);}
+    for(let day=0;day<7;day++){const label=document.createElement('label'),input=document.createElement('input'),name=document.createElement('span');input.type='checkbox';input.value=day;input.checked=!!(days&(1<<day));input.setAttribute('aria-label',weekday(day));name.dataset.weekday=day;name.textContent=weekday(day);label.append(input,name);week.append(label);}
     for(const [name,input] of [['开始时间',start],['结束时间',end],['指定主题',theme]]){const label=document.createElement('label');label.append(name,input);fields.append(label);}
     const dayLabel=document.createElement('div');dayLabel.className='rule-week';dayLabel.append('适用星期',week);fields.append(dayLabel);
     const remove=document.createElement('button');remove.type='button';remove.className='secondary';remove.textContent='删除时段';remove.onclick=()=>{box.remove();changed();};fields.append(remove);
@@ -105,7 +107,7 @@ export function scheduleControls($,getBase,request,message){
   function renderPool(selected){
     const items=themes.concat([...selected].filter(id=>!themes.some(theme=>String(theme.index)===id)).map(id=>({index:id,title:title(id)+'（已卸载）'})));
     $('schedule-pool').replaceChildren(...items.map(theme=>{
-      const label=document.createElement('label'),check=document.createElement('input'),name=document.createElement('span');label.className='theme-choice';check.type='checkbox';check.value=theme.index;check.checked=selected.has(String(theme.index));check.setAttribute('aria-label',theme.title);name.textContent=theme.title;label.append(check,name);return label;
+      const label=document.createElement('label'),check=document.createElement('input'),name=document.createElement('span');label.className='theme-choice';check.type='checkbox';check.value=theme.index;check.checked=selected.has(String(theme.index));check.setAttribute('aria-label',localizeTheme(theme).title);name.textContent=localizeTheme(theme).title;label.append(check,name);return label;
     }));
   }
   $('add-rule').onclick=()=>{try{addRule();}catch(error){message(error.message,true);}};
@@ -131,7 +133,7 @@ export function scheduleControls($,getBase,request,message){
   async function loadSchedule(list,{force=false}={}){
     const base=getBase(),sameDevice=base===loadedBase,selected=new Set([...$('schedule-pool').querySelectorAll('input:checked')].map(input=>input.value));
     if(!sameDevice){dirty=false;if(statusBase!==base)lastStatus={};titles.clear();titles.set(-1,'基础时钟');}
-    themes=list.filter(theme=>Number(theme.index)>=0);for(const theme of list)titles.set(Number(theme.index),theme.title);
+    themes=list.filter(theme=>Number(theme.index)>=0);registerThemes(list);for(const theme of list)titles.set(Number(theme.index),theme.title);
     $('add-rule').disabled=!themes.length;$('lunch-rule').disabled=!menu();
     if(dirty&&sameDevice&&!force){renderPool(selected);for(const box of $('schedule-rules').children){const input=inputs.get(box).theme;options(input,input.value);}update();return;}
     const response=await fetch(base+'/api/schedule',{credentials:'omit'});if(!response.ok)throw new Error('无法读取播放安排');
@@ -143,5 +145,6 @@ export function scheduleControls($,getBase,request,message){
     dirty=false;update();overview();
   }
   loadSchedule.status=data=>{lastStatus=data;statusBase=getBase();update();overview();};
+  onLanguageChange(()=>{const selected=new Set([...$('schedule-pool').querySelectorAll('input:checked')].map(input=>input.value));renderPool(selected);for(const box of $('schedule-rules').children){const input=inputs.get(box).theme;options(input,input.value);for(const node of box.querySelectorAll('[data-weekday]')){node.textContent=weekday(Number(node.dataset.weekday));node.previousElementSibling?.setAttribute('aria-label',node.textContent);}}update();overview();});
   return loadSchedule;
 }

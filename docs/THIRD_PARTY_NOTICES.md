@@ -12,7 +12,7 @@
 | Fengari / fengari-web | 浏览器 Lua 预览：[Fengari](https://github.com/fengari-lua/fengari)、[fengari-web](https://github.com/fengari-lua/fengari-web) |
 | fflate | 浏览器与工具端 ZIP 处理：[源码与许可证](https://github.com/101arrowz/fflate) |
 | esbuild | 浏览器代码打包：[源码与许可证](https://github.com/evanw/esbuild) |
-| ESP Web Tools | 在线 USB 烧录页面，加载官方 10.1.0 Web 组件：[源码与许可证](https://github.com/esphome/esp-web-tools) |
+| ESP Web Tools | 在线 USB 烧录页面，内置官方 10.1.0 Web 组件并增加中文/英文文案；保留 `web/vendor/esp-web-tools-10.1.0/LICENSE` 与本地化变更说明：[源码与许可证](https://github.com/esphome/esp-web-tools) |
 
 固件的 PlatformIO 依赖从各原项目获取，其版权头、许可证和版本声明保留在依赖包中。浏览器分发的库文件保留原有版权声明。
 

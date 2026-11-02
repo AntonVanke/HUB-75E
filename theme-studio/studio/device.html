@@ -52,13 +52,14 @@
 {"cmd":"panel.test","action":"start"}
 {"cmd":"restart"}</pre><small>优先使用 apps 返回的 packageName；数字位置仅为旧接口兼容。设备不会回显家庭 Wi-Fi 密码。</small></details></section>
 </div>
-<p class="footer">Clockwise · 64 × 64 · Lua 主题引擎</p>
+<p class="footer"><span>Clockwise · 64 × 64 · Lua 主题引擎</span> · <span class="credits"><span>致谢</span> <a href="https://topyuan.top/clock/" target="_blank" rel="noopener noreferrer">ClockWise Plus</a> · <span>作者</span> <a href="https://github.com/yuan910715" target="_blank" rel="noopener noreferrer">冯雪原 / MonsterYuan (yuan910715)</a></span></p>
 </main>
 <script type="module">
 import {applicationControls} from "./device-apps.mjs";
 import {scheduleControls} from "./device-schedule.mjs";
+import {localizeTheme,registerThemes,onLanguageChange,translate,refreshLanguage} from "./i18n.mjs";
 const $=id=>document.getElementById(id);
-let base='',connected=false,timer,failures=0,maxFirmware=0,deviceChip='ESP32',configDirty=false,panelDirty=false,panelSupported=false,panelTimingSupported=false;
+let base='',connected=false,timer,failures=0,maxFirmware=0,deviceChip='ESP32',configDirty=false,panelDirty=false,panelSupported=false,panelTimingSupported=false,deviceThemes=[],latestStatus;
 const tabs=[...document.querySelectorAll('[role="tab"][data-panel]')];
 function showPanel(name,focus=false){
  const selected=tabs.find(tab=>tab.dataset.panel===name)||tabs[0];if(!selected)return;
@@ -71,7 +72,7 @@ for(const [index,tab] of tabs.entries()){
 }
 showPanel(location.hash.slice(1));window.addEventListener('hashchange',()=>showPanel(location.hash.slice(1)));
 function configDraft(dirty){configDirty=dirty;$('config-dirty').textContent=dirty?'有未保存的修改':'显示设置已与设备同步';}
-function themeOptions(list){const selected=$('theme').value;$('theme').replaceChildren(...list.map(x=>new Option(x.title,x.index)));if(configDirty&&list.some(x=>String(x.index)===selected))$('theme').value=selected;else if(configDirty)configDraft(false);}
+function themeOptions(list){deviceThemes=list;registerThemes(list);const selected=$('theme').value;$('theme').replaceChildren(...list.map(x=>new Option(localizeTheme(x).title,x.index)));if(configDirty&&list.some(x=>String(x.index)===selected))$('theme').value=selected;else if(configDirty)configDraft(false);}
 $('config').addEventListener('input',()=>configDraft(true));$('config').addEventListener('change',()=>configDraft(true));
 const onDevice=!['localhost','127.0.0.1','[::1]'].includes(location.hostname);
 if(onDevice){$('theme-guide').href='/guide';$('address').value=location.origin;$('connection-form').hidden=true;$('studio-link').hidden=true;}
@@ -89,6 +90,7 @@ async function request(path,options={}){
  if(!response.ok)throw new Error(body.error||'HTTP '+response.status);return body;
 }
 function status(data,initial=false){
+ latestStatus=data;
  if(!/^0\.[5-9]\.\d+$/.test(data.version||''))throw new Error('设备固件不是受支持的 Studio 版本，当前固件不会被自动替换。');
  deviceChip=data.chip||'ESP32';$('version').textContent=data.version+' / '+deviceChip+' / 64×64';$('wifi-status').textContent=data.connected?data.ssid+' · '+data.rssi+' dBm':data.networkState;
  $('uptime').textContent=Math.floor(data.uptime/3600)+'h '+Math.floor(data.uptime%3600/60)+'m';$('heap').textContent=(data.heap/1024).toFixed(1)+' KiB';
@@ -100,7 +102,7 @@ function status(data,initial=false){
  $('device-error').textContent=data.panel?.active?.diagnostic?'屏幕驱动自检中 · 原主题已保留':pending?'正在应用主题…':data.error?'主题运行失败：'+data.error:'主题运行正常 · '+([...$('theme').options].find(option=>Number(option.value)===Number(data.theme))?.text||'');
  const themeError=!pending&&data.error?data.error:'';
  if(themeError&&themeError!==lastThemeError)message('主题未能运行：'+themeError,true);
- else if(!pending&&!themeError&&(lastThemeError||$('message').textContent==='设置已保存，正在应用主题…'))message('当前主题已运行。');
+ else if(!pending&&!themeError&&(lastThemeError||$('message').textContent===translate('设置已保存，正在应用主题…')))message('当前主题已运行。');
  if(!pending)lastThemeError=themeError;
  $('storage-state').textContent=data.storage?'应用存储已就绪，已安装主题可断电保存。':'应用存储尚未初始化，初始化后可安装主题。';$('init-storage').disabled=data.storage;
  maxFirmware=data.otaMaxBytes;$('ota-size').textContent='备用分区容量：'+Math.floor(maxFirmware/1024)+' KiB';
@@ -184,7 +186,7 @@ const appManager=applicationControls($,()=>base,request,upload,message,{local:!o
 }});
 const loadSchedule=scheduleControls($,()=>base,request,message);
 $('init-storage').onclick=async()=>{
- if(!confirm('初始化应用存储将清除该分区内容。继续？'))return;
+ if(!confirm(translate('初始化应用存储将清除该分区内容。继续？')))return;
  try{message((await request('storage',{method:'POST'})).message);status(await request('status'));await appManager.refresh();}catch(e){message(e.message,true);}
 };
 $('restart').onclick=async()=>{try{message((await request('restart',{method:'POST'})).message);}catch(e){message(e.message,true);}};
@@ -211,6 +213,7 @@ $('send-ota').onclick=async()=>{
   message((await upload('ota',file,{'X-SHA256':hash})).message);
  }catch(e){message(e.message,true);}finally{$('send-ota').disabled=false;if(connected)timer=setTimeout(poll,5000);}
 };
+onLanguageChange(()=>{const selected=$('theme').value;themeOptions(deviceThemes);$('theme').value=selected;if(latestStatus)status(latestStatus);refreshLanguage();});
 if($('address').value)$('connect').onclick();else message('首次从电脑工坊管理设备时填写地址；以后自动连接。直接访问设备网页无需填写。');
 </script></html>
 

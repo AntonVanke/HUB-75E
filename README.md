@@ -1,5 +1,7 @@
 # HUB-75E · Clockwise 主题时钟
 
+简体中文 · [English](README.en.md)
+
 基于 ESP32 / ESP32-S3 与 HUB75 RGB LED 面板的 64×64 Lua 主题时钟。主题脚本控制画面、动画、时间和随机逻辑，原生绘图、字体、图块及精灵接口承担主要渲染工作。
 
 **[在线烧录、主题下载与串口配置](https://antonvanke.github.io/HUB-75E/)** · **[固件下载](https://github.com/AntonVanke/HUB-75E/releases)** · **[烧录说明](FLASHING.md)**

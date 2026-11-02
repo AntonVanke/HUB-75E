@@ -1,6 +1,7 @@
 import { API, bundleLua } from './api.mjs';
 import { AssetEditor } from './assets.mjs';
 import { readZip,readFolder,importPackage,exportPackage } from './vendor/package.mjs';
+import {localizeTheme,registerThemes,onLanguageChange,refreshLanguage,translate} from './i18n.mjs';
 
 const $=id=>document.getElementById(id);
 let ctx,frame,rgba;
@@ -81,9 +82,9 @@ async function selectTheme(id,allowLegacy=false){
     if(pack.width!==64||pack.height!==64)throw new Error('此工坊仅接受 64×64 主题');
     $('source').value=pack.source;
     editor.load(pack.assets||[]);pack.assets=editor.assets;
-    $('example').value=id;$('theme-description').textContent=pack.description||'自由创作的 64×64 主题';
+    $('example').value=id;$('theme-description').textContent=localizeTheme(pack).description||translate('自由创作的 64×64 主题');
     $('load-builtin').hidden=!entry.path;$('load-builtin').textContent=beforeBuiltin.has(id)?'撤销载入内置版本':'载入新版内置';
-    $('preview-caption').textContent=pack.title+' · '+(pack.category||'自定义')+' · 64×64 · '+(pack.fidelity||'自定义 Lua');
+    $('preview-caption').textContent=localizeTheme(pack).title+' · '+localizeTheme(pack).category+' · 64×64 · '+translate(pack.fidelity||'自定义 Lua');
     $('show-path').closest('label').hidden=!pack.libraries.includes('pacman');
     $('fps').value=String(pack.fps||60);fillData(pack.data||{});$('resource-ids').value=(pack.media||[]).join(', ');run();
     document.querySelectorAll('.theme-card').forEach(b=>b.classList.toggle('active',b.dataset.theme===id));
@@ -96,12 +97,22 @@ function markDirty(){$('compile-state').textContent='编辑稿已修改 · 点�
 function gallery(){
   $('theme-grid').replaceChildren(...catalog.themes.map(t=>{
     const b=document.createElement('button');b.className='theme-card';b.dataset.theme=t.id;
-    const img=document.createElement('img');if(t.path)img.src='/HUB-75E/themes/thumbnails/'+t.id+'.png';img.alt=t.title+' 64×64';img.loading='lazy';if(!t.path)img.hidden=true;
-    const label=document.createElement('span');label.textContent=t.title;
-    const cat=document.createElement('small');cat.textContent=t.category+' · 64×64';
+    const localized=localizeTheme(t),img=document.createElement('img');if(t.path)img.src='/HUB-75E/themes/thumbnails/'+t.id+'.png';img.alt=localized.title+' 64×64';img.loading='lazy';if(!t.path)img.hidden=true;
+    const label=document.createElement('span');label.textContent=localized.title;
+    const cat=document.createElement('small');cat.textContent=localized.category+' · 64×64';
     b.append(img,label,cat);b.addEventListener('click',()=>selectTheme(t.id));return b;
   }));
 }
+function catalogLabels(){
+  if(!catalog)return;
+  const selected=$('example').value;
+  $('example').replaceChildren(...catalog.themes.map(theme=>{const item=localizeTheme(theme);return new Option(item.title+' · '+item.category,theme.id);}));
+  $('example').value=selected;
+  gallery();document.querySelectorAll('.theme-card').forEach(button=>button.classList.toggle('active',button.dataset.theme===pack?.id));
+  if(pack){const item=localizeTheme(pack);$('theme-description').textContent=item.description||translate('自由创作的 64×64 主题');$('preview-caption').textContent=item.title+' · '+item.category+' · 64×64 · '+translate(pack.fidelity||'自定义 Lua');}
+  const filter=$('gallery-filter').value.toLowerCase();document.querySelectorAll('.theme-card').forEach(button=>button.hidden=!button.textContent.toLowerCase().includes(filter));
+}
+onLanguageChange(catalogLabels);
 function reference(){
   $('api-list').replaceChildren(...API.map(a=>{
     const b=document.createElement('button');b.className='api-insert';b.textContent=a.name+'('+a.args.map(([n])=>n).join(', ')+')';b.title=a.name;
@@ -111,14 +122,14 @@ function reference(){
 }
 try{
   [catalog,libraries.core,libraries.pacman]=await Promise.all([fetch('/HUB-75E/themes/catalog.json').then(r=>r.json()),fetch('/HUB-75E/themes/lib/core.lua').then(r=>r.text()),fetch('/HUB-75E/themes/lib/pacman.lua').then(r=>r.text())]);
+  registerThemes(catalog.themes);
   editor=new AssetEditor($('asset-editor'),()=>{if(pack){pack.assets=editor.assets;markDirty();}});
   let selected='gta-vi';
   try{if(!localStorage.getItem('clockwise-studio-v5')){const old=JSON.parse(localStorage.getItem('clockwise-studio-v4')||'null');for(const d of old?.drafts||[])if(!catalog.themes.some(t=>t.id===d.id))drafts.set(d.id,d);}}catch{}
   try{const saved=JSON.parse(localStorage.getItem('clockwise-studio-v5')||'null');if(saved){for(const d of saved.drafts||[])if(d.width===64&&d.height===64)drafts.set(d.id,d);for(const [id,p]of saved.builtinBackups||[])beforeBuiltin.set(id,p);if(catalog.themes.some(t=>t.id===saved.selected))selected=saved.selected;}}catch{}
   for(const d of drafts.values())if(!catalog.themes.some(t=>t.id===d.id))catalog.themes.push({id:d.id,title:d.title||'我的主题',category:'自定义'});
   try{const saved=JSON.parse(localStorage.getItem('clockwise-studio-v5')||'null');if(drafts.has(saved?.selected))selected=saved.selected;}catch{}
-  $('example').replaceChildren(...catalog.themes.map(t=>new Option(t.title+' · '+t.category,t.id)));
-  gallery();reference();
+  catalogLabels();reference();refreshLanguage();
   $('example').addEventListener('change',()=>selectTheme($('example').value));
   $('run').addEventListener('click',run);$('reset').addEventListener('click',run);
   $('load-builtin').addEventListener('click',async()=>{
