@@ -63,7 +63,7 @@ void BoardSensors::poll(){
       if(valid){humidity=((uint32_t(b[1])<<12)|(uint32_t(b[2])<<4)|(b[3]>>4))*(100.0f/1048576.0f);temperature=((uint32_t(b[3]&15)<<16)|(uint32_t(b[4])<<8)|b[5])*(200.0f/1048576.0f)-50;ahtSamples++;ahtGood_=now;}
     }if(!valid)ahtErrors++;waiting_=false;
   }
-  if(imuPresent&&now-imuAt_>=100){
+  if(imuPresent&&now-imuAt_>=20){
     imuAt_=now;uint8_t status=0,b[12];
     if(!readRegisters(0x1e,&status,1))imuErrors++;
     else if((status&3)==3){
@@ -73,8 +73,10 @@ void BoardSensors::poll(){
   if(now-reportAt_>=1000){reportAt_=now;Serial.printf("[SENSORS] T=%.2fC RH=%.2f%% aht_samples=%u aht_errors=%u accel_g=%.4f,%.4f,%.4f gyro_dps=%.3f,%.3f,%.3f imu_samples=%u imu_errors=%u selftest=%s/%s\n",temperature,humidity,ahtSamples,ahtErrors,accel[0],accel[1],accel[2],gyro[0],gyro[1],gyro[2],imuSamples,imuErrors,accelSelfTest?"PASS":"FAIL",gyroSelfTest?"PASS":"FAIL");}
 }
 String BoardSensors::json()const{
-  char body[512],t[24]="null",h[24]="null";
-  if(isfinite(temperature))snprintf(t,sizeof(t),"%.3f",temperature);
-  if(isfinite(humidity))snprintf(h,sizeof(h),"%.3f",humidity);
-  snprintf(body,sizeof(body),"{\"temperature\":%s,\"humidity\":%s,\"ahtSamples\":%u,\"ahtErrors\":%u,\"ahtHealthy\":%s,\"accelG\":[%.5f,%.5f,%.5f],\"gyroDps\":[%.4f,%.4f,%.4f],\"imuSamples\":%u,\"imuErrors\":%u,\"imuHealthy\":%s,\"accelSelfTest\":%s,\"gyroSelfTest\":%s}",t,h,ahtSamples,ahtErrors,ahtSamples&&millis()-ahtGood_<10000?"true":"false",accel[0],accel[1],accel[2],gyro[0],gyro[1],gyro[2],imuSamples,imuErrors,imuSamples&&millis()-imuGood_<2000?"true":"false",accelSelfTest?"true":"false",gyroSelfTest?"true":"false");return String(body);
+  const bool tv=temperatureValid(),hv=humidityValid(),iv=imuValid();
+  char body[768],t[24]="null",h[24]="null",a[96]="null",g[96]="null";
+  if(tv)snprintf(t,sizeof(t),"%.3f",temperature);
+  if(hv)snprintf(h,sizeof(h),"%.3f",humidity);
+  if(iv){snprintf(a,sizeof(a),"[%.5f,%.5f,%.5f]",accel[0],accel[1],accel[2]);snprintf(g,sizeof(g),"[%.4f,%.4f,%.4f]",gyro[0],gyro[1],gyro[2]);}
+  snprintf(body,sizeof(body),"{\"temperature\":%s,\"humidity\":%s,\"ahtPresent\":%s,\"imuPresent\":%s,\"imuSupported\":true,\"temperatureValid\":%s,\"humidityValid\":%s,\"imuValid\":%s,\"ahtSamples\":%u,\"ahtErrors\":%u,\"ahtHealthy\":%s,\"accelG\":%s,\"gyroDps\":%s,\"imuSamples\":%u,\"imuErrors\":%u,\"imuHealthy\":%s,\"accelSelfTest\":%s,\"gyroSelfTest\":%s}",t,h,ahtPresent?"true":"false",imuPresent?"true":"false",tv?"true":"false",hv?"true":"false",iv?"true":"false",ahtSamples,ahtErrors,tv&&hv?"true":"false",a,g,imuSamples,imuErrors,iv?"true":"false",accelSelfTest?"true":"false",gyroSelfTest?"true":"false");return String(body);
 }

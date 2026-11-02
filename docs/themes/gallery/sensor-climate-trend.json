@@ -1,0 +1,59 @@
+{
+  "format": "clockwise-theme-project",
+  "version": 3,
+  "id": "sensor-climate-trend",
+  "packageName": "org.clockwise.sensor-climate-trend",
+  "title": "温湿度趋势",
+  "appVersion": "1.0.0",
+  "author": "AntonVanke / HUB-75E",
+  "description": "双曲线记录真实观测，每5秒取样、固定28点；无数据留空，不补造历史。",
+  "category": "传感器",
+  "width": 64,
+  "height": 64,
+  "fps": 30,
+  "runtimeApi": 2,
+  "sourceMode": "lua",
+  "libraries": [],
+  "assets": [],
+  "media": [],
+  "resources": [],
+  "data": {
+    "temperature": 23.5,
+    "humidity": 56,
+    "temperature_valid": true,
+    "humidity_valid": true,
+    "imu_supported": true,
+    "imu_valid": true,
+    "accel_x": -0.65,
+    "accel_y": 0.35,
+    "accel_z": -0.67,
+    "gyro_x": 0,
+    "gyro_y": 0,
+    "gyro_z": 18,
+    "gravity_x": 0.35,
+    "gravity_y": 0.65,
+    "gravity_z": 0.67,
+    "screen_rotation": 270,
+    "auto_rotate": false,
+    "sensor_source": "simulated"
+  },
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "luaHeapBytes": 49152,
+    "luaWorkingBytes": 32768,
+    "graphicsBytes": 8192,
+    "targetFps": 30,
+    "sensors": [
+      "temperature",
+      "humidity"
+    ]
+  },
+  "source": "-- Fixed 28-sample history, one observation per five seconds; no invented history.\nlocal temperatures,humidities={},{}\nlocal head,count,seconds=0,0,4\nlocal t,h,validT,validH,tempText,humidityText,time\nfunction second()\n  t=data.get('temperature',nil);h=data.get('humidity',nil)\n  validT=data.get('temperature_valid',false) and type(t)=='number'\n  validH=data.get('humidity_valid',false) and type(h)=='number'\n  tempText=validT and string.format('%.1fC',t) or '--.-C'\n  humidityText=validH and string.format('%dRH',math.floor(h+0.5)) or '--RH'\n  time=clock.format('%H:%M');seconds=seconds+1\n  if seconds>=5 then\n    seconds=0;head=head%28+1;count=math.min(count+1,28)\n    temperatures[head]=validT and t or false;humidities[head]=validH and h or false\n  end\n  telemetry.set('history_samples',count);telemetry.set('sensor_valid',validT and validH)\nend\nfunction start()\n  for i=1,28 do temperatures[i]=false;humidities[i]=false end\n  second()\nend\nlocal function ytemp(v) return math.max(27,math.min(50,50-(v-10)*23/30)) end\nlocal function yhumid(v) return math.max(27,math.min(50,50-v*23/100)) end\nfunction draw()\n  gfx.clear(0x0863);gfx.text(4,3,'CLIMATE',0xcfff)\n  gfx.text(4,14,tempText,0xfca9);gfx.text(39,14,humidityText,0x5f5f)\n  gfx.outline(3,24,58,29,0x3a4c)\n  for y=29,47,9 do gfx.line(5,y,58,y,0x1947) end\n  local previousT,previousH=false,false\n  for i=1,count do\n    local index=(head-count+i-1)%28+1\n    local tv,hv=temperatures[index],humidities[index];local x=5+(i-1)*2\n    if tv then local y=ytemp(tv);if previousT then gfx.line(x-2,previousT,x,y,0xfd2b) end;gfx.pixel(x,y,0xffb6);previousT=y else previousT=false end\n    if hv then local y=yhumid(hv);if previousH then gfx.line(x-2,previousH,x,y,0x2e7d) end;gfx.pixel(x,y,0xafff);previousH=y else previousH=false end\n  end\n  gfx.text(4,57,time,0xffff)\n  gfx.text(38,57,validT and validH and '5SEC' or 'GAP',validT and validH and 0x8d56 or 0xfca9)\nend\n",
+  "fidelity": "模拟器已明确标记模拟输入；设备使用实时传感器。内存声明为估算，尚未完成实板性能验证。",
+  "verification": {
+    "status": "unverified"
+  }
+}

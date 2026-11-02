@@ -3,6 +3,7 @@ const idPattern=/^[a-zA-Z0-9_-]{1,32}$/;
 const packagePattern=/^[a-z][a-z0-9-]*(?:\.[a-z][a-z0-9-]*)+$/;
 const versionPattern=/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
 const chips=['esp32','esp32s3'];
+const sensorTypes=['temperature','humidity','imu'];
 function text(value,name,maximum,fallback=''){
   const result=value??fallback;
   if(typeof result!=='string'||encoder.encode(result).length>maximum||/[\x00-\x08\x0b\x0c\x0e-\x1f]/.test(result))throw new Error(name+' 无效或超过 '+maximum+' UTF-8 字节');
@@ -22,8 +23,11 @@ export function normalizeAppManifest(project={}){
   if(!requested||typeof requested!=='object'||Array.isArray(requested))throw new Error('requirements 必须为对象');
   const allowed=requested.chips??chips;
   if(!Array.isArray(allowed)||!allowed.length||allowed.length>2||allowed.some(chip=>!chips.includes(chip))||new Set(allowed).size!==allowed.length)throw new Error('requirements.chips 须包含 esp32 或 esp32s3，且不能重复');
+  const sensors=requested.sensors??[];
+  if(!Array.isArray(sensors)||sensors.length>3||sensors.some(sensor=>!sensorTypes.includes(sensor))||new Set(sensors).size!==sensors.length)throw new Error('requirements.sensors 仅支持 temperature、humidity、imu，且不能重复');
   const targetFps=integer(requested.targetFps??project.fps??60,'目标帧率',60);if(!targetFps)throw new Error('目标帧率应为 1–60');
   const requirements={chips:[...allowed],psramBytes:integer(requested.psramBytes,'PSRAM 需求'),luaHeapBytes:integer(requested.luaHeapBytes,'Lua 加载内存'),luaWorkingBytes:integer(requested.luaWorkingBytes,'Lua 运行内存'),graphicsBytes:integer(requested.graphicsBytes,'图形内存'),targetFps};
+  if(sensors.length)requirements.sensors=[...sensors];
   if(requirements.luaHeapBytes&&requirements.luaWorkingBytes>requirements.luaHeapBytes)throw new Error('Lua 运行内存需求不能大于加载内存需求');
   const runtimeApi=integer(project.runtimeApi??1,'运行时 API',65535);if(!runtimeApi)throw new Error('运行时 API 版本须大于 0');
   const result={packageName,id,title:text(project.title,'应用名称',96,id),appVersion,description:text(project.description,'应用描述',384),author:text(project.author,'作者',64,'未署名'),runtimeApi,requirements,requirementsDeclared:!!(project.requirements&&requirements.luaHeapBytes&&requirements.luaWorkingBytes&&requirements.graphicsBytes),verification:{status:'unverified'}};
@@ -36,6 +40,10 @@ export function checkAppCompatibility(manifest,device={}){
   const model=String(device.chip||'').toLowerCase().replace(/[^a-z0-9]/g,''),chip=model.startsWith('esp32s3')?'esp32s3':/^esp32(?:s2|c\d|h\d|p\d)/.test(model)?model:model.startsWith('esp32')?'esp32':'';
   if(chip&&!requirements.chips.includes(chip))reasons.push('仅支持 '+requirements.chips.join(' / ')+'，当前设备为 '+device.chip);
   if(device.chip&&!chip)reasons.push('无法识别当前设备型号 '+device.chip);
+  for(const sensor of requirements.sensors||[]){
+    const available=Array.isArray(device.sensorCapabilities)?device.sensorCapabilities.includes(sensor):device.sensors?.[sensor==='imu'?'imuPresent':'ahtPresent'];
+    if(available!==true)reasons.push('设备未确认支持传感器 '+sensor);
+  }
   if(app.runtimeApi>(limits.runtimeApi??device.runtimeApi??1))reasons.push('需要运行时 API '+app.runtimeApi);
   const physicalPsram=Math.ceil((limits.psramBytes||0)/(1024*1024))*1024*1024;
   if(requirements.psramBytes>physicalPsram)reasons.push('需要 '+requirements.psramBytes+' 字节 PSRAM');

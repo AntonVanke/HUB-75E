@@ -1473,6 +1473,265 @@
       "archivePath": "/themes/apps/spider-man-2.zip",
       "bytes": 36653,
       "preinstalled": false
+    },
+    {
+      "index": 49,
+      "packageName": "org.clockwise.sensor-weather-station",
+      "id": "sensor-weather-station",
+      "title": "微气象站",
+      "appVersion": "1.0.0",
+      "description": "独立温度计、湿度条与室内状态，使用真实温湿度；缺失时显示占位。",
+      "author": "AntonVanke / HUB-75E",
+      "runtimeApi": 2,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 49152,
+        "luaWorkingBytes": 32768,
+        "graphicsBytes": 8192,
+        "targetFps": 30,
+        "sensors": [
+          "temperature",
+          "humidity"
+        ]
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "传感器",
+      "path": "/themes/apps/sensor-weather-station.cwp",
+      "archivePath": "/themes/apps/sensor-weather-station.zip",
+      "bytes": 4180,
+      "preinstalled": false
+    },
+    {
+      "index": 50,
+      "packageName": "org.clockwise.sensor-comfort-garden",
+      "id": "sensor-comfort-garden",
+      "title": "舒适度花园",
+      "appVersion": "1.0.0",
+      "description": "温湿度驱动花朵舒展与雨滴，展示装饰性舒适度提示，不作天气预报。",
+      "author": "AntonVanke / HUB-75E",
+      "runtimeApi": 2,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 49152,
+        "luaWorkingBytes": 32768,
+        "graphicsBytes": 8192,
+        "targetFps": 30,
+        "sensors": [
+          "temperature",
+          "humidity"
+        ]
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "传感器",
+      "path": "/themes/apps/sensor-comfort-garden.cwp",
+      "archivePath": "/themes/apps/sensor-comfort-garden.zip",
+      "bytes": 4524,
+      "preinstalled": false
+    },
+    {
+      "index": 51,
+      "packageName": "org.clockwise.sensor-climate-trend",
+      "id": "sensor-climate-trend",
+      "title": "温湿度趋势",
+      "appVersion": "1.0.0",
+      "description": "双曲线记录真实观测，每5秒取样、固定28点；无数据留空，不补造历史。",
+      "author": "AntonVanke / HUB-75E",
+      "runtimeApi": 2,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 49152,
+        "luaWorkingBytes": 32768,
+        "graphicsBytes": 8192,
+        "targetFps": 30,
+        "sensors": [
+          "temperature",
+          "humidity"
+        ]
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "传感器",
+      "path": "/themes/apps/sensor-climate-trend.cwp",
+      "archivePath": "/themes/apps/sensor-climate-trend.zip",
+      "bytes": 4550,
+      "preinstalled": false
+    },
+    {
+      "index": 52,
+      "packageName": "org.clockwise.gravity-hourglass",
+      "id": "gravity-hourglass",
+      "title": "重力沙漏",
+      "appVersion": "1.0.0",
+      "description": "28粒金砂随屏幕重力滑动，A键复位；固定预算的视觉玩具，不是校准计时器。",
+      "author": "AntonVanke / HUB-75E",
+      "runtimeApi": 2,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 49152,
+        "luaWorkingBytes": 32768,
+        "graphicsBytes": 8192,
+        "targetFps": 30,
+        "sensors": [
+          "imu"
+        ]
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "重力互动",
+      "path": "/themes/apps/gravity-hourglass.cwp",
+      "archivePath": "/themes/apps/gravity-hourglass.zip",
+      "bytes": 4696,
+      "preinstalled": false
+    },
+    {
+      "index": 53,
+      "packageName": "org.clockwise.gravity-level",
+      "id": "gravity-level",
+      "title": "重力水平仪",
+      "appVersion": "1.0.0",
+      "description": "同心刻度与弹性气泡，显示平面重力大小；缺失IMU暂停，不替代校准仪器。",
+      "author": "AntonVanke / HUB-75E",
+      "runtimeApi": 2,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 49152,
+        "luaWorkingBytes": 32768,
+        "graphicsBytes": 8192,
+        "targetFps": 30,
+        "sensors": [
+          "imu"
+        ]
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "重力互动",
+      "path": "/themes/apps/gravity-level.cwp",
+      "archivePath": "/themes/apps/gravity-level.zip",
+      "bytes": 3619,
+      "preinstalled": false
+    },
+    {
+      "index": 54,
+      "packageName": "org.clockwise.gravity-maze",
+      "id": "gravity-maze",
+      "title": "滚珠迷宫",
+      "appVersion": "1.0.0",
+      "description": "倾斜控制金色滚珠穿过五面墙到达绿环，A键重开；真实重力输入。",
+      "author": "AntonVanke / HUB-75E",
+      "runtimeApi": 2,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 49152,
+        "luaWorkingBytes": 32768,
+        "graphicsBytes": 8192,
+        "targetFps": 30,
+        "sensors": [
+          "imu"
+        ]
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "重力互动",
+      "path": "/themes/apps/gravity-maze.cwp",
+      "archivePath": "/themes/apps/gravity-maze.zip",
+      "bytes": 4492,
+      "preinstalled": false
+    },
+    {
+      "index": 55,
+      "packageName": "org.clockwise.gravity-stardust",
+      "id": "gravity-stardust",
+      "title": "引力星尘",
+      "appVersion": "1.0.0",
+      "description": "32颗流光响应重力与Z轴角速度，叠加实时数字钟；缺失IMU停动提示。",
+      "author": "AntonVanke / HUB-75E",
+      "runtimeApi": 2,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 49152,
+        "luaWorkingBytes": 32768,
+        "graphicsBytes": 8192,
+        "targetFps": 30,
+        "sensors": [
+          "imu"
+        ]
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "重力互动",
+      "path": "/themes/apps/gravity-stardust.cwp",
+      "archivePath": "/themes/apps/gravity-stardust.zip",
+      "bytes": 3730,
+      "preinstalled": false
+    },
+    {
+      "index": 56,
+      "packageName": "org.clockwise.gravity-liquid",
+      "id": "gravity-liquid",
+      "title": "倾斜水族箱",
+      "appVersion": "1.0.0",
+      "description": "16列水面随屏幕重力倾斜、翻转与波动，气泡只在液体区域出现。",
+      "author": "AntonVanke / HUB-75E",
+      "runtimeApi": 2,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 49152,
+        "luaWorkingBytes": 32768,
+        "graphicsBytes": 8192,
+        "targetFps": 30,
+        "sensors": [
+          "imu"
+        ]
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "重力互动",
+      "path": "/themes/apps/gravity-liquid.cwp",
+      "archivePath": "/themes/apps/gravity-liquid.zip",
+      "bytes": 3852,
+      "preinstalled": false
     }
   ]
 }

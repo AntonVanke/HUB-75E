@@ -1,0 +1,59 @@
+{
+  "format": "clockwise-theme-project",
+  "version": 3,
+  "id": "sensor-weather-station",
+  "packageName": "org.clockwise.sensor-weather-station",
+  "title": "微气象站",
+  "appVersion": "1.0.0",
+  "author": "AntonVanke / HUB-75E",
+  "description": "独立温度计、湿度条与室内状态，使用真实温湿度；缺失时显示占位。",
+  "category": "传感器",
+  "width": 64,
+  "height": 64,
+  "fps": 30,
+  "runtimeApi": 2,
+  "sourceMode": "lua",
+  "libraries": [],
+  "assets": [],
+  "media": [],
+  "resources": [],
+  "data": {
+    "temperature": 23.5,
+    "humidity": 56,
+    "temperature_valid": true,
+    "humidity_valid": true,
+    "imu_supported": true,
+    "imu_valid": true,
+    "accel_x": -0.65,
+    "accel_y": 0.35,
+    "accel_z": -0.67,
+    "gyro_x": 0,
+    "gyro_y": 0,
+    "gyro_z": 18,
+    "gravity_x": 0.35,
+    "gravity_y": 0.65,
+    "gravity_z": 0.67,
+    "screen_rotation": 270,
+    "auto_rotate": false,
+    "sensor_source": "simulated"
+  },
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "luaHeapBytes": 49152,
+    "luaWorkingBytes": 32768,
+    "graphicsBytes": 8192,
+    "targetFps": 30,
+    "sensors": [
+      "temperature",
+      "humidity"
+    ]
+  },
+  "source": "-- Live indoor readings, not a weather forecast. Text is refreshed once a second.\nlocal t,h,validT,validH,temperature,humidity,time,condition\nlocal phase=0\nlocal function clamp(v,a,b) return math.max(a,math.min(b,v)) end\nfunction second()\n  validT=data.get('temperature_valid',false);validH=data.get('humidity_valid',false)\n  t=data.get('temperature',nil);h=data.get('humidity',nil)\n  validT=validT and type(t)=='number';validH=validH and type(h)=='number'\n  temperature=validT and string.format('%.1fC',t) or '--.-C'\n  humidity=validH and string.format('%dRH',math.floor(h+0.5)) or '--RH'\n  condition=not(validT and validH) and 'NO SENSOR' or h<35 and 'DRY AIR' or h>70 and 'HUMID' or 'INDOOR'\n  time=clock.format('%H:%M')\n  telemetry.set('sensor_valid',validT and validH)\nend\nfunction start() second() end\nfunction update(dt) phase=(phase+dt*0.001)%6.283 end\nfunction draw()\n  gfx.clear(0x0863);gfx.rect(0,0,64,11,0x11a9);gfx.text(5,3,'WEATHER',0xafff)\n  gfx.outline(4,15,12,31,0x7532);gfx.rect(8,18,4,22,0x2106)\n  if validT then local n=clamp(math.floor((t+10)*22/55),1,22);gfx.rect(8,40-n,4,n,0xfaa9) end\n  gfx.circle(10,41,4,validT and 0xfc48 or 0x5aeb);gfx.pixel(9,40,0xffff)\n  for y=20,35,5 do gfx.line(13,y,15,y,0xc638) end\n  gfx.text(21,17,temperature,0xff19);gfx.text(21,28,humidity,0x67ff)\n  gfx.outline(21,38,37,5,0x326e)\n  if validH then gfx.rect(23,40,math.floor(clamp(h,0,100)*33/100),1,0x4e7f) end\n  gfx.text(5,49,condition,0x8d56)\n  gfx.rect(0,58,64,6,0x11a9);gfx.text(21,58,time,0xffff)\n  local p=math.floor(54+math.sin(phase)*2)\n  gfx.pixel(p,51,0x6f3c);gfx.pixel(p-2,53,0x326e)\nend\n",
+  "fidelity": "模拟器已明确标记模拟输入；设备使用实时传感器。内存声明为估算，尚未完成实板性能验证。",
+  "verification": {
+    "status": "unverified"
+  }
+}

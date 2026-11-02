@@ -4,6 +4,7 @@
 #include <Preferences.h>
 #include <FS.h>
 #include <DNSServer.h>
+#include <WiFiUdp.h>
 #include <functional>
 #include <mbedtls/sha256.h>
 #include "ThemeSchedule.h"
@@ -28,6 +29,8 @@ public:
   std::function<const uint16_t*()> framePixels;
   std::function<String()> sensorStatus;
   std::function<String()> panelStatus;
+  std::function<void(const PanelOrientation&)> orientationChanged;
+  std::function<String()> orientationStatus;
   void begin(int count,const char* titlesJson);
   void poll();
   void pollSerial();
@@ -38,6 +41,16 @@ private:
   UploadServer web_{80};
   Preferences prefs_;
   DNSServer dns_;
+  WiFiUDP discoveryUdp_;
+  struct DiscoveredDevice { IPAddress ip; char id[17]={},chip[32]={},version[16]={}; } discovered_[12];
+  uint8_t discoveredCount_=0,discoveryQueries_=0;
+  bool discoveryListening_=false,discovering_=false,discoveryTruncated_=false;
+  uint32_t discoveryStarted_=0,discoverySent_=0,discoveryReply_=0,discoveryLastScan_=0;
+  String discoveryNonce_;
+  void pollDiscovery(uint32_t now);
+  bool startDiscovery(String& error);
+  String discoveryJson()const;
+  String discoveryIdentity()const;
   String ssid_,password_,pendingSsid_,pendingPassword_,uploadError_,expectedHash_;
   File scriptFile_;
   size_t scriptBytes_=0;
@@ -69,6 +82,17 @@ private:
   int installIndex_=-1;
   String installId_,installTitle_,installPackageName_;
   bool legacyUpload_=false;
+  bool serialInstall_=false;
+  uint32_t serialInstallAt_=0,serialInstallStarted_=0;
+  size_t serialInstallExpected_=0;
+  String serialInstallPackage_,serialInstallHash_;
+  mbedtls_sha256_context serialInstallDigest_;
+  void abortSerialInstall();
+  void serialInstallCommand(const String& cmd,const String& line);
+  String completeInstall(int& code,bool serial=false);
+  uint8_t sensorCapabilities()const;
+  String sensorCapabilitiesJson()const;
+  bool saveOrientation(int manualRotation,bool automatic,String& error);
   String appId(int index);
   String appTitle(int index);
   String appPackageName(int index);
@@ -80,6 +104,7 @@ private:
   bool appCompatible(int index,String& error);
   String catalogField(int index,const char* key)const;
   String catalogJson(int index)const;
+  int catalogIndexByName(const String& name,const String& id)const;
   void refreshApps();
   void sendApps(bool serial=false);
   void exportApp(int index,bool archive=false,bool source=false);

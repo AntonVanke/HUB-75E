@@ -1,0 +1,58 @@
+{
+  "format": "clockwise-theme-project",
+  "version": 3,
+  "id": "gravity-level",
+  "packageName": "org.clockwise.gravity-level",
+  "title": "重力水平仪",
+  "appVersion": "1.0.0",
+  "author": "AntonVanke / HUB-75E",
+  "description": "同心刻度与弹性气泡，显示平面重力大小；缺失IMU暂停，不替代校准仪器。",
+  "category": "重力互动",
+  "width": 64,
+  "height": 64,
+  "fps": 30,
+  "runtimeApi": 2,
+  "sourceMode": "lua",
+  "libraries": [],
+  "assets": [],
+  "media": [],
+  "resources": [],
+  "data": {
+    "temperature": 23.5,
+    "humidity": 56,
+    "temperature_valid": true,
+    "humidity_valid": true,
+    "imu_supported": true,
+    "imu_valid": true,
+    "accel_x": -0.65,
+    "accel_y": 0.35,
+    "accel_z": -0.67,
+    "gyro_x": 0,
+    "gyro_y": 0,
+    "gyro_z": 18,
+    "gravity_x": 0.35,
+    "gravity_y": 0.65,
+    "gravity_z": 0.67,
+    "screen_rotation": 270,
+    "auto_rotate": false,
+    "sensor_source": "simulated"
+  },
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "luaHeapBytes": 49152,
+    "luaWorkingBytes": 32768,
+    "graphicsBytes": 8192,
+    "targetFps": 30,
+    "sensors": [
+      "imu"
+    ]
+  },
+  "source": "local gx,gy,valid,bx,by=0,0,false,32,33\nlocal tilt,time='-- G','--:--'\nfunction second()\n  time=clock.format('%H:%M')\n  tilt=valid and string.format('%.2fG',math.sqrt(gx*gx+gy*gy)) or 'NO IMU'\n  telemetry.set('imu_valid',valid)\nend\nfunction start() update(0);second() end\nfunction update(dt)\n  gx=data.get('gravity_x',nil);gy=data.get('gravity_y',nil)\n  valid=data.get('imu_valid',false) and type(gx)=='number' and type(gy)=='number'\n  if not valid then return end\n  local a=math.min(dt*0.009,1)\n  bx=bx+(32+math.max(-1,math.min(1,gx))*18-bx)*a\n  by=by+(33+math.max(-1,math.min(1,gy))*18-by)*a\nend\nfunction draw()\n  gfx.clear(0x0863);gfx.text(17,2,'LEVEL',0xaff9)\n  gfx.circle(32,33,24,0x328c);gfx.circle(32,33,22,0x1106)\n  gfx.circle(32,33,12,0x21ea);gfx.circle(32,33,11,0x1106)\n  gfx.circle(32,33,5,0x328c);gfx.circle(32,33,4,0x1106)\n  gfx.line(9,33,55,33,0x2a4a);gfx.line(32,10,32,56,0x2a4a)\n  gfx.line(9,30,9,36,0x8d56);gfx.line(55,30,55,36,0x8d56)\n  if valid then\n    gfx.circle(bx+1,by+1,4,0x0248);gfx.circle(bx,by,4,0x6f75)\n    gfx.circle(bx-1,by-1,2,0xcff9);gfx.pixel(bx-2,by-2,0xffff)\n  else gfx.rect(11,29,42,8,0x1106);gfx.text(14,31,'NO IMU',0xfca9) end\n  gfx.rect(13,57,42,7,0x0863);gfx.text((64-gfx.text_width(tilt))//2,58,tilt,0xbefb)\nend\n",
+  "fidelity": "模拟器已明确标记模拟输入；设备使用实时传感器。内存声明为估算，尚未完成实板性能验证。",
+  "verification": {
+    "status": "unverified"
+  }
+}

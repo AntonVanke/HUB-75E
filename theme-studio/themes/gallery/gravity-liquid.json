@@ -1,0 +1,58 @@
+{
+  "format": "clockwise-theme-project",
+  "version": 3,
+  "id": "gravity-liquid",
+  "packageName": "org.clockwise.gravity-liquid",
+  "title": "倾斜水族箱",
+  "appVersion": "1.0.0",
+  "author": "AntonVanke / HUB-75E",
+  "description": "16列水面随屏幕重力倾斜、翻转与波动，气泡只在液体区域出现。",
+  "category": "重力互动",
+  "width": 64,
+  "height": 64,
+  "fps": 30,
+  "runtimeApi": 2,
+  "sourceMode": "lua",
+  "libraries": [],
+  "assets": [],
+  "media": [],
+  "resources": [],
+  "data": {
+    "temperature": 23.5,
+    "humidity": 56,
+    "temperature_valid": true,
+    "humidity_valid": true,
+    "imu_supported": true,
+    "imu_valid": true,
+    "accel_x": -0.65,
+    "accel_y": 0.35,
+    "accel_z": -0.67,
+    "gyro_x": 0,
+    "gyro_y": 0,
+    "gyro_z": 18,
+    "gravity_x": 0.35,
+    "gravity_y": 0.65,
+    "gravity_z": 0.67,
+    "screen_rotation": 270,
+    "auto_rotate": false,
+    "sensor_source": "simulated"
+  },
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "luaHeapBytes": 49152,
+    "luaWorkingBytes": 32768,
+    "graphicsBytes": 8192,
+    "targetFps": 30,
+    "sensors": [
+      "imu"
+    ]
+  },
+  "source": "-- Sixteen water columns; no full-screen distortion pass or per-frame allocation.\nlocal gx,gy,valid=0,0,false\nlocal phase,time=0,'--:--'\nlocal function clamp(v,a,b) return math.max(a,math.min(b,v)) end\nfunction second() time=clock.format('%H:%M');telemetry.set('imu_valid',valid) end\nfunction start() update(0);second() end\nfunction update(dt)\n  gx=data.get('gravity_x',nil);gy=data.get('gravity_y',nil)\n  valid=data.get('imu_valid',false) and type(gx)=='number' and type(gy)=='number'\n  if valid then phase=(phase+dt*0.002)%6.283 end\nend\nfunction draw()\n  gfx.clear(0x0864);gfx.text(14,3,'AQUARIUM',0x6fff)\n  gfx.rect(6,14,52,39,0x196b);gfx.outline(5,13,54,41,0x7ddc)\n  if valid then\n    for i=0,15 do\n      local x=8+i*3;local wave=math.sin(phase+i*0.6)*1.3\n      if math.abs(gy)<0.15 then\n        if gx*(x-32)>0 then gfx.rect(x,16,3,35,0x1377);gfx.rect(x,16,1,35,0x1bd9) end\n      else\n        local surface=clamp(33-gx*(x-32)/gy+wave,16,51)\n        if gy>0 then gfx.rect(x,surface,3,51-surface,0x1377)\n        else gfx.rect(x,16,3,surface-16,0x1377) end\n        gfx.line(x,surface,x+2,surface,0x5f9f)\n      end\n    end\n    for i=1,6 do\n      local x=10+(i*11)%42;local y=19+(i*13-phase*5)%29\n      if gx*(x-32)+gy*(y-33)>2 then gfx.outline(x,y,2,2,0x3cfc) end\n    end\n  else gfx.text(14,30,'NO IMU',0xfca9) end\n  gfx.line(8,16,8,48,0xafff);gfx.line(10,15,21,15,0xafff)\n  gfx.text(18,58,time,0xe7ff)\nend\n",
+  "fidelity": "模拟器已明确标记模拟输入；设备使用实时传感器。内存声明为估算，尚未完成实板性能验证。",
+  "verification": {
+    "status": "unverified"
+  }
+}

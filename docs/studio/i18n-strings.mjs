@@ -657,5 +657,93 @@ Lua 执行错误|Lua execution error
 被截住，保留进度后重新出发|Caught; restarting while retaining progress
 全部豆子吃完，进入下一关|All pellets cleared; advancing to the next level
 字号|fontSize
+屏幕方向|Screen orientation
+手动方向 / 自动旋转回退|Manual orientation / automatic rotation fallback
+根据重力自动旋转|Rotate automatically with gravity
+连接设备后读取屏幕方向。|Connect a device to read its screen orientation.
+自动模式使用低通滤波、方向滞回和稳定等待；平放时保持方向，传感器离线时回退手动方向。保存后立即生效，不需要重启。|Automatic rotation uses low-pass filtering, hysteresis, and a stability delay. Face-up placement keeps the current orientation; an offline sensor falls back to manual. Changes apply immediately without a restart.
+方向设置未同步|Orientation settings not synchronized
+保存方向设置|Save orientation settings
+方向设置已与设备同步|Orientation settings synchronized with the device
+当前方向：|Current orientation: 
+当前设备无 IMU，可使用手动方向。|This device has no IMU. Manual orientation is available.
+重力自动旋转已启用。|Gravity-based automatic rotation is enabled.
+IMU 读数离线，暂用手动方向。|IMU readings are offline. Using the manual orientation temporarily.
+使用手动方向。|Using manual orientation.
+方向设置需要 v0.9.8 或更新固件。|Orientation settings require firmware v0.9.8 or later.
+方向设置有未保存的修改|Orientation settings have unsaved changes
+方向设置已保存并生效。|Orientation settings saved and applied.
+局域网设备|LAN devices
+发现同网设备|Find devices on this network
+先连接一台支持发现的设备，再查找同一局域网内的 Clockwise。|Connect a discovery-capable device first to find Clockwise devices on the same LAN.
+发现由当前设备发送局域网广播，持续约 5 秒；VPN、访客网络或路由隔离可能阻止广播。|The connected device broadcasts discovery requests on its LAN for about 5 seconds. VPNs, guest networks, and router isolation may block these broadcasts.
+当前设备不支持局域网发现，请升级到 v0.9.8 或更新固件。|This firmware does not support LAN discovery. Update to v0.9.8 or later.
+可发现同一局域网内的 Clockwise，点击按钮开始。|Find Clockwise devices on this LAN. Click the button to start.
+在此管理|Manage here
+正在发现… |Discovering… 
+发现完成：|Discovery complete: 
+ 台设备| devices
+；最多列出 12 台，仍有设备未列出。|; only 12 devices are listed. Additional devices were omitted.
+；请检查设备是否在同一局域网。|; check that the devices are on the same LAN.
+设备发现尚未完成，请稍后重试。|Discovery has not finished. Try again shortly.
+设备发现失败，可手动输入地址。|Discovery failed. You can enter the address manually.
+连接后读取主题库，可直接安装兼容应用。|Connect a device to load the theme library and install compatible apps directly.
+卸载选中应用|Uninstall selected apps
+选择当前列表中已安装的应用|Select installed apps in the current list
+选择应用 |Select app 
+ 需要传感器：| Required sensors: 
+设备未确认支持传感器 |The device has not confirmed support for sensor 
+requirements.sensors 仅支持 temperature、humidity、imu，且不能重复|requirements.sensors supports only temperature, humidity, and imu without duplicates.
+设备安装空间不足，请先卸载不使用的应用。|Insufficient installation storage. Uninstall unused apps first.
+无法读取主题应用包|Cannot download the theme app package.
+下载应用的包名与主题库不一致|The downloaded package identity does not match the theme catalog.
+目录格式无效|Invalid catalog format
+本地主题库：|Local theme library: 
+在线主题库：|Online theme library: 
+ 个应用，可直接安装兼容项。| apps. Compatible apps can be installed directly.
+主题库暂时无法读取，已安装应用和手动导入仍可使用。|The theme library is unavailable. Installed apps and manual import remain available.
+已卸载 |Uninstalled 
+ 个应用，存储空间已释放。| apps; storage released.
+ 个应用| apps
+仅发现运行 v0.9.8 或更新固件的设备。|Only devices running firmware v0.9.8 or later can be discovered.
+手动角度须为 0、90、180 或 270|Manual orientation must be 0, 90, 180, or 270 degrees.
+此设备没有支持自动方向的 IMU|This device has no IMU supporting automatic orientation.
+方向设置保存失败|Failed to save orientation settings.
+方向设置已保存|Orientation settings saved
+手动角度须为整数|Manual orientation must be an integer.
+autoRotate 须为布尔值|autoRotate must be a boolean.
+请先让设备连接局域网 Wi-Fi|Connect the device to LAN Wi-Fi first.
+发现操作间隔至少 10 秒|Wait at least 10 seconds between discovery scans.
+设备缺少应用要求的真实传感器|The device lacks the sensors required by this app.
+应用运行时 API 不兼容|The app requires an unsupported runtime API.
+应用 Lua 内存预算超出当前设备配额|The app's Lua memory requirement exceeds the device quota.
+应用图形内存预算超过 64 KiB|The app's graphics memory requirement exceeds 64 KiB.
+USB 应用安装进行中|A USB app installation is in progress.
+设备正在处理另一项安装|The device is processing another installation.
+安装参数无效|Invalid installation parameters
+请先初始化脚本存储|Initialize app storage first.
+应用包超出设备容量或安装空间不足|The app exceeds the device capacity or available installation storage.
+无法创建应用文件|Cannot create the app file.
+没有进行中的 USB 应用安装|No USB app installation is in progress.
+应用分块顺序或内容无效|Invalid app chunk order or content.
+应用写入失败，原应用已保留|App write failed. The original app has been retained.
+应用包尚未完整上传|The app package has not been fully uploaded.
+应用 SHA-256 不匹配，原应用已保留|App SHA-256 mismatch. The original app has been retained.
+未知 USB 安装命令|Unknown USB installation command
+应用上传超时，原应用已保留|App upload timed out. The original app has been retained.
+下载应用包与请求的包名不一致|The downloaded package does not match the requested package name.
+这些数值仅为手动模拟，不是设备实测。取消有效性可验证缺失提示。|These values are manually simulated, not device measurements. Disable validity to test missing-data notices.
+温度 °C|Temperature °C
+湿度 %RH|Humidity %RH
+温度有效|Temperature valid
+湿度有效|Humidity valid
+重力与陀螺仪模拟|Gravity and gyroscope simulation
+支持 IMU|IMU supported
+IMU 有效|IMU valid
+原轴加速度单位 g；角速度单位 °/s。重力按所选屏幕方向换算，不模拟硬件滤波延迟。|Raw acceleration is in g; angular velocity is in °/s. Gravity follows the selected screen rotation. Hardware filter delay is not simulated.
+屏幕方向|Screen rotation
+向左倾斜|Tilt left
+向右倾斜|Tilt right
+平放|Lay flat
 `;
 export const strings = Object.fromEntries(pairs.trim().split('\n').filter(Boolean).map(line=>{const at=line.indexOf('|');return [line.slice(0,at),line.slice(at+1)];}));

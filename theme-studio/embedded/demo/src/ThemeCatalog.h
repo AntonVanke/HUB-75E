@@ -49,5 +49,13 @@ static const ThemeCatalogItem THEME_CATALOG[] = {
 {"one-piece","海贼王 · 千阳号"},
 {"harry-potter","哈利波特 · 霍格沃茨"},
 {"mario-1-1","超级马里奥 · 全 32 关"},
-{"spider-man-2","漫威蜘蛛侠 2 · 纽约守望"}
+{"spider-man-2","漫威蜘蛛侠 2 · 纽约守望"},
+{"sensor-weather-station","微气象站"},
+{"sensor-comfort-garden","舒适度花园"},
+{"sensor-climate-trend","温湿度趋势"},
+{"gravity-hourglass","重力沙漏"},
+{"gravity-level","重力水平仪"},
+{"gravity-maze","滚珠迷宫"},
+{"gravity-stardust","引力星尘"},
+{"gravity-liquid","倾斜水族箱"}
 };

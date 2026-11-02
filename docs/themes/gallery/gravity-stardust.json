@@ -1,0 +1,58 @@
+{
+  "format": "clockwise-theme-project",
+  "version": 3,
+  "id": "gravity-stardust",
+  "packageName": "org.clockwise.gravity-stardust",
+  "title": "引力星尘",
+  "appVersion": "1.0.0",
+  "author": "AntonVanke / HUB-75E",
+  "description": "32颗流光响应重力与Z轴角速度，叠加实时数字钟；缺失IMU停动提示。",
+  "category": "重力互动",
+  "width": 64,
+  "height": 64,
+  "fps": 30,
+  "runtimeApi": 2,
+  "sourceMode": "lua",
+  "libraries": [],
+  "assets": [],
+  "media": [],
+  "resources": [],
+  "data": {
+    "temperature": 23.5,
+    "humidity": 56,
+    "temperature_valid": true,
+    "humidity_valid": true,
+    "imu_supported": true,
+    "imu_valid": true,
+    "accel_x": -0.65,
+    "accel_y": 0.35,
+    "accel_z": -0.67,
+    "gyro_x": 0,
+    "gyro_y": 0,
+    "gyro_z": 18,
+    "gravity_x": 0.35,
+    "gravity_y": 0.65,
+    "gravity_z": 0.67,
+    "screen_rotation": 270,
+    "auto_rotate": false,
+    "sensor_source": "simulated"
+  },
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "luaHeapBytes": 49152,
+    "luaWorkingBytes": 32768,
+    "graphicsBytes": 8192,
+    "targetFps": 30,
+    "sensors": [
+      "imu"
+    ]
+  },
+  "source": "local px,py,vx,vy={},{},{},{}\nlocal valid,gx,gy,spin=false,0,0,0\nlocal time,reading='--:--','NO IMU'\nfunction second()\n  time=clock.format('%H:%M')\n  reading=valid and string.format('%+.1f %+.1fG',gx,gy) or 'NO IMU'\n  telemetry.set('imu_valid',valid)\nend\nfunction start()\n  for i=1,32 do px[i]=rng.int(0,63);py[i]=rng.int(13,51);vx[i]=0;vy[i]=0 end\n  update(0);second()\nend\nfunction update(dt)\n  gx=data.get('gravity_x',nil);gy=data.get('gravity_y',nil)\n  valid=data.get('imu_valid',false) and type(gx)=='number' and type(gy)=='number'\n  if not valid then return end\n  spin=math.max(-90,math.min(90,data.get('gyro_z',0)))*0.003\n  local step=math.min(dt,50)/1000\n  for i=1,32 do\n    vx[i]=(vx[i]+(gx*15-(py[i]-32)*spin)*step)*0.985\n    vy[i]=(vy[i]+(gy*15+(px[i]-32)*spin)*step)*0.985\n    px[i]=(px[i]+vx[i]*step)%64;py[i]=13+(py[i]-13+vy[i]*step)%39\n  end\nend\nfunction draw()\n  gfx.clear(0x0803);gfx.text(8,3,'STARDUST',0xa4ff)\n  for i=1,32 do\n    local color=i%3==0 and 0xd5ff or i%3==1 and 0x6fdf or 0xfed5\n    gfx.line(px[i]-vx[i]*0.07,py[i]-vy[i]*0.07,px[i],py[i],color)\n    if i%8==0 then gfx.pixel(px[i]+1,py[i],0xffff);gfx.pixel(px[i],py[i]+1,0xffff) end\n  end\n  gfx.rect(11,26,42,13,0x0803);gfx.text(12,28,time,0xffff,2)\n  gfx.text((64-gfx.text_width(reading))//2,57,reading,valid and 0x8fdf or 0xfca9)\nend\n",
+  "fidelity": "模拟器已明确标记模拟输入；设备使用实时传感器。内存声明为估算，尚未完成实板性能验证。",
+  "verification": {
+    "status": "unverified"
+  }
+}

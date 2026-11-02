@@ -39,7 +39,11 @@ function draw()
   gfx.text(11,49,clock.format("%m-%d"),33840)
 end
 )CW";
-struct Snapshot { ThemeClock clock; int theme=0,brightness=80; uint32_t generation=0; float temperature=NAN,humidity=NAN; bool a=false,b=false,panelTest=false; };
+struct Snapshot {
+  ThemeClock clock;int theme=0,brightness=80,rotation=PANEL_ROTATION;uint32_t generation=0;
+  float temperature=NAN,humidity=NAN,accel[3]={},gyro[3]={},gravity[3]={};
+  bool a=false,b=false,panelTest=false,imuSupported=false,imuValid=false,temperatureValid=false,humidityValid=false,autoRotate=false;
+};
 struct Metrics { uint32_t frames=0,late=0,missed=0,maxUs=0,computeUs=0,blitUs=0,heap=0,lua=0,luaUsed=0,graphics=0,generation=0,sampleMs=0; int theme=-1,level=0,area=0,deaths=0,coins=0,targetFps=60; char error[256]={}; };
 static QueueHandle_t snapshotQueue,metricsQueue;
 static TaskHandle_t renderHandle;
@@ -75,6 +79,7 @@ static void panelBrightness(uint8_t brightness){
 }
 static Snapshot snapshot;
 static DeviceService service;
+static PanelOrientationController orientation;
 static DeviceLimits limits;
 static SemaphoreHandle_t renderGate;
 static uint32_t bootReadyAt=0,bootDrawAt=0;
@@ -133,8 +138,27 @@ public:
   }
   bool pressed(const char* key)override{return !strcmp(key,"A")?snapshot.a:!strcmp(key,"B")?snapshot.b:false;}
   bool data(const char* key,ThemeValue& value)override{
-    if(!strcmp(key,"temperature")){if(!isfinite(snapshot.temperature))return false;value.number=snapshot.temperature;}
-    else if(!strcmp(key,"humidity")){if(!isfinite(snapshot.humidity))return false;value.number=snapshot.humidity;}
+    bool boolean=false,isBoolean=true;
+    if(!strcmp(key,"imu_supported"))boolean=snapshot.imuSupported;
+    else if(!strcmp(key,"imu_valid"))boolean=snapshot.imuValid;
+    else if(!strcmp(key,"temperature_valid"))boolean=snapshot.temperatureValid;
+    else if(!strcmp(key,"humidity_valid"))boolean=snapshot.humidityValid;
+    else if(!strcmp(key,"auto_rotate"))boolean=snapshot.autoRotate;
+    else isBoolean=false;
+    if(isBoolean){value.type=ThemeValue::Boolean;value.boolean=boolean;return true;}
+    if(!strcmp(key,"screen_rotation")){value.number=snapshot.rotation*90;return true;}
+    for(int axis=0;axis<3;axis++){
+      const char names[]="xyz";const size_t n=strlen(key);
+      if(n&&key[n-1]==names[axis]){
+        const float* vector=nullptr;
+        if(n==7&&!strncmp(key,"accel_",6))vector=snapshot.accel;
+        else if(n==6&&!strncmp(key,"gyro_",5))vector=snapshot.gyro;
+        else if(n==9&&!strncmp(key,"gravity_",8))vector=snapshot.gravity;
+        if(vector){if(!snapshot.imuValid)return false;value.number=vector[axis];return true;}
+      }
+    }
+    if(!strcmp(key,"temperature")){if(!snapshot.temperatureValid)return false;value.number=snapshot.temperature;}
+    else if(!strcmp(key,"humidity")){if(!snapshot.humidityValid)return false;value.number=snapshot.humidity;}
     else if(!strcmp(key,"message")){value.type=ThemeValue::String;value.string="HELLO PIXELS";}
     else return false;return true;
   }
@@ -201,7 +225,7 @@ static bool showBoot(){
   if(bootReady&&now-bootReadyAt>=5000)return false;
   if(now-bootDrawAt<250)return true;
   bootDrawAt=now;
-  auto* graphics=panelGraphics();graphics->fillScreen(0);graphics->setTextSize(1);graphics->setTextWrap(false);
+  auto* graphics=panelGraphics();graphics->setRotation(orientation.rotation());graphics->fillScreen(0);graphics->setTextSize(1);graphics->setTextWrap(false);
   auto line=[](int y,const char* text,uint16_t color){auto* graphics=panelGraphics();graphics->setTextColor(panelColor(color));graphics->setCursor(std::max(0,(64-int(strlen(text))*6)/2),y);graphics->print(text);};
   line(2,"WI-FI",0x07ff);
   line(14,connected?"CONNECTED":ready?"SETUP AP":"CONNECTING",0xffff);
@@ -252,8 +276,10 @@ static void renderTask(void*){
       xSemaphoreGive(renderGate);continue;
     }
 #endif
+    bool rotated=false;
+    if(panelGraphics()->getRotation()!=snapshot.rotation){panelGraphics()->setRotation(snapshot.rotation);host.valid[0]=host.valid[1]=false;rotated=true;}
     static int brightness=-1;if(snapshot.brightness!=brightness){brightness=snapshot.brightness;panelBrightness(brightness);host.valid[0]=host.valid[1]=false;}
-    if(snapshot.panelTest){if(!testing)drawPanelTest();testing=true;xSemaphoreGive(renderGate);continue;}
+    if(snapshot.panelTest){if(!testing||rotated)drawPanelTest();testing=true;xSemaphoreGive(renderGate);continue;}
     if(testing){testing=false;previous=esp_timer_get_time()/1000;nextFrameAt=esp_timer_get_time();}
     host.blitUs=0;
     const int64_t start=esp_timer_get_time();
@@ -266,7 +292,7 @@ static void renderTask(void*){
     }else if(healthy){
       if(snapshot.a&&!oldA)healthy=runtime.button("A");
       if(healthy&&snapshot.b&&!oldB)healthy=runtime.button("B");
-      if(healthy&&(start>=nextFrameAt||(snapshot.a&&!oldA)||(snapshot.b&&!oldB))){
+      if(healthy&&(start>=nextFrameAt||rotated||(snapshot.a&&!oldA)||(snapshot.b&&!oldB))){
         const uint32_t dt=std::min<int64_t>(std::max(uint32_t(100),(framePeriodUs+999)/1000),start/1000-previous);previous=start/1000;
         healthy=runtime.update(dt)&&runtime.draw();
         const uint32_t elapsed=esp_timer_get_time()-start;
@@ -287,12 +313,27 @@ static void renderTask(void*){
 }
 void setup(){
   Serial.begin(115200);setCpuFrequencyMhz(240);
+  orientation.configure(panelOrientation());
 #ifdef HUB75_S3_BOARD
   delay(1500);
   Serial.printf("[BOARD] HUB75-S3 20261101-1 chip=%s flash=%u psram=%u\n",ESP.getChipModel(),ESP.getFlashChipSize(),ESP.getPsramSize());
   sensors.begin();
   service.sensorStatus=[](){return sensors.json();};
+#else
+  service.sensorStatus=[](){return String("{\"ahtPresent\":false,\"imuPresent\":false,\"imuSupported\":false,\"temperatureValid\":false,\"humidityValid\":false,\"imuValid\":false,\"ahtHealthy\":false,\"imuHealthy\":false,\"temperature\":null,\"humidity\":null,\"accelG\":null,\"gyroDps\":null}");};
 #endif
+  service.orientationChanged=[](const PanelOrientation& value){orientation.configure(value);};
+  service.orientationStatus=[](){
+#ifdef HUB75_S3_BOARD
+    const bool supported=true,valid=sensors.imuValid();
+#else
+    const bool supported=false,valid=false;
+#endif
+    char gravity[96]="null";
+    if(orientation.gravityValid()){float x,y,z;orientation.screenGravity(x,y,z);snprintf(gravity,sizeof(gravity),"[%.5f,%.5f,%.5f]",x,y,z);}
+    const auto& config=orientation.configuration();
+    return "{\"manualRotation\":"+String(config.rotation*90)+",\"rotationDegrees\":"+String(orientation.rotation()*90)+",\"autoRotate\":"+(config.autoRotate?"true":"false")+",\"autoRotateSupported\":"+(supported?"true":"false")+",\"imuValid\":"+(valid?"true":"false")+",\"source\":\""+(orientation.automatic()?"gravity":config.autoRotate?"sensor-unavailable":"manual")+"\",\"gravityG\":"+gravity+",\"coordinates\":\"screen +x right,+y down; -accel in g; IMU X/Y basis at rotation 0\"}";
+  };
   HUB75_I2S_CFG cfg(64,64,1);
 #ifdef HUB75_S3_BOARD
   cfg.gpio={4,14,5,6,13,7,15,11,16,10,12,9,18,17};
@@ -323,7 +364,7 @@ void setup(){
 #endif
     }
   }
-  if(panelInitialized&&!diagnosticPanel()){panelGraphics()->setRotation(PANEL_ROTATION);panelBrightness(80);panelGraphics()->fillScreen(0);showPanel();}
+  if(panelInitialized&&!diagnosticPanel()){panelGraphics()->setRotation(orientation.rotation());panelBrightness(80);panelGraphics()->fillScreen(0);showPanel();}
   if(!panelInitialized)panelInitError="屏幕驱动初始化失败，可通过串口或后台切回 SHIFTREG";
   service.panelStatus=[](){
     String result="{\"initialized\":"+String(panelInitialized?"true":"false")+",\"diagnostic\":"+(diagnosticPanel()?"true":"false")+",\"backend\":\""+(selectedPanelDriver==7?"GPIO":selectedPanelDriver==9?"Protomatter":"HUB75_DMA")+"\"";
@@ -364,8 +405,15 @@ void loop(){
   static Snapshot next;next.a=service.buttonAUntil&&int32_t(service.buttonAUntil-millis())>0;next.b=service.buttonBUntil&&int32_t(service.buttonBUntil-millis())>0;next.theme=service.theme;next.generation=service.generation;next.brightness=service.brightness;
   next.panelTest=service.panelTestUntil&&int32_t(service.panelTestUntil-millis())>0;
 #ifdef HUB75_S3_BOARD
-  next.temperature=sensors.temperature;next.humidity=sensors.humidity;
+  next.temperatureValid=sensors.temperatureValid();next.humidityValid=sensors.humidityValid();
+  next.temperature=next.temperatureValid?sensors.temperature:NAN;next.humidity=next.humidityValid?sensors.humidity:NAN;
+  next.imuSupported=true;next.imuValid=sensors.imuValid();
+  orientation.update(millis(),true,next.imuValid,sensors.imuSamples,sensors.accel[0],sensors.accel[1],sensors.accel[2]);
+  if(next.imuValid){for(int i=0;i<3;i++){next.accel[i]=sensors.accel[i];next.gyro[i]=sensors.gyro[i];}orientation.screenGravity(next.gravity[0],next.gravity[1],next.gravity[2]);}
+#else
+  orientation.update(millis(),false,false,0,0,0,0);
 #endif
+  next.rotation=orientation.rotation();next.autoRotate=orientation.configuration().autoRotate;
   struct timeval tv;gettimeofday(&tv,nullptr);time_t epoch=tv.tv_sec;struct tm t;localtime_r(&epoch,&t);
   next.clock.hour=t.tm_hour;next.clock.minute=t.tm_min;next.clock.second=t.tm_sec;
   next.clock.day=t.tm_mday;next.clock.month=t.tm_mon+1;next.clock.year=t.tm_year+1900;next.clock.weekday=t.tm_wday;

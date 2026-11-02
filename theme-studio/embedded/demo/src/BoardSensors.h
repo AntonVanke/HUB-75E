@@ -4,11 +4,14 @@
 
 class BoardSensors {
 public:
-  float temperature=NAN,humidity=NAN,accel[3]={},gyro[3]={};
+  float temperature=NAN,humidity=NAN,accel[3]={NAN,NAN,NAN},gyro[3]={NAN,NAN,NAN};
   uint32_t ahtSamples=0,imuSamples=0,ahtErrors=0,imuErrors=0;
   bool ahtPresent=false,imuPresent=false,accelSelfTest=false,gyroSelfTest=false;
   void begin();
   void poll();
+  bool temperatureValid()const{return ahtPresent&&ahtSamples&&uint32_t(millis()-ahtGood_)<10000&&isfinite(temperature);}
+  bool humidityValid()const{return ahtPresent&&ahtSamples&&uint32_t(millis()-ahtGood_)<10000&&isfinite(humidity);}
+  bool imuValid()const{return imuPresent&&imuSamples&&uint32_t(millis()-imuGood_)<500;}
   String json()const;
 private:
   uint32_t ahtAt_=0,ahtReady_=0,imuAt_=0,reportAt_=0,ahtGood_=0,imuGood_=0;

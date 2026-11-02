@@ -1,6 +1,16 @@
 #pragma once
 #include <Preferences.h>
 #include <utility>
+#include "PanelOrientation.h"
+
+inline PanelOrientation panelOrientation(){
+  PanelOrientation value;Preferences settings;
+  if(settings.begin("cwstudio",true)){value.rotation=settings.getInt("panelRotation",3);value.autoRotate=settings.getBool("panelAutoRotate",false);settings.end();}
+  return validPanelOrientation(value)?value:PanelOrientation{};
+}
+inline bool savePanelOrientation(Preferences& settings,const PanelOrientation& value){
+  return validPanelOrientation(value)&&settings.putInt("panelRotation",value.rotation)==sizeof(int32_t)&&settings.putBool("panelAutoRotate",value.autoRotate)==sizeof(uint8_t);
+}
 
 struct PanelTiming { int clockMHz=8,clockPhase=1,latchBlanking=2,driver=0; };
 inline const char* panelDriverName(int driver){

@@ -43,3 +43,19 @@ test('legacy manifests remain importable with unknown requirements while new met
   assert.throws(()=>normalizeAppManifest({...project,requirements:{...requirements,targetFps:61}}),/帧率/);
   assert.throws(()=>normalizeAppManifest({...project,requirements:{...requirements,luaHeapBytes:10,luaWorkingBytes:11}}),/运行内存/);
 });
+
+test('sensor requirements survive source and device packaging and reject missing hardware',async()=>{
+  const sensorProject={...project,runtimeApi:2,requirements:{...requirements,chips:['esp32s3'],sensors:['temperature','humidity','imu']}};
+  const {zip}=await exportPackage(sensorProject),imported=await importPackage(readZip(zip));
+  assert.deepEqual(imported.requirements.sensors,sensorProject.requirements.sensors);
+  const packed=devicePackage(imported,{},zip),view=new DataView(packed.buffer);
+  const metadata=JSON.parse(strFromU8(packed.subarray(24+40*view.getUint32(12,true),24+40*view.getUint32(12,true)+view.getUint32(16,true))));
+  assert.deepEqual(metadata.requirements.sensors,sensorProject.requirements.sensors);
+  const device={chip:'ESP32-S3',runtimeApi:2,sensorCapabilities:['temperature','humidity','imu']};
+  assert.equal(checkAppCompatibility(metadata,device).compatible,true);
+  assert.equal(checkAppCompatibility(metadata,{...device,runtimeApi:1}).compatible,false);
+  assert.equal(checkAppCompatibility(metadata,{...device,sensorCapabilities:['temperature','humidity']}).compatible,false);
+  assert.equal(checkAppCompatibility(metadata,{...device,sensorCapabilities:[]}).compatible,false);
+  assert.throws(()=>normalizeAppManifest({...project,requirements:{sensors:['imu','imu']}}));
+  assert.throws(()=>normalizeAppManifest({...project,requirements:{sensors:['unknown']}}));
+});

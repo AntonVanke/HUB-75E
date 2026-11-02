@@ -136,7 +136,7 @@ export class LuaRuntime extends Graphics {
     });
     table('data',{get:()=>{
       const value=this.data[str(1)];
-      if(value===undefined)lua.lua_pushvalue(L,2);
+      if(value==null||(typeof value==='number'&&!Number.isFinite(value)))lua.lua_pushvalue(L,2);
       else if(typeof value==='number')lua.lua_pushnumber(L,value);
       else if(typeof value==='boolean')lua.lua_pushboolean(L,value);
       else lua.lua_pushstring(L,s(String(value)));

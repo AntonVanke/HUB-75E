@@ -543,6 +543,201 @@
       "category": "游戏",
       "path": "/HUB-75E/themes/gallery/spider-man-2.json",
       "reference": "https://www.playstation.com/en-us/games/marvels-spider-man-2/"
+    },
+    {
+      "id": "sensor-weather-station",
+      "title": "微气象站",
+      "description": "独立温度计、湿度条与室内状态，使用真实温湿度；缺失时显示占位。",
+      "category": "传感器",
+      "width": 64,
+      "height": 64,
+      "fidelity": "模拟器已明确标记模拟输入；设备使用实时传感器。内存声明为估算，尚未完成实板性能验证。",
+      "path": "/HUB-75E/themes/gallery/sensor-weather-station.json",
+      "runtimeApi": 2,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 49152,
+        "luaWorkingBytes": 32768,
+        "graphicsBytes": 8192,
+        "targetFps": 30,
+        "sensors": [
+          "temperature",
+          "humidity"
+        ]
+      }
+    },
+    {
+      "id": "sensor-comfort-garden",
+      "title": "舒适度花园",
+      "description": "温湿度驱动花朵舒展与雨滴，展示装饰性舒适度提示，不作天气预报。",
+      "category": "传感器",
+      "width": 64,
+      "height": 64,
+      "fidelity": "模拟器已明确标记模拟输入；设备使用实时传感器。内存声明为估算，尚未完成实板性能验证。",
+      "path": "/HUB-75E/themes/gallery/sensor-comfort-garden.json",
+      "runtimeApi": 2,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 49152,
+        "luaWorkingBytes": 32768,
+        "graphicsBytes": 8192,
+        "targetFps": 30,
+        "sensors": [
+          "temperature",
+          "humidity"
+        ]
+      }
+    },
+    {
+      "id": "sensor-climate-trend",
+      "title": "温湿度趋势",
+      "description": "双曲线记录真实观测，每5秒取样、固定28点；无数据留空，不补造历史。",
+      "category": "传感器",
+      "width": 64,
+      "height": 64,
+      "fidelity": "模拟器已明确标记模拟输入；设备使用实时传感器。内存声明为估算，尚未完成实板性能验证。",
+      "path": "/HUB-75E/themes/gallery/sensor-climate-trend.json",
+      "runtimeApi": 2,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 49152,
+        "luaWorkingBytes": 32768,
+        "graphicsBytes": 8192,
+        "targetFps": 30,
+        "sensors": [
+          "temperature",
+          "humidity"
+        ]
+      }
+    },
+    {
+      "id": "gravity-hourglass",
+      "title": "重力沙漏",
+      "description": "28粒金砂随屏幕重力滑动，A键复位；固定预算的视觉玩具，不是校准计时器。",
+      "category": "重力互动",
+      "width": 64,
+      "height": 64,
+      "fidelity": "模拟器已明确标记模拟输入；设备使用实时传感器。内存声明为估算，尚未完成实板性能验证。",
+      "path": "/HUB-75E/themes/gallery/gravity-hourglass.json",
+      "runtimeApi": 2,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 49152,
+        "luaWorkingBytes": 32768,
+        "graphicsBytes": 8192,
+        "targetFps": 30,
+        "sensors": [
+          "imu"
+        ]
+      }
+    },
+    {
+      "id": "gravity-level",
+      "title": "重力水平仪",
+      "description": "同心刻度与弹性气泡，显示平面重力大小；缺失IMU暂停，不替代校准仪器。",
+      "category": "重力互动",
+      "width": 64,
+      "height": 64,
+      "fidelity": "模拟器已明确标记模拟输入；设备使用实时传感器。内存声明为估算，尚未完成实板性能验证。",
+      "path": "/HUB-75E/themes/gallery/gravity-level.json",
+      "runtimeApi": 2,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 49152,
+        "luaWorkingBytes": 32768,
+        "graphicsBytes": 8192,
+        "targetFps": 30,
+        "sensors": [
+          "imu"
+        ]
+      }
+    },
+    {
+      "id": "gravity-maze",
+      "title": "滚珠迷宫",
+      "description": "倾斜控制金色滚珠穿过五面墙到达绿环，A键重开；真实重力输入。",
+      "category": "重力互动",
+      "width": 64,
+      "height": 64,
+      "fidelity": "模拟器已明确标记模拟输入；设备使用实时传感器。内存声明为估算，尚未完成实板性能验证。",
+      "path": "/HUB-75E/themes/gallery/gravity-maze.json",
+      "runtimeApi": 2,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 49152,
+        "luaWorkingBytes": 32768,
+        "graphicsBytes": 8192,
+        "targetFps": 30,
+        "sensors": [
+          "imu"
+        ]
+      }
+    },
+    {
+      "id": "gravity-stardust",
+      "title": "引力星尘",
+      "description": "32颗流光响应重力与Z轴角速度，叠加实时数字钟；缺失IMU停动提示。",
+      "category": "重力互动",
+      "width": 64,
+      "height": 64,
+      "fidelity": "模拟器已明确标记模拟输入；设备使用实时传感器。内存声明为估算，尚未完成实板性能验证。",
+      "path": "/HUB-75E/themes/gallery/gravity-stardust.json",
+      "runtimeApi": 2,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 49152,
+        "luaWorkingBytes": 32768,
+        "graphicsBytes": 8192,
+        "targetFps": 30,
+        "sensors": [
+          "imu"
+        ]
+      }
+    },
+    {
+      "id": "gravity-liquid",
+      "title": "倾斜水族箱",
+      "description": "16列水面随屏幕重力倾斜、翻转与波动，气泡只在液体区域出现。",
+      "category": "重力互动",
+      "width": 64,
+      "height": 64,
+      "fidelity": "模拟器已明确标记模拟输入；设备使用实时传感器。内存声明为估算，尚未完成实板性能验证。",
+      "path": "/HUB-75E/themes/gallery/gravity-liquid.json",
+      "runtimeApi": 2,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 49152,
+        "luaWorkingBytes": 32768,
+        "graphicsBytes": 8192,
+        "targetFps": 30,
+        "sensors": [
+          "imu"
+        ]
+      }
     }
   ]
 }

@@ -6,18 +6,24 @@ A 64 × 64 Lua theme clock for ESP32 / ESP32-S3 and HUB75 RGB LED panels. Lua co
 
 **[Web installer, theme downloads and USB configuration](https://antonvanke.github.io/HUB-75E/)** · **[Firmware releases](https://github.com/AntonVanke/HUB-75E/releases)** · **[Flashing guide](FLASHING.en.md)**
 
+**[OSHWHUB hardware project](https://oshwhub.com/team_rzwlbjjl/project_tfevmhyp)**: ESP32-S3 board, HUB75 level shifting, AHT30 temperature/humidity, LSM6DS3TR-C IMU, TF card and buttons. Submitted under MIT; platform review is pending. OSHWHUB hosts the circuit and PCB; GitHub hosts firmware, applications, the web installer and theme studio. Both project descriptions link to each other.
+
 ## Releases
 
 | Release | Hardware | Notes |
 | --- | --- | --- |
 | [ESP32 v0.9.3](https://github.com/AntonVanke/HUB-75E/releases/tag/esp32-v0.9.3) | Classic ESP32, 4 MB Flash, no PSRAM required | Original DMA backend, CWP2 applications and device resource checks |
 | [ESP32-S3 v0.9.7](https://github.com/AntonVanke/HUB-75E/releases/tag/esp32s3-v0.9.7) | The project's board with an 8 MB Flash layout and OPI PSRAM | DMA and Protomatter backends; profile 9 was tested on the P2.5-2121-32S-V1 panel |
+| [ESP32 / S3 v0.9.8 feature build](https://github.com/AntonVanke/HUB-75E/releases/tag/v0.9.8) | Separate classic 4 MB and S3 8 MB + OPI PSRAM packages | API 2, sensors, orientation, USB installation and discovery; compiled from current source, not physically validated in this update |
 
-These releases preserve the original prebuilt application binaries. The current source corresponds to S3 v0.9.7; a new classic ESP32 build is not the historical v0.9.3 binary. The S3 package does **not** support S3 N4 modules with only 4 MB Flash. Other boards require matching Flash, PSRAM and pin configuration.
+The v0.9.3/v0.9.7 releases preserve the original prebuilt application binaries. The current source is v0.9.8; a new classic ESP32 build is not the historical v0.9.3 binary. The S3 package does **not** support S3 N4 modules with only 4 MB Flash. Other boards require matching Flash, PSRAM and pin configuration.
 
 ## Features
 
-- 49 public applications with install, export, update and uninstall support; editable folder / ZIP projects and CWP2 device packages. Internal lunch menus and their data are excluded from the public repository.
+- 57 public applications with install, export, update and uninstall support; editable folder / ZIP projects and CWP2 device packages. Internal lunch menus and their data are excluded from the public repository.
+- Eight new board themes: weather station, comfort garden, climate trend, gravity hourglass, level, maze, stardust and liquid. They require runtime API 2 and the corresponding detected sensors.
+- Manual display rotation at 0/90/180/270 degrees; optional S3 gravity orientation with hysteresis, settling delay and manual fallback when the sensor is unavailable.
+- One-click installation/removal and LAN discovery through the device interface or USB portal. Discovery requires compatible firmware on the same subnet; isolated clients and other VLANs are outside broadcast discovery.
 - Chinese / English website, Lua editor, 64 × 64 preview and theme development guide.
 - Interval rotation, daily schedules, time windows and selected rotation pools.
 - Device settings for display, Wi-Fi, applications, schedules and OTA; line-delimited serial JSON configuration.
@@ -34,7 +40,7 @@ These releases preserve the original prebuilt application binaries. The current 
    ```
 
 3. Send `{"cmd":"status"}` to read the IP address, then open the device's own web interface.
-4. Download a `.cwp` application from the website and install it through the device interface. Import the editable `.zip` into the theme studio to modify it.
+4. With v0.9.8, install directly in the device's application page or connect USB for one-click installation/removal on the website. Manual `.cwp` import remains available. Import an editable `.zip` into the studio to modify it.
 
 The HTTPS website uses USB serial for configuration. It opens the local HTTP device interface separately and does not proxy your device through a cloud service. USB installation with `merged.bin` resets NVS / Wi-Fi settings; compatible same-chip OTA uses `app.bin` to preserve configuration. See the [flashing guide](FLASHING.en.md).
 

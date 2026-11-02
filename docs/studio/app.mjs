@@ -2,6 +2,7 @@ import { API, bundleLua } from './api.mjs';
 import { AssetEditor } from './assets.mjs';
 import { readZip,readFolder,importPackage,exportPackage } from './vendor/package.mjs';
 import {localizeTheme,registerThemes,onLanguageChange,refreshLanguage,translate} from './i18n.mjs';
+import {sensorInputIds,sensorPreviewData,accelerationForGravity} from './preview-sensors.mjs';
 
 const $=id=>document.getElementById(id);
 let ctx,frame,rgba;
@@ -90,8 +91,14 @@ async function selectTheme(id,allowLegacy=false){
     document.querySelectorAll('.theme-card').forEach(b=>b.classList.toggle('active',b.dataset.theme===id));
   }catch(e){error(e);}
 }
-function readData(){return{temperature:Number($('data-temperature').value),humidity:Number($('data-humidity').value),message:$('data-message').value};}
-function fillData(d){$('data-temperature').value=d.temperature??22;$('data-humidity').value=d.humidity??60;$('data-message').value=d.message??'HELLO PIXELS';}
+function readData(){
+  const input={};for(const id of sensorInputIds){const key=id.slice(5).replaceAll('-','_'),element=$(id);input[key]=element.type==='checkbox'?element.checked:element.value;}
+  return sensorPreviewData(input);
+}
+function fillData(d){
+  const values={temperature:22,humidity:60,message:'HELLO PIXELS',temperature_valid:Number.isFinite(d.temperature),humidity_valid:Number.isFinite(d.humidity),imu_supported:false,imu_valid:false,accel_x:0,accel_y:0,accel_z:-1,gyro_x:0,gyro_y:0,gyro_z:0,screen_rotation:270,...d};
+  for(const id of sensorInputIds){const key=id.slice(5).replaceAll('-','_'),element=$(id);if(element.type==='checkbox')element.checked=values[key]===true;else element.value=values[key];}
+}
 function download(name,body,type){const url=URL.createObjectURL(new Blob([body],{type}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 function markDirty(){$('compile-state').textContent='编辑稿已修改 · 点击运行应用';saveDraft();}
 function gallery(){
@@ -105,6 +112,7 @@ function gallery(){
 }
 function catalogLabels(){
   if(!catalog)return;
+  document.querySelector('.gallery-heading h2 span').textContent=translate(catalog.themes.length+' 款主题')+' · 64×64';
   const selected=$('example').value;
   $('example').replaceChildren(...catalog.themes.map(theme=>{const item=localizeTheme(theme);return new Option(item.title+' · '+item.category,theme.id);}));
   $('example').value=selected;
@@ -152,7 +160,13 @@ try{
     el.addEventListener('pointerdown',()=>worker?.postMessage({type:'key',key,down:true}));
     for(const name of ['pointerup','pointerleave','pointercancel'])el.addEventListener(name,()=>worker?.postMessage({type:'key',key,down:false}));
   }
-  for(const id of ['data-temperature','data-humidity','data-message'])$(id).addEventListener('input',()=>{worker?.postMessage({type:'data',value:readData()});saveDraft();});
+  const updatePreviewData=()=>{worker?.postMessage({type:'data',value:readData()});saveDraft();};
+  for(const id of sensorInputIds)$(id).addEventListener('input',updatePreviewData);
+  for(const button of document.querySelectorAll('[data-gravity-preset]'))button.addEventListener('click',()=>{
+    const preset=button.dataset.gravityPreset,axes=accelerationForGravity(preset==='left'?-0.7:preset==='right'?0.7:0,preset==='flat'?0:0.6,preset==='flat'?1:0.38,Number($('data-screen-rotation').value));
+    for(const [key,value] of Object.entries(axes))$('data-'+key.replaceAll('_','-')).value=value;
+    $('data-imu-supported').checked=$('data-imu-valid').checked=true;updatePreviewData();
+  });
   $('export-project').addEventListener('click',()=>{captureDraft();download(pack.id+'.json',JSON.stringify(pack,null,2),'application/json');});
   $('export-package').addEventListener('click',async()=>{try{captureDraft();const {zip}=await exportPackage(pack,libraries);download(pack.id+'.zip',zip,'application/zip');}catch(e){error(e);}});
   $('import-folder').addEventListener('click',()=>$('folder-input').click());

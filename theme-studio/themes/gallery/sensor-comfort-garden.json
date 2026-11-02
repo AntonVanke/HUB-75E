@@ -1,0 +1,59 @@
+{
+  "format": "clockwise-theme-project",
+  "version": 3,
+  "id": "sensor-comfort-garden",
+  "packageName": "org.clockwise.sensor-comfort-garden",
+  "title": "舒适度花园",
+  "appVersion": "1.0.0",
+  "author": "AntonVanke / HUB-75E",
+  "description": "温湿度驱动花朵舒展与雨滴，展示装饰性舒适度提示，不作天气预报。",
+  "category": "传感器",
+  "width": 64,
+  "height": 64,
+  "fps": 30,
+  "runtimeApi": 2,
+  "sourceMode": "lua",
+  "libraries": [],
+  "assets": [],
+  "media": [],
+  "resources": [],
+  "data": {
+    "temperature": 23.5,
+    "humidity": 56,
+    "temperature_valid": true,
+    "humidity_valid": true,
+    "imu_supported": true,
+    "imu_valid": true,
+    "accel_x": -0.65,
+    "accel_y": 0.35,
+    "accel_z": -0.67,
+    "gyro_x": 0,
+    "gyro_y": 0,
+    "gyro_z": 18,
+    "gravity_x": 0.35,
+    "gravity_y": 0.65,
+    "gravity_z": 0.67,
+    "screen_rotation": 270,
+    "auto_rotate": false,
+    "sensor_source": "simulated"
+  },
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "luaHeapBytes": 49152,
+    "luaWorkingBytes": 32768,
+    "graphicsBytes": 8192,
+    "targetFps": 30,
+    "sensors": [
+      "temperature",
+      "humidity"
+    ]
+  },
+  "source": "-- A decorative comfort heuristic driven only by valid live temperature/humidity.\nlocal t,h,valid,label,reading,time,bloom\nlocal phase=0\nfunction second()\n  t=data.get('temperature',nil);h=data.get('humidity',nil)\n  valid=data.get('temperature_valid',false) and data.get('humidity_valid',false) and type(t)=='number' and type(h)=='number'\n  if valid then\n    label=t<18 and 'COOL' or t>28 and 'WARM' or h<35 and 'DRY' or h>70 and 'DAMP' or 'COMFY'\n    bloom=math.max(0,1-math.abs(t-23)/18-math.abs(h-50)/100)\n    reading=string.format('%.0fC %dRH',t,math.floor(h+0.5))\n  else label='NO SENSOR';reading='--C --RH';bloom=0 end\n  time=clock.format('%H:%M');telemetry.set('sensor_valid',valid)\nend\nfunction start() second() end\nfunction update(dt) phase=(phase+dt*0.0012)%6.283 end\nlocal function flower(x,y,color,offset)\n  local sway=math.floor(math.sin(phase+offset)*2)\n  gfx.line(x,52,x+sway,y,0x3528);gfx.triangle(x,46,x-7,42,x-2,48,0x65ec)\n  gfx.triangle(x,42,x+7,38,x+2,44,0x8e71)\n  local r=2+math.floor(bloom*2)\n  gfx.circle(x+sway-r,y,r,color);gfx.circle(x+sway+r,y,r,color)\n  gfx.circle(x+sway,y-r,r,color);gfx.circle(x+sway,y+r,r,color)\n  gfx.circle(x+sway,y,2,0xff05);gfx.pixel(x+sway-1,y-1,0xffff)\nend\nfunction draw()\n  gfx.clear(0x198a);gfx.gradient(0,10,64,40,0x198a,0x4bd0)\n  gfx.text(18,2,time,0xe7ff);gfx.circle(54,17,5,valid and 0xff6b or 0x73ae)\n  gfx.circle(6,19,4,0xbebd);gfx.circle(12,17,5,0xbebd);gfx.rect(3,19,15,4,0xbebd)\n  gfx.rect(0,49,64,15,0x2225);gfx.rect(0,49,64,2,0x7568)\n  flower(20,31,valid and 0xfd95 or 0x73ae,0);flower(44,36,valid and 0xc3ff or 0x73ae,2)\n  if valid and h>55 then\n    for i=1,4 do local x=6+i*12;local y=18+math.floor((phase*5+i*7)%26);gfx.line(x,y,x-1,y+2,0x6f1f) end\n  end\n  gfx.text((64-gfx.text_width(label))//2,52,label,0xcff4)\n  gfx.text((64-gfx.text_width(reading))//2,58,reading,0xffff)\nend\n",
+  "fidelity": "模拟器已明确标记模拟输入；设备使用实时传感器。内存声明为估算，尚未完成实板性能验证。",
+  "verification": {
+    "status": "unverified"
+  }
+}

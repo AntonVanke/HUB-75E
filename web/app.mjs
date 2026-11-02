@@ -4,6 +4,8 @@ const supported = 'serial' in navigator && window.isSecureContext;
 const boards = {
   esp32: { label: 'ESP32', version: '0.9.3', manifest: 'firmware/esp32-v0.9.3/manifest.json', tag: 'esp32-v0.9.3', note: t('适用于本项目经典 ESP32 接线与 4 MB Flash 分区。') },
   esp32s3: { label: 'ESP32-S3', version: '0.9.7', manifest: 'firmware/esp32s3-v0.9.7/manifest.json', tag: 'esp32s3-v0.9.7', note: t('仅适用于本项目 8 MB Flash + OPI PSRAM 的 S3 板；S3 N4（4 MB）不能刷此包。') },
+  'esp32-v098': { label: 'ESP32 v0.9.8', version: '0.9.8', manifest: 'firmware/esp32-v0.9.8/manifest.json', tag: 'v0.9.8', note: t('v0.9.8 新功能版：支持 USB 一键安装、设备发现与方向设置；源码构建版，待实屏验证。经典 ESP32：4 MB Flash、无 PSRAM。') },
+  'esp32s3-v098': { label: 'ESP32-S3 v0.9.8', version: '0.9.8', manifest: 'firmware/esp32s3-v0.9.8/manifest.json', tag: 'v0.9.8', note: t('v0.9.8 新功能版：新增传感器 API；源码构建版，待实屏验证。仅用于 8 MB Flash + OPI PSRAM 本板，S3 N4 不能刷此包。') },
 };
 let port = null;
 let reader = null;
@@ -15,6 +17,11 @@ let activeWrite = null;
 let device = null;
 let installedApps = [];
 let themes = [];
+let appInstalling = false;
+let installCancelled = false;
+let installTask = null;
+let discoveryTask = null;
+const serialWaiters = new Set();
 
 function message(text, error = false) {
   $('config-message').textContent = translateText(text);
@@ -52,8 +59,14 @@ function updateConnection() {
   $('connection-state').textContent = closing ? t('正在断开…') : connecting ? t('正在连接…') : connected ? t('USB 已连接') : t('未连接');
   $('connect').disabled = !supported || connected || connecting || closing;
   $('disconnect').disabled = !connected || sending;
-  document.querySelectorAll('[data-connected]').forEach((button) => { button.disabled = !connected || sending; });
-  $('panel-fields').disabled = !connected || !panelAvailable() || sending;
+  document.querySelectorAll('[data-connected]').forEach((button) => { button.disabled = !connected || sending || appInstalling; });
+  $('panel-fields').disabled = !connected || !panelAvailable() || sending || appInstalling;
+  $('orientation-fields').disabled = !connected || !device?.features?.orientation || sending || appInstalling;
+  $('auto-rotate').disabled = !device?.orientation?.autoRotateSupported;
+  $('cancel-install-config').hidden = !appInstalling || !installTask;
+  $('cancel-install').disabled = !appInstalling || !installTask;
+  document.querySelectorAll('[data-theme-action]').forEach((button) => { button.disabled = !connected || sending || appInstalling || button.dataset.incompatible === 'true' || !device?.features?.serialAppInstall; });
+  $('discover-devices').disabled = !connected || sending || appInstalling || !!discoveryTask || !device?.features?.discovery;
   $('install-button').disabled = !supported || connected || connecting || closing;
   $('panel-support').textContent = panelAvailable()
     ? t('保存屏幕设置后设备会重启，请稍后重新读取状态。')
@@ -62,10 +75,16 @@ function updateConnection() {
 
 async function disconnect() {
   if (closing) return;
+  if (installTask) {
+    installCancelled = true;
+    for (const waiter of [...serialWaiters]) waiter.reject(new Error(t('安装已取消，原应用已保留。')));
+    await installTask.catch(() => {});
+  }
   closing = true;
   updateConnection();
   const current = port;
   port = null;
+  for (const waiter of [...serialWaiters]) waiter.reject(new Error(t('设备串口连接已结束。')));
   try {
     if (activeWrite) await activeWrite.catch(() => {});
     if (reader) await reader.cancel();
@@ -161,6 +180,22 @@ function element(tag, className, text) {
   return node;
 }
 
+function themeCompatibility(app) {
+  if (!device) return t('连接 USB 并读取状态后可安装。');
+  if (!device.features?.serialAppInstall) return t('USB 一键安装需要 v0.9.8 或更新固件。');
+  const requirements = app.requirements || {};
+  const chip = /S3/i.test(device.chip) ? 'esp32s3' : 'esp32';
+  if (requirements.chips?.length && !requirements.chips.includes(chip)) return t('此应用不支持当前芯片。');
+  if (Number(app.runtimeApi || 1) > Number(device.runtimeApi || 1)) return t('此应用需要更新的设备运行时。');
+  const physicalPsram = Math.ceil(Number(device.limits?.psramBytes || 0) / 1048576) * 1048576;
+  if (Number(requirements.psramBytes || 0) > physicalPsram) return t('设备 PSRAM 不满足应用要求。');
+  for (const key of ['luaHeapBytes', 'luaWorkingBytes', 'graphicsBytes']) {
+    if (Number(requirements[key] || 0) > Number(device.limits?.[key] ?? Infinity)) return t('应用内存需求超出设备配额。');
+  }
+  if ((requirements.sensors || []).some((sensor) => !device.sensorCapabilities?.includes(sensor))) return t('设备缺少应用要求的真实传感器。');
+  return '';
+}
+
 function renderThemes() {
   const query = $('theme-search').value.trim().toLocaleLowerCase();
   const chip = $('theme-chip').value;
@@ -194,6 +229,16 @@ function renderThemes() {
       source.href = relativeAsset(app.archivePath, `themes/apps/${id}.zip`);
       source.download = `${id}.zip`;
       downloads.append(cwp, source);
+      const installed = installedApps.find((item) => item.packageName === app.packageName);
+      const action = element('button', 'button secondary', t(installed ? '卸载' : '安装到 USB 设备'));
+      action.type = 'button';
+      action.dataset.themeAction = app.packageName || '';
+      const reason = installed ? '' : themeCompatibility(app);
+      action.dataset.incompatible = String(Boolean(reason));
+      action.disabled = !port || appInstalling || Boolean(reason) || !device?.features?.serialAppInstall;
+      action.addEventListener('click', () => installed ? manageApplication(installed.packageName, true) : startThemeInstall(app));
+      downloads.append(action);
+      if (reason) card.append(element('p', 'theme-device-note', reason));
     }
     const details = element('details');
     details.append(element('summary', '', t('需求与应用信息')));
@@ -204,6 +249,7 @@ function renderThemes() {
       [t('图形内存'), bytes(requirements.graphicsBytes)], ['PSRAM', bytes(requirements.psramBytes)],
       [t('目标帧率'), requirements.targetFps ? `${requirements.targetFps} FPS` : t('未声明')],
       [t('应用大小'), bytes(app.bytes)], [t('实机验证'), app.verification?.status === 'verified' ? t('已标记验证') : t('尚未验证')],
+      [t('传感器要求'), (requirements.sensors || []).map((sensor) => t({ temperature: '温度', humidity: '湿度', imu: 'IMU' }[sensor] || sensor)).join(' / ') || t('无')],
     ];
     for (const [label, value] of rows) list.append(element('dt', '', label), element('dd', '', String(value || '—')));
     details.append(list);
@@ -246,8 +292,12 @@ function updateApps(apps, quiet = false) {
   $('device-theme').replaceChildren(new Option(t('内置基础时钟'), '-1'));
   for (const app of installedApps) $('device-theme').append(new Option(metadata(app, 'title'), app.index));
   selectDeviceTheme(current);
+  const managed = $('managed-app').value;
+  $('managed-app').replaceChildren(new Option(t('请选择已安装应用'), ''), ...installedApps.map((app) => new Option(metadata(app, 'title'), app.packageName || '')));
+  if (installedApps.some((app) => app.packageName === managed)) $('managed-app').value = managed;
   if (device) $('status-theme').textContent = themeLabel(device.baseTheme ?? device.theme);
   if (!quiet) log(t('已读取应用：{0} 款已安装应用。', [installedApps.length]));
+  if (themes.length) renderThemes();
 }
 
 function themeLabel(index) {
@@ -268,6 +318,11 @@ function updateStatus(data) {
   if (data.panel && ['RGB', 'RBG', 'GRB', 'GBR', 'BRG', 'BGR'].includes(data.panel.colorOrder)) $('panel-rgb').value = data.panel.colorOrder;
   if (Number.isInteger(data.panel?.driver)) $('panel-driver').value = data.panel.driver;
   if (typeof data.ssid === 'string') $('wifi-ssid').value = data.ssid;
+  if (data.orientation) {
+    $('manual-rotation').value = String(data.orientation.manualRotation ?? 270);
+    $('auto-rotate').checked = Boolean(data.orientation.autoRotate);
+    $('orientation-state').textContent = t('当前方向：{0}°；{1}', [data.orientation.rotationDegrees ?? data.orientation.manualRotation ?? 270, data.orientation.autoRotateSupported ? data.orientation.imuValid ? t('IMU 数据有效') : t('IMU 数据暂不可用，使用手动角度') : t('此设备不支持自动重力方向')]);
+  }
   const ip = String(data.ip || '');
   const validIP = /^(?:\d{1,3}\.){3}\d{1,3}$/.test(ip) && ip.split('.').every((part) => Number(part) <= 255) && ip !== '0.0.0.0';
   $('device-link').hidden = !validIP;
@@ -275,6 +330,7 @@ function updateStatus(data) {
   log(t('设备状态：{0} · v{1} · IP {2} · 亮度 {3} · 默认主题 {4} · 时区 {5}', [data.chip, data.version, validIP ? ip : t('未分配'), data.brightness, theme, data.timezone]));
   message(t('已读取设备状态。编辑后点击对应的保存按钮写入。'));
   updateConnection();
+  if (themes.length) renderThemes();
 }
 
 function receiveLine(line) {
@@ -282,7 +338,10 @@ function receiveLine(line) {
   if (marker === -1) return;
   try {
     const data = JSON.parse(line.slice(marker + 7).trim());
+    for (const waiter of [...serialWaiters]) waiter.receive(data);
     if (data && typeof data === 'object' && !Array.isArray(data)) {
+      if (data.upload) return;
+      if (data.discovery) { renderDiscovery(data); return; }
       if (data.chip && data.version && 'brightness' in data) updateStatus(data);
       else if (Array.isArray(data.apps)) updateApps(data.apps);
       else if (typeof data.ok === 'boolean') {
@@ -325,6 +384,7 @@ async function readSerial(current) {
     reader = null;
     if (!closing && port === current) {
       port = null;
+      for (const waiter of [...serialWaiters]) waiter.reject(new Error(t('设备串口连接已结束。')));
       await current.close().catch(() => {});
       updateConnection();
       log(t('设备串口连接已结束。'));
@@ -332,7 +392,7 @@ async function readSerial(current) {
   }
 }
 
-async function send(command) {
+async function send(command, quiet = false) {
   if (!port || !port.writable || sending) throw new Error(t('请先连接 USB 串口，并等待当前操作完成。'));
   const json = JSON.stringify(command);
   const data = new TextEncoder().encode(json + '\n');
@@ -344,8 +404,10 @@ async function send(command) {
     writer = port.writable.getWriter();
     activeWrite = writer.write(data);
     await activeWrite;
-    log(t('发送：{0}{1}', [command.cmd, command.cmd === 'wifi' ? t('（凭据不记录）') : '']));
-    message(t('命令已发送，等待设备回应。'));
+    if (!quiet) {
+      log(t('发送：{0}{1}', [command.cmd, command.cmd === 'wifi' ? t('（凭据不记录）') : '']));
+      message(t('命令已发送，等待设备回应。'));
+    }
   } finally {
     writer?.releaseLock();
     activeWrite = null;
@@ -353,6 +415,158 @@ async function send(command) {
     updateConnection();
   }
 }
+
+function requestSerial(command, matches, timeout = 15000) {
+  return new Promise((resolve, reject) => {
+    let timer;
+    const finish = (callback, value) => { clearTimeout(timer); serialWaiters.delete(waiter); callback(value); };
+    const waiter = {
+      reject: (error) => finish(reject, error),
+      receive(data) {
+        if (!data || typeof data !== 'object') return;
+        if (data.ok === false) return finish(reject, new Error(translateText(data.error || data.result?.error || t('设备拒绝了操作。'))));
+        if (matches(data)) finish(resolve, data);
+      },
+    };
+    serialWaiters.add(waiter);
+    timer = setTimeout(() => waiter.reject(new Error(t('等待设备响应超时，请重新读取状态。'))), timeout);
+    send(command, true).catch(waiter.reject);
+  });
+}
+
+async function fetchBoundedPackage(url, maximum) {
+  const response = await fetch(url, { signal: AbortSignal.timeout(30000) });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  if (Number(response.headers.get('content-length') || 0) > maximum) throw new Error(t('应用包超出设备容量或安装空间不足'));
+  const stream = response.body?.getReader();
+  if (!stream) throw new Error(t('浏览器无法流式读取应用包。'));
+  const chunks = []; let size = 0;
+  try {
+    for (;;) {
+      const { value, done } = await stream.read();
+      if (done) break;
+      size += value.length;
+      if (size > maximum) throw new Error(t('应用包超出设备容量或安装空间不足'));
+      if (installCancelled) throw new Error(t('安装已取消，原应用已保留。'));
+      chunks.push(value);
+    }
+  } finally { await stream.cancel().catch(() => {}); stream.releaseLock(); }
+  if (size < 24) throw new Error(t('应用包内容不完整'));
+  const bytes = new Uint8Array(size); let offset = 0;
+  for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
+  return bytes;
+}
+
+async function installTheme(app) {
+  const reason = themeCompatibility(app);
+  if (!port || reason) throw new Error(reason || t('请先连接 USB 串口，并等待当前操作完成。'));
+  if (appInstalling) return;
+  appInstalling = true; installCancelled = false; updateConnection();
+  $('theme-install-state').hidden = false;
+  $('theme-install-progress').value = 0;
+  $('theme-install-message').textContent = t('正在下载：{0}', [metadata(app, 'title')]);
+  log(t('开始安装：{0}', [metadata(app, 'title')]));
+  let started = false;
+  try {
+    const bytes = await fetchBoundedPackage(relativeAsset(app.path || app.file, `themes/apps/${app.id}.cwp`), Number(device.limits?.appBytes || 1048576));
+    if (new TextDecoder().decode(bytes.subarray(0, 4)) !== 'CWP2') throw new Error(t('USB 安装需要带包名的 CWP2 应用。'));
+    const header = new DataView(bytes.buffer), metadataOffset = 24 + header.getUint32(12, true) * 40, metadataLength = header.getUint32(16, true);
+    if (metadataLength > 2048 || metadataOffset + metadataLength > bytes.length) throw new Error(t('应用包内容不完整'));
+    const manifest = JSON.parse(new TextDecoder().decode(bytes.subarray(metadataOffset, metadataOffset + metadataLength)));
+    if (manifest.packageName !== app.packageName) throw new Error(t('下载应用包与请求的包名不一致'));
+    const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map((value) => value.toString(16).padStart(2, '0')).join('');
+    if (installCancelled) throw new Error(t('安装已取消，原应用已保留。'));
+    await requestSerial({ cmd: 'app.install.begin', packageName: app.packageName, bytes: bytes.length, sha256: hash }, (data) => data.upload && data.phase === 'begin');
+    started = true;
+    for (let offset = 0; offset < bytes.length; offset += 300) {
+      if (installCancelled) throw new Error(t('安装已取消，原应用已保留。'));
+      const chunk = bytes.subarray(offset, offset + 300);
+      const data = btoa(String.fromCharCode(...chunk));
+      await requestSerial({ cmd: 'app.install.chunk', offset, data }, (result) => result.upload && result.phase === 'chunk' && result.received === offset + chunk.length);
+      const percentage = Math.floor((offset + chunk.length) * 100 / bytes.length);
+      $('theme-install-progress').value = percentage;
+      $('theme-install-message').textContent = t('正在通过 USB 安装 {0}：{1}%', [metadata(app, 'title'), percentage]);
+    }
+    const result = await requestSerial({ cmd: 'app.install.finish' }, (data) => data.upload && data.phase === 'finish', 45000);
+    started = false;
+    message(translateText(result.result?.message || t('应用已安装。')));
+    $('theme-install-message').textContent = t('已安装：{0}', [metadata(app, 'title')]);
+    log(t('已安装：{0}', [metadata(app, 'title')]));
+    await requestSerial({ cmd: 'apps' }, (data) => Array.isArray(data.apps));
+    await requestSerial({ cmd: 'status' }, (data) => Boolean(data.chip && data.version));
+  } catch (error) {
+    if (started && port) await requestSerial({ cmd: 'app.install.abort' }, (data) => data.upload && data.phase === 'abort', 3000).catch(() => {});
+    $('theme-install-message').textContent = translateText(error.message);
+    throw error;
+  } finally { appInstalling = false; updateConnection(); }
+}
+
+function startThemeInstall(app) {
+  if (appInstalling || installTask) return;
+  action(async () => {
+    installTask = installTheme(app);
+    updateConnection();
+    try { await installTask; } finally { installTask = null; }
+  });
+}
+
+async function manageApplication(packageName, uninstall = false) {
+  return action(async () => {
+    if (!packageName || appInstalling) throw new Error(t('请选择已安装应用'));
+    appInstalling = true; updateConnection();
+    try {
+      await requestSerial({ cmd: uninstall ? 'app.uninstall' : 'app.run', packageName }, (data) => typeof data.ok === 'boolean' && !data.upload);
+      await requestSerial({ cmd: 'apps' }, (data) => Array.isArray(data.apps));
+      await requestSerial({ cmd: 'status' }, (data) => Boolean(data.chip && data.version));
+    } finally { appInstalling = false; updateConnection(); }
+  });
+}
+
+function renderDiscovery(data) {
+  $('discovery-state').textContent = data.scanning ? t('正在发现同网设备…') : t('发现 {0} 台项目设备。', [(data.devices || []).length]);
+  if (data.truncated) $('discovery-state').textContent += ' ' + t('结果达到设备数量上限，列表可能不完整。');
+  const rows = [];
+  for (const device of data.devices || []) {
+    const ip = String(device.ip || '');
+    if (!/^(?:\d{1,3}\.){3}\d{1,3}$/.test(ip) || !ip.split('.').every((part) => Number(part) <= 255)) continue;
+    const link = element('a', '', `${ip} ↗`);
+    link.href = `http://${ip}/`; link.target = '_blank'; link.rel = 'noopener noreferrer';
+    link.append(element('small', '', `${device.chip || 'ESP32'} · v${device.version || '—'} · ${device.id || ''}`));
+    rows.push(link);
+  }
+  $('discovered-devices').replaceChildren(...rows);
+}
+
+$('manage-run').addEventListener('click', () => manageApplication($('managed-app').value));
+$('manage-uninstall').addEventListener('click', () => manageApplication($('managed-app').value, true));
+for (const id of ['cancel-install', 'cancel-install-config']) $(id).addEventListener('click', () => {
+  installCancelled = true;
+  for (const waiter of [...serialWaiters]) waiter.reject(new Error(t('安装已取消，原应用已保留。')));
+});
+$('discover-devices').addEventListener('click', () => {
+  if (discoveryTask) return;
+  action(async () => {
+    discoveryTask = (async () => {
+      try {
+        await requestSerial({ cmd: 'discover', action: 'start' }, (data) => Boolean(data.discovery));
+        const deadline = Date.now() + 6500;
+        while (port && Date.now() < deadline) {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          const data = await requestSerial({ cmd: 'discover' }, (data) => Boolean(data.discovery));
+          if (!data.scanning) break;
+        }
+      } finally { discoveryTask = null; updateConnection(); }
+    })();
+    updateConnection(); await discoveryTask;
+  });
+});
+$('orientation-form').addEventListener('submit', (event) => {
+  event.preventDefault();
+  action(async () => {
+    await requestSerial({ cmd: 'orientation', manualRotation: Number($('manual-rotation').value), autoRotate: $('auto-rotate').checked }, (data) => typeof data.ok === 'boolean');
+    await requestSerial({ cmd: 'status' }, (data) => Boolean(data.chip && data.version));
+  });
+});
 
 async function action(operation) {
   try { await operation(); }
@@ -426,6 +640,7 @@ $('panel-form').addEventListener('submit', (event) => {
 $('export-settings').addEventListener('click', () => action(async () => {
   const settings = settingsDraft();
   if (panelAvailable()) settings.panel = { colorOrder: $('panel-rgb').value, driver: Number($('panel-driver').value) };
+  if (device?.features?.orientation) settings.orientation = { manualRotation: Number($('manual-rotation').value), autoRotate: $('auto-rotate').checked };
   const file = new Blob([JSON.stringify({ format: 'clockwise-settings', version: 1, settings }, null, 2) + '\n'], { type: 'application/json' });
   const url = URL.createObjectURL(file);
   const link = document.createElement('a');
@@ -450,12 +665,14 @@ $('settings-file').addEventListener('change', () => action(async () => {
     || typeof settings.timezone !== 'string' || !/^[A-Za-z0-9+\-,:.<>/]{1,63}$/.test(settings.timezone)) throw new Error(t('配置字段无效，未导入任何设置。'));
   if (settings.panel && (!['RGB', 'RBG', 'GRB', 'GBR', 'BRG', 'BGR'].includes(settings.panel.colorOrder)
     || !Number.isInteger(settings.panel.driver) || settings.panel.driver < 0 || settings.panel.driver > 9)) throw new Error(t('屏幕配置无效，未导入任何设置。'));
+  if (settings.orientation && (![0, 90, 180, 270].includes(settings.orientation.manualRotation) || typeof settings.orientation.autoRotate !== 'boolean')) throw new Error(t('屏幕配置无效，未导入任何设置。'));
   $('brightness').value = settings.brightness;
   $('timezone').value = settings.timezone;
   $('rotation').value = settings.rotationMinutes;
   selectDeviceTheme(settings.theme);
   if (settings.panel) { $('panel-rgb').value = settings.panel.colorOrder; $('panel-driver').value = settings.panel.driver; }
-  message(t('配置已填入草稿，尚未发送。请核对后分别保存显示设置与屏幕设置。'));
+  if (settings.orientation) { $('manual-rotation').value = settings.orientation.manualRotation; $('auto-rotate').checked = settings.orientation.autoRotate; }
+  message(t('配置已填入草稿，尚未发送。请核对后分别保存对应设置。'));
   log(t('已导入非密码配置草稿。'));
 }));
 function refreshLanguage() {

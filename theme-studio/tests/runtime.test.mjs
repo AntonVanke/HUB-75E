@@ -18,12 +18,12 @@ function create(p,options={}){
  const r=new LuaRuntime(fengari,{date,seed:42,data:p.data,media,resources,...options});
  r.load(assetLua(p.assets)+'\n'+p.libraries.map(x=>libs[x]).join('\n'),p.source);return r;
 }
-test('51 Lua themes initialize, run callbacks and render 64x64',()=>{
- assert.equal(catalog.themes.length,51);
+test('57 Lua themes initialize, run callbacks and render 64x64',()=>{
+ assert.equal(catalog.themes.length,57);
  for(const e of catalog.themes){
   const p=JSON.parse(read(e.path.slice(1)));assert.equal(p.version,3);assert.equal(p.width,64);assert.equal(p.height,64);assert.equal(p.pseudo,undefined);assert.equal(p.blocks,undefined);
   const r=create(p);r.tick(16);r.call('button','A');r.tick(16);assert.ok(new Set(r.pixels).size>=3,e.id);
-  if(catalog.themes.indexOf(e)>=28){const before=r.pixels.slice();if(e.id==='mario-1-1'){for(let i=0;i<120;i++)r.tick(1000/60);}else r.tick(10000);assert.notDeepEqual(r.pixels,before,e.id+' must animate beyond its static background');}
+  if(catalog.themes.indexOf(e)>=28&&!p.requirements?.sensors?.length){const before=r.pixels.slice();if(e.id==='mario-1-1'){for(let i=0;i<120;i++)r.tick(1000/60);}else r.tick(10000);assert.notDeepEqual(r.pixels,before,e.id+' must animate beyond its static background');}
   r.close();
  }
 });

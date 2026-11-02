@@ -15,6 +15,7 @@
 #include <ctype.h>
 #include <limits.h>
 #include <utility>
+#include <mbedtls/base64.h>
 static String quote(const String& s){
   String out="\"";for(size_t i=0;i<s.length();i++){unsigned char c=s[i];if(c=='"'||c=='\\'){out+='\\';out+=(char)c;}else if(c<32){char b[7];snprintf(b,sizeof(b),"\\u%04x",c);out+=b;}else out+=(char)c;}return out+"\"";
 }
@@ -27,6 +28,76 @@ static bool integer(const String& text,int& value){
 static bool safeId(const String& id){return id.length()>0&&id.length()<64&&strspn(id.c_str(),"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_")==id.length();}
 static bool safeTitle(const String& title){if(title.isEmpty()||title.length()>96)return false;for(size_t i=0;i<title.length();i++)if((unsigned char)title[i]<32)return false;return true;}
 static String appKey(int index,char suffix){return "a"+String(index)+suffix;}
+uint8_t DeviceService::sensorCapabilities()const{
+  const String status=sensorStatus?sensorStatus():"{}";String value;bool found;uint8_t result=0;
+  if(jsonField(status,"ahtPresent",value,found)&&found&&value=="true")result|=3;
+  if(jsonField(status,"imuPresent",value,found)&&found&&value=="true")result|=4;
+  return result;
+}
+String DeviceService::sensorCapabilitiesJson()const{
+  const uint8_t caps=sensorCapabilities();String result="[";
+  for(const auto& item:{std::pair<uint8_t,const char*>(1,"temperature"),{2,"humidity"},{4,"imu"}})if(caps&item.first){if(result.length()>1)result+=',';result+=quote(item.second);}
+  return result+"]";
+}
+bool DeviceService::saveOrientation(int degrees,bool automatic,String& error){
+  if(degrees<0||degrees>270||degrees%90){error="手动角度须为 0、90、180 或 270";return false;}
+#ifndef HUB75_S3_BOARD
+  if(automatic){error="此设备没有支持自动方向的 IMU";return false;}
+#endif
+  PanelOrientation next;next.rotation=degrees/90;next.autoRotate=automatic;
+  if(!savePanelOrientation(prefs_,next)){error="方向设置保存失败";return false;}
+  if(orientationChanged)orientationChanged(next);
+  return true;
+}
+String DeviceService::discoveryIdentity()const{
+  char id[17];snprintf(id,sizeof(id),"%012llx",ESP.getEfuseMac()&0xffffffffffffULL);
+  return "{\"product\":\"clockwise-hub75\",\"id\":"+quote(id)+",\"chip\":"+quote(ESP.getChipModel())+",\"version\":\"0.9.8\"}";
+}
+bool DeviceService::startDiscovery(String& error){
+  if(WiFi.status()!=WL_CONNECTED){error="请先让设备连接局域网 Wi-Fi";return false;}
+  if(!discoveryListening_){discoveryListening_=discoveryUdp_.begin(42175);if(!discoveryListening_){error="局域网设备发现端口不可用";return false;}}
+  const uint32_t now=millis();if(discoveryLastScan_&&now-discoveryLastScan_<10000){error="发现操作间隔至少 10 秒";return false;}
+  discoveredCount_=0;discoveryTruncated_=false;discovering_=true;discoveryStarted_=discoveryLastScan_=now;discoveryQueries_=0;discoverySent_=0;
+  char nonce[9];snprintf(nonce,sizeof(nonce),"%08x",esp_random());discoveryNonce_=nonce;return true;
+}
+String DeviceService::discoveryJson()const{
+  String result="{\"discovery\":true,\"scanning\":"+String(discovering_?"true":"false")+",\"scanMs\":5000,\"maxDevices\":12,\"truncated\":"+String(discoveryTruncated_?"true":"false")+",\"devices\":[";
+  for(int i=0;i<discoveredCount_;i++){if(i)result+=',';const auto& row=discovered_[i];result+="{\"ip\":"+quote(row.ip.toString())+",\"id\":"+quote(row.id)+",\"chip\":"+quote(row.chip)+",\"version\":"+quote(row.version)+"}";}
+  return result+"]}";
+}
+void DeviceService::pollDiscovery(uint32_t now){
+  if(WiFi.status()!=WL_CONNECTED){if(discoveryListening_)discoveryUdp_.stop();discoveryListening_=discovering_=false;return;}
+  if(discovering_&&now-discoveryStarted_>=5000)discovering_=false;
+  if(!discoveryListening_){discoveryListening_=discoveryUdp_.begin(42175);if(!discoveryListening_)return;}
+  if(discovering_&&discoveryQueries_<3&&(!discoveryQueries_||now-discoverySent_>=1200)){
+    const IPAddress broadcast((uint32_t)WiFi.localIP()|~(uint32_t)WiFi.subnetMask());
+    const String query="{\"query\":\"clockwise-hub75\",\"nonce\":"+quote(discoveryNonce_)+"}";
+    if(discoveryUdp_.beginPacket(broadcast,42175)){discoveryUdp_.write((const uint8_t*)query.c_str(),query.length());discoveryUdp_.endPacket();}
+    discoverySent_=now;discoveryQueries_++;
+  }
+  for(int count=0;count<4;count++){
+    const int size=discoveryUdp_.parsePacket();if(size<=0)break;
+    const IPAddress remote=discoveryUdp_.remoteIP();const uint16_t port=discoveryUdp_.remotePort();
+    if(size>=384||((uint32_t)remote&(uint32_t)WiFi.subnetMask())!=((uint32_t)WiFi.localIP()&(uint32_t)WiFi.subnetMask())){discoveryUdp_.flush();continue;}
+    char data[384];const int n=discoveryUdp_.read((uint8_t*)data,sizeof(data)-1);if(n<=0)continue;data[n]=0;
+    String packet(data),nonce,value;bool found;
+    if(!jsonField(packet,"nonce",nonce,found)||!found||nonce.length()!=8||strspn(nonce.c_str(),"0123456789abcdef")!=8)continue;
+    if(jsonField(packet,"query",value,found)&&found&&value=="clockwise-hub75"){
+      if(discoveryReply_&&now-discoveryReply_<400)continue;
+      String response=discoveryIdentity();response.remove(response.length()-1);response+=",\"nonce\":"+quote(nonce)+"}";
+      if(discoveryUdp_.beginPacket(remote,port)){discoveryUdp_.write((const uint8_t*)response.c_str(),response.length());discoveryUdp_.endPacket();discoveryReply_=now;}
+      continue;
+    }
+    if(!discovering_||nonce!=discoveryNonce_||!jsonField(packet,"product",value,found)||!found||value!="clockwise-hub75")continue;
+    String id,chip,version;
+    if(!jsonField(packet,"id",id,found)||!found||id.isEmpty()||id.length()>16||strspn(id.c_str(),"0123456789abcdef")!=id.length())continue;
+    if(!jsonField(packet,"chip",chip,found)||!found||!chip.startsWith("ESP32")||chip.length()>31||!safeTitle(chip))continue;
+    if(!jsonField(packet,"version",version,found)||!found||version.length()>15||!AppManifest::versionOK(version))continue;
+    int index=0;for(;index<discoveredCount_;index++)if(id==discovered_[index].id)break;
+    if(index==discoveredCount_){if(discoveredCount_>=12){discoveryTruncated_=true;continue;}discoveredCount_++;}
+    auto& row=discovered_[index];row.ip=remote;id.toCharArray(row.id,sizeof(row.id));chip.toCharArray(row.chip,sizeof(row.chip));version.toCharArray(row.version,sizeof(row.version));
+  }
+}
 void DeviceService::access(){
   web_.sendHeader("Access-Control-Allow-Origin","*");
   web_.sendHeader("Access-Control-Allow-Headers","Content-Type,X-SHA256");
@@ -102,11 +173,19 @@ void DeviceService::begin(int count,const char* titlesJson){
     for(int i=0;i<64;i++)if(appInstalled(i))web_.sendContent(",{\"index\":"+String(i)+",\"id\":"+quote(appId(i))+",\"title\":"+quote(appTitle(i))+"}");web_.sendContent("]");web_.sendContent("");
   });
   web_.on("/api/apps",HTTP_GET,[this](){sendApps();});
-  web_.on("/api/apps/install",HTTP_POST,[this](){finishInstall();},[this](){uploadScript();});
+  web_.on("/api/apps/install",HTTP_POST,[this](){if(serialInstall_){reply(409,"{\"error\":\"USB 应用安装进行中\"}");return;}finishInstall();},[this](){if(!serialInstall_)uploadScript();});
   web_.on("/api/apps/uninstall",HTTP_POST,[this](){String error;const int index=requestAppIndex(error);if(index<0||!uninstallApp(index,error)){reply(400,"{\"error\":"+quote(error)+"}");return;}reply(200,"{\"message\":\"应用已卸载，存储空间已释放\"}");});
   web_.on("/api/apps/export",HTTP_GET,[this](){String error;const int index=requestAppIndex(error);if(index<0){reply(404,"{\"error\":"+quote(error)+"}");return;}exportApp(index);});
   web_.on("/api/apps/run",HTTP_POST,[this](){String error;const int index=requestAppIndex(error);if(index<0||!runApp(index,error)){reply(400,"{\"error\":"+quote(error)+"}");return;}reply(200,"{\"message\":\"已设为默认主题；指定时段仍优先播放\"}");});
   web_.on("/api/sensors",HTTP_GET,[this](){reply(200,sensorStatus?sensorStatus():"{}");});
+  web_.on("/api/discovery",HTTP_GET,[this](){reply(200,discoveryJson());});
+  web_.on("/api/discovery",HTTP_POST,[this](){String error;if(!startDiscovery(error)){reply(409,"{\"error\":"+quote(error)+"}");return;}reply(202,discoveryJson());});
+  web_.on("/api/orientation",HTTP_POST,[this](){
+    const PanelOrientation current=panelOrientation();int degrees=current.rotation*90;bool automatic=current.autoRotate;String error;
+    if(web_.hasArg("manualRotation")&&!integer(web_.arg("manualRotation"),degrees)){reply(400,"{\"error\":\"手动角度须为整数\"}");return;}
+    if(web_.hasArg("autoRotate")){const String value=web_.arg("autoRotate");if(value!="true"&&value!="false"&&value!="1"&&value!="0"){reply(400,"{\"error\":\"autoRotate 须为布尔值\"}");return;}automatic=value=="true"||value=="1";}
+    if(!saveOrientation(degrees,automatic,error)){reply(400,"{\"error\":"+quote(error)+"}");return;}reply(200,"{\"message\":\"方向设置已保存\"}");
+  });
   web_.on("/api/frame",HTTP_GET,[this](){
     if(!renderLock(true)){reply(503,"{\"error\":\"渲染任务忙\"}");return;}
     if(!framePixels()){renderLock(false);reply(503,"{\"error\":\"当前驱动没有主题帧缓冲\"}");return;}
@@ -173,9 +252,9 @@ void DeviceService::begin(int count,const char* titlesJson){
   });
   web_.on("/api/script",HTTP_GET,[this](){exportApp(63,false,true);});
   web_.on("/api/package",HTTP_GET,[this](){exportApp(63,true);});
-  web_.on("/api/script",HTTP_POST,[this](){finishInstall();},[this](){uploadScript();});
+  web_.on("/api/script",HTTP_POST,[this](){if(serialInstall_){reply(409,"{\"error\":\"USB 应用安装进行中\"}");return;}finishInstall();},[this](){if(!serialInstall_)uploadScript();});
   web_.on("/api/ota",HTTP_POST,[this](){
-    
+    if(serialInstall_){reply(409,"{\"error\":\"USB 应用安装进行中\"}");return;}
     if(uploadError_.length()){reply(400,"{\"error\":"+quote(uploadError_)+"}");return;}
     if(!restartAt_){reply(400,"{\"error\":\"未收到完整固件\"}");return;}
     reply(200,"{\"message\":\"SHA-256 与固件格式验证通过，即将重启\"}");
@@ -194,7 +273,7 @@ void DeviceService::begin(int count,const char* titlesJson){
   });
   web_.begin();
   Serial.printf("Provision AP: %s  Password: %s\n",apName_.c_str(),apPassword_.c_str());
-  Serial.println("CWJSON:{\"ok\":true,\"version\":\"0.9.7\",\"message\":\"串口设置已就绪，发送 {\\\"cmd\\\":\\\"help\\\"} 查看命令\"}");
+  Serial.println("CWJSON:{\"ok\":true,\"version\":\"0.9.8\",\"message\":\"串口设置已就绪，发送 {\\\"cmd\\\":\\\"help\\\"} 查看命令\"}");
 }
 void DeviceService::uploadScript(){
   auto& u=web_.upload();
@@ -232,6 +311,7 @@ void DeviceService::finishOTA(){
   if(locked_){generation++;renderLock(false);locked_=false;}
 }
 void DeviceService::uploadOTA(){
+  if(serialInstall_)return;
   auto& u=web_.upload();
   if(u.status==UPLOAD_FILE_START){
     finishOTA();uploadError_="";restartAt_=0;
@@ -255,6 +335,8 @@ void DeviceService::poll(){
   pollSerial();
   web_.handleClient();if(ap_)dns_.processNextRequest();
   uint32_t now=millis();
+  pollDiscovery(now);
+  if(serialInstall_&&(now-serialInstallAt_>30000||now-serialInstallStarted_>600000)){abortSerialInstall();Serial.println("CWJSON:{\"ok\":false,\"upload\":true,\"phase\":\"timeout\",\"error\":\"应用上传超时，原应用已保留\"}");}
   if(ota_&&now-otaAt_>60000){uploadError_="固件上传超时";finishOTA();}
   if(restartAt_&&int32_t(now-restartAt_)>=0)ESP.restart();
   if(connecting_){
@@ -320,11 +402,19 @@ String DeviceService::catalogJson(int index)const{
   }return String();
 }
 String DeviceService::catalogField(int index,const char* key)const{String value;bool found=false;return jsonField(catalogJson(index),key,value,found)&&found?value:String();}
+int DeviceService::catalogIndexByName(const String& name,const String& id)const{
+  if(!titlesJson_)return -1;const char* p=titlesJson_;
+  while(*p){if(*p++!='{')continue;const char* start=p-1;bool quoted=false,escape=false;int depth=1;
+    while(*p){const char c=*p++;if(escape){escape=false;continue;}if(c=='\\'&&quoted){escape=true;continue;}if(c=='"')quoted=!quoted;if(!quoted){if(c=='{')depth++;else if(c=='}'&&!--depth)break;}}
+    String row,value,identity,number;row.concat(start,p-start);bool found;int index;
+    if(jsonField(row,"packageName",value,found)&&found&&value==name&&jsonField(row,"id",identity,found)&&found&&identity==id&&jsonField(row,"index",number,found)&&found&&integer(number,index))return index;
+  }return -1;
+}
 String DeviceService::appId(int index){const String key=appKey(index,'i');String id=prefs_.isKey(key.c_str())?prefs_.getString(key.c_str(),""):index<themeCount?catalogField(index,"id"):String();return id.length()?id:"theme-"+String(index);}
 String DeviceService::appTitle(int index){const String key=appKey(index,'t');String title=prefs_.isKey(key.c_str())?prefs_.getString(key.c_str(),""):index<themeCount?catalogField(index,"title"):String();return title.length()?title:"用户应用 "+String(index);}
 String DeviceService::appPackageName(int index){
   const String key=appKey(index,'n');if(prefs_.isKey(key.c_str()))return prefs_.getString(key.c_str(),"");
-  if(index<themeCount){String name=catalogField(index,"packageName");return name.length()?name:"org.clockwise."+appId(index);}
+  if(index<themeCount&&appId(index)==catalogField(index,"id")){String name=catalogField(index,"packageName");return name.length()?name:"org.clockwise."+appId(index);}
   return "legacy."+appId(index);
 }
 int DeviceService::appIndex(const String& identity){
@@ -355,11 +445,12 @@ bool DeviceService::compatible(const AppManifest& manifest,String& error)const{
   if(!manifest.modern)return true;
   const bool s3=String(ESP.getChipModel()).indexOf("S3")>=0;
   if(!(manifest.chips&(s3?2:1))){error="应用不支持当前芯片 "+String(ESP.getChipModel());return false;}
-  if(manifest.runtimeApi!=DeviceLimits::runtimeApi){error="应用运行时 API 不兼容";return false;}
+  if(manifest.runtimeApi>DeviceLimits::runtimeApi){error="应用运行时 API 不兼容";return false;}
   const uint32_t physicalPsram=(limits_.psramBytes+1048575)/1048576*1048576;
   if(manifest.psramBytes>physicalPsram){error="应用需要 "+String(manifest.psramBytes/1024)+" KiB PSRAM，当前设备不满足";return false;}
   if(manifest.luaHeapBytes>limits_.luaHeapBytes||manifest.luaWorkingBytes>limits_.luaWorkingBytes){error="应用 Lua 内存预算超出当前设备配额";return false;}
   if(manifest.graphicsBytes>DeviceLimits::graphicsBytes){error="应用图形内存预算超过 64 KiB";return false;}
+  if(manifest.sensors&~sensorCapabilities()){error="设备缺少应用要求的真实传感器";return false;}
   return true;
 }
 bool DeviceService::checkPackage(const char* path,String& error,int* targetFps){
@@ -399,17 +490,19 @@ void DeviceService::sendApps(bool serial){
     if(comma)send(",");comma=true;
     const bool installed=appInstalled(i);AppManifest manifest;String error;
     const bool valid=!installed||readManifest(appPath(i).c_str(),manifest,error),modernPackage=installed&&manifest.modern;
-    if(valid&&!manifest.modern&&i<themeCount)catalogManifest(i,manifest);
+    const bool catalogOwned=modernPackage?catalogIndexByName(manifest.packageName,manifest.id)>=0:i<themeCount&&appId(i)==catalogField(i,"id");
+    if(valid&&!manifest.modern&&catalogOwned)catalogManifest(i,manifest);
     const bool declared=manifest.declared&&(!installed||modernPackage),checked=!installed||modernPackage;
     const bool accepted=valid&&(!checked||compatible(manifest,error));
     const char* compatibility=!accepted?"incompatible":checked&&declared?"compatible":"unknown";
     if(error.isEmpty())error=strcmp(compatibility,"compatible")?"未提供完整的包内需求声明，运行性能尚未验证":"满足静态设备配额；实际帧率仍需测量";
     String row;row.reserve(1536);
-    row="{\"index\":"+String(i)+",\"id\":"+quote(manifest.modern?manifest.id:appId(i))+",\"packageName\":"+quote(manifest.modern?manifest.packageName:appPackageName(i))+",\"title\":"+quote(manifest.modern?manifest.title:appTitle(i))+",\"appVersion\":"+quote(manifest.appVersion)+",\"description\":"+quote(manifest.description)+",\"author\":"+quote(manifest.author)+",\"runtimeApi\":"+String(manifest.runtimeApi)+",\"requirements\":"+manifest.requirements+",\"requirementsDeclared\":"+(declared?"true":"false")+",\"verification\":"+manifest.verification+",\"metadataSource\":"+quote(modernPackage?"package":i<themeCount?"catalog":"legacy")+",\"compatibility\":{\"status\":"+quote(compatibility)+",\"reason\":"+quote(error)+"},\"installed\":"+(installed?"true":"false")+",\"bytes\":"+String(appBytes_[i])+",\"active\":"+(theme==i?"true":"false")+",\"builtin\":"+(i<themeCount?"true":"false")+"}";
+    row="{\"index\":"+String(i)+",\"id\":"+quote(manifest.modern?manifest.id:appId(i))+",\"packageName\":"+quote(manifest.modern?manifest.packageName:appPackageName(i))+",\"title\":"+quote(manifest.modern?manifest.title:appTitle(i))+",\"appVersion\":"+quote(manifest.appVersion)+",\"description\":"+quote(manifest.description)+",\"author\":"+quote(manifest.author)+",\"runtimeApi\":"+String(manifest.runtimeApi)+",\"requirements\":"+manifest.requirements+",\"requirementsDeclared\":"+(declared?"true":"false")+",\"verification\":"+manifest.verification+",\"metadataSource\":"+quote(modernPackage?"package":catalogOwned?"catalog":"legacy")+",\"compatibility\":{\"status\":"+quote(compatibility)+",\"reason\":"+quote(error)+"},\"installed\":"+(installed?"true":"false")+",\"bytes\":"+String(appBytes_[i])+",\"active\":"+(theme==i?"true":"false")+",\"builtin\":"+(catalogOwned?"true":"false")+"}";
     send(row);
   }
   const size_t free=fs_?LittleFS.totalBytes()-LittleFS.usedBytes():0;
-  send("],\"freeBytes\":"+String(free)+",\"installFreeBytes\":"+String(free>8192?free-8192:0)+",\"totalBytes\":"+String(fs_?LittleFS.totalBytes():0)+",\"storage\":"+(fs_?"true":"false")+",\"maxPackageBytes\":"+String(limits_.appBytes)+",\"limits\":"+limits_.json()+",\"packageVersion\":2,\"runtimeApi\":1,\"device\":{\"chip\":"+quote(String(ESP.getChipModel()).indexOf("S3")>=0?"esp32s3":"esp32")+",\"internalHeapBytes\":"+String(heap_caps_get_total_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT))+",\"psramBytes\":"+String(limits_.psramBytes)+"}}");
+  const String sensors=sensorCapabilitiesJson();
+  send("],\"freeBytes\":"+String(free)+",\"installFreeBytes\":"+String(free>8192?free-8192:0)+",\"totalBytes\":"+String(fs_?LittleFS.totalBytes():0)+",\"storage\":"+(fs_?"true":"false")+",\"maxPackageBytes\":"+String(limits_.appBytes)+",\"limits\":"+limits_.json()+",\"packageVersion\":2,\"runtimeApi\":2,\"sensorCapabilities\":"+sensors+",\"device\":{\"chip\":"+quote(String(ESP.getChipModel()).indexOf("S3")>=0?"esp32s3":"esp32")+",\"sensorCapabilities\":"+sensors+",\"internalHeapBytes\":"+String(heap_caps_get_total_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT))+",\"psramBytes\":"+String(limits_.psramBytes)+"}}");
   if(serial)Serial.println();else web_.sendContent("");
 }
 String DeviceService::statusJson(){
@@ -419,13 +512,13 @@ String DeviceService::statusJson(){
   const char* source=windowTheme_>=0?"window":schedule_.mode==1?"interval":!timeValid&&(schedule_.windowCount||schedule_.mode==2)?"waiting-time":schedule_.mode==2?"daily":"fixed";
   if(windowTheme_<0&&schedule_.mode==1){const uint32_t period=uint32_t(schedule_.interval)*60000,elapsed=uint32_t(millis()-rotateAt_);snprintf(remaining,sizeof(remaining),"%u",unsigned(elapsed>=period?0:(period-elapsed+999)/1000));}
   String ip=(WiFi.status()==WL_CONNECTED?WiFi.localIP():WiFi.softAPIP()).toString();
-  const int length=snprintf(body,sizeof(body),"{\"version\":\"0.9.7\",\"chip\":%s,\"width\":64,\"height\":64,\"ip\":%s,\"stationIP\":%s,\"apIP\":%s,\"configUrl\":%s,\"ssid\":%s,\"connected\":%s,\"networkState\":%s,\"rssi\":%d,\"uptime\":%u,\"heap\":%u,\"largestBlock\":%u,\"theme\":%d,\"generation\":%u,\"brightness\":%d,\"rotationMinutes\":%d,\"timezone\":%s,\"otaMaxBytes\":%u,\"storage\":%s,\"hasCustom\":%s,\"appSlots\":64,\"catalogCount\":%d,\"error\":%s,\"performance\":%s,\"limits\":%s,\"baseTheme\":%d,\"timeValid\":%s,\"localTime\":\"%s\",\"clock\":{\"weekday\":%d,\"hour\":%d,\"minute\":%d,\"second\":%d},\"playbackSource\":\"%s\",\"rotationRemainingSeconds\":%s}",
+  const int length=snprintf(body,sizeof(body),"{\"version\":\"0.9.8\",\"chip\":%s,\"width\":64,\"height\":64,\"ip\":%s,\"stationIP\":%s,\"apIP\":%s,\"configUrl\":%s,\"ssid\":%s,\"connected\":%s,\"networkState\":%s,\"rssi\":%d,\"uptime\":%u,\"heap\":%u,\"largestBlock\":%u,\"theme\":%d,\"generation\":%u,\"brightness\":%d,\"rotationMinutes\":%d,\"timezone\":%s,\"otaMaxBytes\":%u,\"storage\":%s,\"hasCustom\":%s,\"appSlots\":64,\"catalogCount\":%d,\"error\":%s,\"performance\":%s,\"limits\":%s,\"baseTheme\":%d,\"timeValid\":%s,\"localTime\":\"%s\",\"clock\":{\"weekday\":%d,\"hour\":%d,\"minute\":%d,\"second\":%d},\"playbackSource\":\"%s\",\"rotationRemainingSeconds\":%s}",
     quote(ESP.getChipModel()).c_str(),quote(ip).c_str(),quote(WiFi.localIP().toString()).c_str(),quote(WiFi.softAPIP().toString()).c_str(),quote("http://"+ip+"/").c_str(),quote(WiFi.SSID()).c_str(),WiFi.status()==WL_CONNECTED?"true":"false",quote(networkState).c_str(),WiFi.RSSI(),millis()/1000,
     heap_caps_get_free_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT),heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT),theme,generation,brightness,rotationMinutes,
     quote(prefs_.getString("tz","CST-8")).c_str(),unsigned(next?next->size:0),fs_?"true":"false",hasCustom?"true":"false",themeCount,quote(lastError).c_str(),metrics,limits_.json().c_str(),
     baseTheme_,timeValid?"true":"false",localTime,local.tm_wday,local.tm_hour,local.tm_min,local.tm_sec,source,remaining);
   if(length<0||length>=int(sizeof(body))-128)return "{\"error\":\"状态信息过长\"}";
-  String result(body);result.remove(result.length()-1);result+=",\"packageVersion\":2,\"runtimeApi\":1,\"internalHeapBytes\":"+String(heap_caps_get_total_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT))+",\"panel\":{\"colorOrder\":"+quote(panelOrder_)+",\"scan\":32,\"clockMHz\":"+String(panelTiming_.clockMHz)+",\"clockPhase\":"+String(panelTiming_.clockPhase)+",\"latchBlanking\":"+String(panelTiming_.latchBlanking)+",\"driver\":"+String(panelTiming_.driver)+",\"driverName\":"+quote(panelDriverName(panelTiming_.driver))+",\"active\":"+(panelStatus?panelStatus():String("{}"))+",\"testing\":"+(panelTestUntil&&int32_t(panelTestUntil-millis())>0?"true":"false")+"}}";return result;
+  String result(body);result.remove(result.length()-1);result+=",\"sensorCapabilities\":"+sensorCapabilitiesJson()+",\"features\":{\"serialAppInstall\":1,\"discovery\":1,\"orientation\":1},\"orientation\":"+(orientationStatus?orientationStatus():String("{}"));result+=",\"packageVersion\":2,\"runtimeApi\":2,\"internalHeapBytes\":"+String(heap_caps_get_total_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT))+",\"panel\":{\"colorOrder\":"+quote(panelOrder_)+",\"scan\":32,\"clockMHz\":"+String(panelTiming_.clockMHz)+",\"clockPhase\":"+String(panelTiming_.clockPhase)+",\"latchBlanking\":"+String(panelTiming_.latchBlanking)+",\"driver\":"+String(panelTiming_.driver)+",\"driverName\":"+quote(panelDriverName(panelTiming_.driver))+",\"active\":"+(panelStatus?panelStatus():String("{}"))+",\"testing\":"+(panelTestUntil&&int32_t(panelTestUntil-millis())>0?"true":"false")+"}}";return result;
 }
 bool DeviceService::savePanel(const String& order,PanelTiming timing,String& error){
   if(!validPanelColorOrder(order)){error="RGB 顺序必须为 RGB、RBG、GRB、GBR、BRG 或 BGR";return false;}
@@ -457,6 +550,7 @@ void DeviceService::pruneSchedule(){
   prefs_.putInt("rotate",rotationMinutes);prefs_.putString("schedule",scheduleText());
 }
 bool DeviceService::uninstallApp(int index,String& error){
+  if(serialInstall_){error="USB 应用安装进行中";return false;}
   if(index<0||index>=64||!appInstalled(index)){error="应用未安装";return false;}
   if(ota_||scriptLocked_){error="设备正在写入，请稍后重试";return false;}
   if(!renderLock(true)){error="渲染任务忙";return false;}stopScript();
@@ -466,16 +560,20 @@ bool DeviceService::uninstallApp(int index,String& error){
   for(char key:{'i','t','n'})prefs_.remove(appKey(index,key).c_str());
   pruneSchedule();prefs_.putInt("theme",baseTheme_);prefs_.putBool("custom",baseTheme_==63);generation++;renderLock(false);return true;
 }
-void DeviceService::finishInstall(){
+void DeviceService::finishInstall(){int code;const String result=completeInstall(code);reply(code,result);}
+String DeviceService::completeInstall(int& code,bool serial){
+  code=400;
   scriptFile_.close();
   if(!scriptBytes_&&uploadError_.isEmpty())uploadError_="应用包为空";
   if(uploadError_.isEmpty()){
     AppManifest manifest;
     if(readManifest("/apps/install.tmp",manifest,uploadError_)&&compatible(manifest,uploadError_)){
+      if(serial&&(!manifest.modern||manifest.packageName!=serialInstallPackage_)){uploadError_="下载应用包与请求的包名不一致";}
       if(manifest.modern){
         installId_=manifest.id;installTitle_=manifest.title;installPackageName_=manifest.packageName;
         installIndex_=appIndex(installPackageName_);
         if(installIndex_<0)for(int i=themeCount;i<64;i++)if(!appInstalled(i)){installIndex_=i;break;}
+        if(installIndex_<0)for(int i=0;i<themeCount;i++)if(!appInstalled(i)){installIndex_=i;break;}
       }else if(installIndex_<0&&safeId(installId_)){
         installIndex_=appIndex(installId_);if(installIndex_<0)for(int i=themeCount;i<64;i++)if(!appInstalled(i)){installIndex_=i;break;}
       }
@@ -485,21 +583,67 @@ void DeviceService::finishInstall(){
     }
   }
   // Parsing has finished; release the multipart buffer before the Lua compiler's peak allocation.
-  web_.releaseParsedUpload();
+  if(!serial)web_.releaseParsedUpload();
   if(uploadError_.isEmpty()&&(!applyScript||!applyScript("/apps/install.tmp",uploadError_))){if(uploadError_.isEmpty())uploadError_="应用初始化失败";}
   if(scriptLocked_)stopScript();
-  if(!uploadError_.isEmpty()){LittleFS.remove("/apps/install.tmp");finishScript();reply(400,"{\"error\":"+quote(uploadError_)+"}");return;}
+  if(!uploadError_.isEmpty()){LittleFS.remove("/apps/install.tmp");finishScript();return "{\"error\":"+quote(uploadError_)+"}";}
   const String path=appPath(installIndex_),backup=path+".bak";
   bool saved=true,old=LittleFS.exists(path);
   if(old){LittleFS.remove(backup);saved=LittleFS.rename(path,backup);}
   if(saved)saved=LittleFS.rename("/apps/install.tmp",path);
-  if(!saved){if(old&&LittleFS.exists(backup))LittleFS.rename(backup,path);LittleFS.remove("/apps/install.tmp");finishScript();reply(500,"{\"error\":\"应用保存失败，原应用已保留\"}");return;}
+  if(!saved){if(old&&LittleFS.exists(backup))LittleFS.rename(backup,path);LittleFS.remove("/apps/install.tmp");finishScript();code=500;return "{\"error\":\"应用保存失败，原应用已保留\"}";}
   LittleFS.remove(backup);installed_|=uint64_t(1)<<installIndex_;incompatible_&=~(uint64_t(1)<<installIndex_);appBytes_[installIndex_]=scriptBytes_;
   appTargetFps_[installIndex_]=candidateTargetFps_;
   prefs_.putString(appKey(installIndex_,'i').c_str(),installId_);prefs_.putString(appKey(installIndex_,'t').c_str(),installTitle_);
   if(installPackageName_.length())prefs_.putString(appKey(installIndex_,'n').c_str(),installPackageName_);else prefs_.remove(appKey(installIndex_,'n').c_str());
   hasCustom=appInstalled(63);theme=baseTheme_=installIndex_;windowTheme_=-1;prefs_.putInt("theme",theme);prefs_.putBool("custom",theme==63);finishScript();
-  reply(200,"{\"message\":\"应用已安装并设为默认主题；指定时段仍优先播放\",\"index\":"+String(installIndex_)+",\"id\":"+quote(installId_)+",\"packageName\":"+quote(appPackageName(installIndex_))+"}");
+  code=200;return "{\"message\":\"应用已安装并设为默认主题；指定时段仍优先播放\",\"index\":"+String(installIndex_)+",\"id\":"+quote(installId_)+",\"packageName\":"+quote(appPackageName(installIndex_))+"}";
+}
+void DeviceService::abortSerialInstall(){
+  if(!serialInstall_)return;
+  scriptFile_.close();LittleFS.remove("/apps/install.tmp");mbedtls_sha256_free(&serialInstallDigest_);
+  serialInstall_=false;serialInstallPackage_="";serialInstallHash_="";finishScript();
+}
+void DeviceService::serialInstallCommand(const String& cmd,const String& line){
+  const String phase=cmd.substring(12);
+  auto answer=[this,&phase](bool ok,const String& error=""){
+    Serial.print("CWJSON:{\"upload\":true,\"ok\":");Serial.print(ok?"true":"false");Serial.print(",\"phase\":");Serial.print(quote(phase));Serial.print(",\"received\":");Serial.print(scriptBytes_);
+    if(error.length()){Serial.print(",\"error\":");Serial.print(quote(error));}Serial.println("}");
+  };
+  if(phase=="abort"){abortSerialInstall();answer(true);return;}
+  if(phase=="begin"){
+    if(serialInstall_||ota_||scriptLocked_){answer(false,"设备正在处理另一项安装");return;}
+    String identity,sizeText,hash;bool found;uint32_t size=0;
+    if(!jsonField(line,"packageName",identity,found)||!found||!AppManifest::nameOK(identity)
+      ||!jsonField(line,"bytes",sizeText,found)||!found||!CwJson::natural(sizeText,size)||!size
+      ||!jsonField(line,"sha256",hash,found)||!found||hash.length()!=64||strspn(hash.c_str(),"0123456789abcdef")!=64){answer(false,"安装参数无效");return;}
+    if(!fs_){answer(false,"请先初始化脚本存储");return;}
+    const size_t free=LittleFS.totalBytes()-LittleFS.usedBytes();
+    if(size>limits_.appBytes||free<8192||size>free-8192){answer(false,"应用包超出设备容量或安装空间不足");return;}
+    if(!renderLock(true)){answer(false,"渲染任务忙");return;}scriptLocked_=true;stopScript();
+    scriptFile_=LittleFS.open("/apps/install.tmp","w");if(!scriptFile_){finishScript();answer(false,"无法创建应用文件");return;}
+    scriptBytes_=0;uploadError_="";installIndex_=-1;installId_="";installTitle_="";installPackageName_="";legacyUpload_=false;candidateChecked_=false;candidateTargetFps_=60;
+    serialInstallExpected_=size;serialInstallPackage_=identity;serialInstallHash_=hash;serialInstallAt_=serialInstallStarted_=millis();
+    mbedtls_sha256_init(&serialInstallDigest_);mbedtls_sha256_starts_ret(&serialInstallDigest_,0);serialInstall_=true;answer(true);return;
+  }
+  if(!serialInstall_){answer(false,"没有进行中的 USB 应用安装");return;}
+  if(phase=="chunk"){
+    String encoded,offsetText;bool found;uint32_t offset=0;uint8_t data[300];size_t size=0;
+    if(!jsonField(line,"offset",offsetText,found)||!found||!CwJson::natural(offsetText,offset)||offset!=scriptBytes_
+      ||!jsonField(line,"data",encoded,found)||!found||encoded.length()>400
+      ||mbedtls_base64_decode(data,sizeof(data),&size,(const unsigned char*)encoded.c_str(),encoded.length())||!size
+      ||size>serialInstallExpected_-scriptBytes_){answer(false,"应用分块顺序或内容无效");return;}
+    if(scriptFile_.write(data,size)!=size){abortSerialInstall();answer(false,"应用写入失败，原应用已保留");return;}
+    mbedtls_sha256_update_ret(&serialInstallDigest_,data,size);scriptBytes_+=size;serialInstallAt_=millis();answer(true);return;
+  }
+  if(phase=="finish"){
+    if(scriptBytes_!=serialInstallExpected_){abortSerialInstall();answer(false,"应用包尚未完整上传");return;}
+    unsigned char digest[32];char hex[65];mbedtls_sha256_finish_ret(&serialInstallDigest_,digest);for(int i=0;i<32;i++)snprintf(hex+i*2,3,"%02x",digest[i]);
+    if(serialInstallHash_!=hex){abortSerialInstall();answer(false,"应用 SHA-256 不匹配，原应用已保留");return;}
+    mbedtls_sha256_free(&serialInstallDigest_);int code;const String result=completeInstall(code,true);serialInstall_=false;serialInstallPackage_="";serialInstallHash_="";
+    Serial.print("CWJSON:{\"upload\":true,\"phase\":\"finish\",\"ok\":");Serial.print(code==200?"true":"false");Serial.print(",\"result\":");Serial.print(result);Serial.println("}");return;
+  }
+  answer(false,"未知 USB 安装命令");
 }
 void DeviceService::exportApp(int index,bool archive,bool source){
   if(index<0||index>=64||!appInstalled(index)){reply(404,"{\"error\":\"应用未安装\"}");return;}
@@ -527,9 +671,17 @@ void DeviceService::serialCommand(const String& line){
   String cmd;bool found;
   if(!jsonField(line,"cmd",cmd,found)||!found){answer(false,"请发送单行JSON，例如 {\"cmd\":\"help\"}");return;}
   if(cmd=="help"){
-    Serial.println("CWJSON:{\"ok\":true,\"baud\":115200,\"commands\":[{\"cmd\":\"status\"},{\"cmd\":\"wifi\",\"ssid\":\"网络名称\",\"password\":\"网络密码\"},{\"cmd\":\"config\",\"brightness\":80,\"theme\":-1,\"timezone\":\"CST-8\",\"rotationMinutes\":0},{\"cmd\":\"apps\"},{\"cmd\":\"app.run\",\"packageName\":\"org.clockwise.super-mario\"},{\"cmd\":\"app.uninstall\",\"packageName\":\"org.clockwise.super-mario\"},{\"cmd\":\"ap\"},{\"cmd\":\"sensors\"},{\"cmd\":\"panel\",\"colorOrder\":\"RGB\"},{\"cmd\":\"panel.test\",\"action\":\"start\"},{\"cmd\":\"restart\"}],\"note\":\"config字段可单独修改；每条命令以换行结束，密码不回显\"}");return;
+    Serial.println("CWJSON:{\"ok\":true,\"baud\":115200,\"commands\":[{\"cmd\":\"discover\",\"action\":\"start\"},{\"cmd\":\"orientation\",\"manualRotation\":270,\"autoRotate\":false},{\"cmd\":\"status\"},{\"cmd\":\"wifi\",\"ssid\":\"网络名称\",\"password\":\"网络密码\"},{\"cmd\":\"config\",\"brightness\":80,\"theme\":-1,\"timezone\":\"CST-8\",\"rotationMinutes\":0},{\"cmd\":\"apps\"},{\"cmd\":\"app.run\",\"packageName\":\"org.clockwise.super-mario\"},{\"cmd\":\"app.uninstall\",\"packageName\":\"org.clockwise.super-mario\"},{\"cmd\":\"ap\"},{\"cmd\":\"sensors\"},{\"cmd\":\"panel\",\"colorOrder\":\"RGB\"},{\"cmd\":\"panel.test\",\"action\":\"start\"},{\"cmd\":\"restart\"}],\"note\":\"config字段可单独修改；每条命令以换行结束，密码不回显\"}");return;
   }
   if(cmd=="status"){const String status=statusJson();Serial.print("CWJSON:");Serial.println(status);return;}
+  if(cmd.startsWith("app.install.")){serialInstallCommand(cmd,line);return;}
+  if(cmd=="discover"){String action;bool present;if(!jsonField(line,"action",action,present)){answer(false,"JSON格式无效");return;}if(present&&action=="start"&&!startDiscovery(error)){answer(false,error);return;}Serial.print("CWJSON:");Serial.println(discoveryJson());return;}
+  if(cmd=="orientation"){
+    const PanelOrientation current=panelOrientation();int degrees=current.rotation*90;bool automatic=current.autoRotate;String value;bool present;char kind;
+    if(!jsonField(line,"manualRotation",value,present)||(present&&!integer(value,degrees))){answer(false,"手动角度须为整数");return;}
+    if(!CwJson::field(line,"autoRotate",value,present,&kind)||(present&&(kind=='"'||(value!="true"&&value!="false")))){answer(false,"autoRotate 须为布尔值");return;}if(present)automatic=value=="true";
+    const bool ok=saveOrientation(degrees,automatic,error);answer(ok,ok?"方向设置已保存":error);return;
+  }
   if(cmd=="panel"){
     String value,order=panelOrder_;bool present;PanelTiming timing=panelTiming_;
     if(!jsonField(line,"colorOrder",value,present)){answer(false,"JSON格式无效");return;}if(present)order=value;

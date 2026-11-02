@@ -49,8 +49,10 @@ export function applicationSlot(apps,id){
 }
 function download(blob,name){const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=name;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 export function applicationControls($,getBase,request,upload,message,{local=false,changed=async()=>{}}={}){
-  let apps=[],catalog=[],active=-1,busy=false,limits={...DEFAULT_LIMITS},installFreeBytes=Infinity,device={},previousPerf,observedFps;
+  let apps=[],catalog=[],active=-1,busy=false,limits={...DEFAULT_LIMITS},installFreeBytes=Infinity,device={},previousPerf,observedFps,catalogAt=0,appBase='';
+  const selected=new Set(),catalogUrl=local?new URL('/HUB-75E/themes/apps/catalog.json',location.href):new URL('https://antonvanke.github.io/HUB-75E/theme-catalog.json');
   const identity=app=>app.packageName?{packageName:app.packageName}:{id:app.id};
+  const key=app=>app.packageName||app.id;
   function compatibility(app){
     if(app.compatibility)return app.compatibility;
     if(!app.requirements)return {status:'unknown',reason:'旧应用未声明设备需求，兼容性尚未确认'};
@@ -68,7 +70,13 @@ export function applicationControls($,getBase,request,upload,message,{local=fals
     if(value)limits={...DEFAULT_LIMITS,...value};
     $('app-limits').textContent='当前设备：应用包 '+capacity(limits.appBytes)+' · 合并脚本 '+capacity(limits.sourceBytes)+' · 可编辑归档 '+capacity(limits.archiveBytes)+(limits.luaHeapBytes?' · Lua 加载 / 运行配额 '+capacity(limits.luaHeapBytes)+' / '+capacity(limits.luaWorkingBytes):'')+'。同一包名更新原应用；更新需保留新旧两份文件的空间。配额匹配不代表已验证流畅度。';
   }
-  function setBusy(value){busy=value;$('app-install').disabled=value;$('app-refresh').disabled=value;for(const button of $('app-list').querySelectorAll('button'))button.disabled=value;}
+  function selection(){
+    const count=apps.filter(app=>app.installed&&selected.has(key(app))).length;
+    $('app-remove-selected').disabled=busy||!count;$('app-selection-count').textContent=count?'已选 '+count+' 个应用':'';
+    const visible=[...$('app-list').querySelectorAll('input.app-select')],checked=visible.filter(input=>input.checked).length;
+    $('app-select-all').checked=!!visible.length&&checked===visible.length;$('app-select-all').indeterminate=checked>0&&checked<visible.length;$('app-select-all').disabled=busy||!visible.length;
+  }
+  function setBusy(value){busy=value;$('app-install').disabled=value;$('app-refresh').disabled=value;for(const control of $('app-list').querySelectorAll('button,input'))control.disabled=value;selection();}
   async function perform(action,reload=true){if(busy)return;setBusy(true);try{await action();if(reload){await changed();await refresh();}}catch(error){message(error.message,true);}finally{setBusy(false);render();}}
   async function install(file,info){
     const check=compatibility(info);if(check.status==='incompatible')throw new Error('此应用不适用于当前设备：'+check.reason);
@@ -81,6 +89,7 @@ export function applicationControls($,getBase,request,upload,message,{local=fals
     const result=await upload('apps/install?'+query,file);message(result.message||'应用已安装。');
   }
   async function run(app){const result=await request('apps/run',{method:'POST',body:new URLSearchParams(identity(app))});message(result.message||'正在运行应用。');}
+  async function uninstall(app){const result=await request('apps/uninstall',{method:'POST',body:new URLSearchParams(identity(app))});selected.delete(key(app));return result;}
   function button(label,action,reload=true){const b=document.createElement('button');b.type='button';b.className='secondary';b.textContent=label;b.onclick=()=>perform(action,reload);return b;}
   async function exportApp(app,source){
     const response=await fetch(getBase()+'/api/apps/export?'+new URLSearchParams(identity(app)),{credentials:'omit'});
@@ -96,14 +105,22 @@ export function applicationControls($,getBase,request,upload,message,{local=fals
     $('app-list').replaceChildren(...visible.map(app=>{
       const row=document.createElement('tr'),name=document.createElement('td'),state=document.createElement('td'),size=document.createElement('td'),actions=document.createElement('td'),title=document.createElement('strong'),detail=document.createElement('small'),running=document.createElement('span'),badge=document.createElement('small');
       const check=compatibility(app),metadata=document.createElement('details'),summary=document.createElement('summary'),description=document.createElement('p'),requirements=document.createElement('p'),r=app.requirements,legacy=app.installed&&app.metadataSource!=='package';
+      if(app.installed){const check=document.createElement('input');check.type='checkbox';check.className='app-select';check.checked=selected.has(key(app));check.setAttribute('aria-label','选择应用 '+localizeTheme(app).title);check.onchange=()=>{if(check.checked)selected.add(key(app));else selected.delete(key(app));selection();};name.append(check);}
       const localized=localizeTheme(app);title.textContent=localized.title+(!legacy&&app.appVersion?' · v'+app.appVersion:'');detail.textContent=app.packageName||app.id+' · 旧包未声明包名';name.append(title,detail);summary.textContent='简介与设备要求';description.textContent=(legacy?'目录参考（当前旧包版本未知）：':'')+(localized.description||'旧应用未携带描述，更新为新版应用包后可显示完整信息。');
-      requirements.textContent=(app.author?'作者：'+app.author+'。':'')+(r?.chips?'设备：'+r.chips.join(' / ')+'；PSRAM '+capacity(r.psramBytes)+'；Lua 加载 / 运行配额 '+capacity(r.luaHeapBytes)+' / '+capacity(r.luaWorkingBytes)+'；图形配额 '+capacity(r.graphicsBytes)+'；目标 '+r.targetFps+' FPS。':'未声明内存与设备要求。')+' 尚未在本机进行完整性能认证。';const measured=document.createElement('p');measured.dataset.appMetrics=app.index;measured.hidden=true;metadata.append(summary,description,requirements,measured);name.append(metadata);
+      requirements.textContent=(app.author?'作者：'+app.author+'。':'')+(r?.chips?'设备：'+r.chips.join(' / ')+'；PSRAM '+capacity(r.psramBytes)+'；Lua 加载 / 运行配额 '+capacity(r.luaHeapBytes)+' / '+capacity(r.luaWorkingBytes)+'；图形配额 '+capacity(r.graphicsBytes)+'；目标 '+r.targetFps+' FPS。'+(r.sensors?.length?' 需要传感器：'+r.sensors.join(' / ')+'。':''):'未声明内存与设备要求。')+' 尚未在本机进行完整性能认证。';const measured=document.createElement('p');measured.dataset.appMetrics=app.installed?String(app.index):'uninstalled';measured.hidden=true;metadata.append(summary,description,requirements,measured);name.append(metadata);
       running.dataset.appState=app.index;running.textContent=app.installed?(Number(app.index)===Number(active)?'运行中':'已安装'):'未安装';badge.textContent=check.status==='incompatible'?'不适用':check.status==='compatible'?'需求匹配':'兼容性未知';badge.title=check.reason||'';badge.className='app-compat '+check.status;state.append(running,badge);if(check.status==='incompatible'){const reason=document.createElement('small');reason.textContent=check.reason;state.append(reason);}
       size.textContent=app.installed?(app.bytes/1024).toFixed(1)+' KiB':'—';actions.className='app-actions';
-      if(app.installed){const runButton=button('运行',()=>run(app));runButton.disabled=check.status==='incompatible';actions.append(runButton,button('导出应用',()=>exportApp(app,false),false),button('导出源码',()=>exportApp(app,true),false),button('卸载',async()=>{const result=await request('apps/uninstall',{method:'POST',body:new URLSearchParams(identity(app))});message(result.message||'应用已卸载，所占空间已释放。');}));}
+      if(app.installed){const runButton=button('运行',()=>run(app));runButton.disabled=check.status==='incompatible';actions.append(runButton,button('导出应用',()=>exportApp(app,false),false),button('导出源码',()=>exportApp(app,true),false),button('卸载',async()=>{const result=await uninstall(app);message(result.message||'应用已卸载，所占空间已释放。');}));}
       else{
         const item=catalog.find(item=>item.id===app.id);
-        if(item){const installButton=button('安装',async()=>{const response=await fetch(item.path||'/HUB-75E/themes/apps/'+item.id+'.cwp');if(!response.ok)throw new Error('无法读取本地应用包');const bytes=new Uint8Array(await response.arrayBuffer()),info=applicationInfo(bytes,item.id+'.cwp',limits);await install(new File([bytes],item.id+'.cwp'),info);});installButton.disabled=check.status==='incompatible';actions.append(installButton);}
+        if(item){const installButton=button('安装',async()=>{
+          if(item.bytes>limits.appBytes||item.bytes>installFreeBytes)throw new Error('设备安装空间不足，请先卸载不使用的应用。');
+          const path=item.path||'themes/apps/'+item.id+'.cwp',url=local?new URL(path,location.href):new URL(path.replace(/^\//,''),new URL('.',catalogUrl));
+          const response=await fetch(url,{credentials:'omit',signal:AbortSignal.timeout(30000)});if(!response.ok)throw new Error('无法读取主题应用包');
+          const bytes=new Uint8Array(await response.arrayBuffer()),info=applicationInfo(bytes,item.id+'.cwp',limits);
+          if(item.packageName&&info.packageName!==item.packageName)throw new Error('下载应用的包名与主题库不一致');
+          await install(new File([bytes],item.id+'.cwp'),info);
+        });installButton.disabled=check.status==='incompatible';actions.append(installButton);}
         else actions.append(button('从文件安装',async()=>{$('app-file').closest('details').open=true;$('app-file').click();message('请选择 '+app.title+' 的 CWP 或 ZIP 应用包，再点击“安装并运行”。');},false));
       }
       row.append(name,state,size,actions);return row;
@@ -111,18 +128,31 @@ export function applicationControls($,getBase,request,upload,message,{local=fals
     $('app-empty').hidden=visible.length>0;
     if(!visible.length)$('app-empty').textContent=search?'没有匹配的应用。':'此列表暂无应用。';
     measurements();
+    selection();
   }
   async function refresh(){
-    const data=await request('apps');apps=data.apps||[];registerThemes(apps);active=apps.find(app=>app.active)?.index??-1;setLimits(data.limits);installFreeBytes=data.installFreeBytes??data.freeBytes??Infinity;
+    if(appBase!==getBase()){selected.clear();appBase=getBase();}
+    const data=await request('apps');apps=data.apps||[];active=apps.find(app=>app.active)?.index??-1;setLimits(data.limits);installFreeBytes=data.installFreeBytes??data.freeBytes??Infinity;
     $('app-storage').textContent='已安装 '+apps.filter(app=>app.installed).length+' 个应用 · 可用 '+((data.freeBytes||0)/1024).toFixed(1)+' / '+((data.totalBytes||0)/1024).toFixed(1)+' KiB';
-    if(local&&!catalog.length){try{const response=await fetch('/HUB-75E/themes/apps/catalog.json');if(response.ok){const data=await response.json();catalog=data.apps||data.themes||[];}}catch{}}
-    apps=apps.map(app=>app.installed?app:{...catalog.find(item=>item.id===app.id),...app});
+    if(!catalogAt){
+      try{const response=await fetch(catalogUrl,{credentials:'omit',signal:AbortSignal.timeout(10000)});if(!response.ok)throw new Error('HTTP '+response.status);const value=await response.json(),items=Array.isArray(value)?value:value.apps||value.themes;if(!Array.isArray(items))throw new Error('目录格式无效');catalog=items.filter(item=>/^[a-zA-Z0-9_-]{1,32}$/.test(item.id||''));catalogAt=Date.now();$('app-catalog-state').textContent=(local?'本地主题库：':'在线主题库：')+catalog.length+' 个应用，可直接安装兼容项。';}
+      catch(error){$('app-catalog-state').textContent='主题库暂时无法读取，已安装应用和手动导入仍可使用。';}
+    }
+    if(catalog.length){const installed=apps.filter(app=>app.installed),merged=catalog.map(item=>installed.find(app=>item.packageName?app.packageName===item.packageName:app.id===item.id)||{...item,builtin:true,installed:false,index:-1});apps=[...merged,...installed.filter(app=>!merged.includes(app))];}
+    registerThemes(apps);for(const item of [...selected])if(!apps.some(app=>app.installed&&key(app)===item))selected.delete(item);
     render();
   }
   onLanguageChange(()=>{setLimits(limits);render();});
   $('app-file').onchange=()=>{$('app-folder').value='';};$('app-folder').onchange=()=>{$('app-file').value='';};
   $('app-filter').onchange=$('app-search').oninput=render;
-  $('app-refresh').onclick=()=>perform(async()=>{});
+  $('app-refresh').onclick=()=>perform(async()=>{catalogAt=0;});
+  $('app-select-all').onchange=()=>{const checked=$('app-select-all').checked;for(const input of $('app-list').querySelectorAll('input.app-select')){input.checked=checked;input.onchange();}};
+  $('app-remove-selected').onclick=()=>perform(async()=>{
+    const chosen=apps.filter(app=>app.installed&&selected.has(key(app)));let removed=0;
+    try{for(const app of chosen){await uninstall(app);removed++;}}
+    finally{await changed();await refresh();}
+    message('已卸载 '+removed+' 个应用，存储空间已释放。');
+  },false);
   $('app-install').onclick=()=>perform(async()=>{
     let file=$('app-file').files[0];const folder=$('app-folder').files;let info;
     if(folder.length||file?.name.toLowerCase().endsWith('.zip')){

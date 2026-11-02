@@ -62,7 +62,7 @@ def main():
             app[key] = app[key].lstrip("/")
             assert (output / app[key]).is_file(), "Missing theme download: " + app[key]
     (output / "theme-catalog.json").write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    for name in ("esp32-v0.9.3", "esp32s3-v0.9.7"):
+    for name in ("esp32-v0.9.3", "esp32s3-v0.9.7", "esp32-v0.9.8", "esp32s3-v0.9.8"):
         source = ROOT / "releases" / name
         assert (source / "manifest.json").is_file(), "Run tools/package-releases.py first"
         count += copy_tree(source, output / "firmware" / name, base)
@@ -76,7 +76,7 @@ def main():
     (output / ".nojekyll").write_text("", encoding="utf-8")
     size = sum(p.stat().st_size for p in output.rglob("*") if p.is_file())
     print(f"BUILT docs/: {count} copied files, {len(catalog['apps'])} apps, {size} bytes; base={base}")
-    print("PASS: both flash manifests and all CWP/source ZIP download paths")
+    print("PASS: flash manifests and all CWP/source ZIP download paths")
 
 
 if __name__ == "__main__":
