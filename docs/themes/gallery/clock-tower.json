@@ -1,0 +1,28 @@
+{
+  "format": "clockwise-theme-project",
+  "version": 3,
+  "id": "clock-tower",
+  "title": "Clock Tower",
+  "width": 64,
+  "height": 64,
+  "fps": 60,
+  "reference": "https://topyuan.top/clock/",
+  "description": "模拟表盘与连续秒针",
+  "category": "时钟",
+  "sourceMode": "lua",
+  "libraries": [
+    "core"
+  ],
+  "assets": [],
+  "data": {
+    "temperature": 22,
+    "humidity": 60,
+    "weather": "CLEAR",
+    "message": "HELLO PIXELS"
+  },
+  "media": [
+    "clock-tower"
+  ],
+  "source": "-- Lua 5.3 · 64×64 · all composition is controlled here.\n-- Native RGB565 delta decoder and native glyph spans.\nlocal hour, minute, secondText, hm\nlocal phase = 0\nlocal week = {\"SUN\",\"MON\",\"TUE\",\"WED\",\"THU\",\"FRI\",\"SAT\"}\nfunction second()\n  hour, minute = clock.format(\"%H\"), clock.format(\"%M\")\n  secondText = clock.format(\"%S\")\n  hm = hour .. \":\" .. minute\nend\nfunction start()\n  second()\n  phase = rng.int(0, 2000)\nend\nfunction button(key)\n  if key == \"A\" then phase = rng.int(0, 10000) end\nend\nfunction draw()\n  media.draw(\"clock-tower\", 0, 0, clock.millis() + phase)\n  local h=(clock.value(\"hour\")%12+clock.value(\"minute\")/60)*math.pi/6-math.pi/2\n  local m=(clock.value(\"minute\")+clock.value(\"second\")/60)*math.pi/30-math.pi/2\n  for i=0,11 do\n    local a=i*math.pi/6\n    gfx.pixel(33+math.sin(a)*18,32-math.cos(a)*18,\"#84ac3d\")\n  end\n  gfx.line(33,32,33+math.cos(h)*11,32+math.sin(h)*11,\"#7eae42\")\n  gfx.line(33,32,33+math.cos(m)*16,32+math.sin(m)*16,\"#b4cf55\")\nend\n",
+  "fidelity": "官网背景素材，实时指针重绘"
+}

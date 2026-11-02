@@ -1,0 +1,23 @@
+{
+  "format": "clockwise-theme-project",
+  "version": 3,
+  "id": "cyberpunk-night-city",
+  "title": "赛博朋克 · 夜之城",
+  "width": 64,
+  "height": 64,
+  "fps": 60,
+  "reference": "",
+  "category": "游戏风景",
+  "description": "夜之城 · 局部水波、场景动效与随机相位",
+  "sourceMode": "lua",
+  "libraries": [
+    "core"
+  ],
+  "assets": [],
+  "media": [
+    "cyberpunk-night-city"
+  ],
+  "data": {},
+  "source": "local hm,phase,nextFlash,flashEnd\nfunction minute() hm=clock.format(\"%H:%M\") end\nfunction start()\n  minute();phase=rng.int(0,63);nextFlash=rng.int(3,7);flashEnd=0\n  fx.create(\"atmosphere\",22,0,0,64,49,-3,20,\"#5ce7e4\",\"rain\")\nend\nfunction button(key) if key==\"A\" then phase=rng.int(0,63) end end\nfunction draw()\n  local t=clock.millis()/1000\n  media.draw(\"cyberpunk-night-city\",0,0,0)\n  local q=(t*5+phase)%16\n  gfx.wave(17,37,32,13,q,1,8,8)\n  local n=math.floor(t*3)%17\n  if n~=0 and n~=2 then gfx.line(6,18,6,23,\"#e4529e\");gfx.line(50,13,50,18,\"#69d9df\") end\n  local x=(t*3+phase)%72-4;gfx.line(x,30,x+3,30,\"#d46eae\");gfx.pixel(x+3,29,\"#aee9ed\")\n  fx.draw(\"atmosphere\")\n  gfx.text(14,54,hm,\"#041019\",2)\n  gfx.text(13,53,hm,\"#5ce7e4\",2)\nend\n",
+  "fidelity": "64×64 像素风景，Lua 场景运动与原生 RGB565 局部特效"
+}

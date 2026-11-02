@@ -1,0 +1,28 @@
+{
+  "format": "clockwise-theme-project",
+  "version": 3,
+  "id": "world-map",
+  "title": "World Map",
+  "width": 64,
+  "height": 64,
+  "fps": 60,
+  "reference": "https://topyuan.top/clock/",
+  "description": "UTC 太阳赤纬与均时差 · 真实晨昏线及民用曙暮光",
+  "category": "风景",
+  "sourceMode": "lua",
+  "libraries": [
+    "core"
+  ],
+  "assets": [],
+  "data": {
+    "temperature": 22,
+    "humidity": 60,
+    "weather": "CLEAR",
+    "message": "HELLO PIXELS"
+  },
+  "media": [
+    "world-map"
+  ],
+  "source": "-- NOAA fractional-year solar position; coordinates are east-positive, UTC only.\n-- https://gml.noaa.gov/grad/solcalc/solareqns.PDF\nlocal hm, dateText\nlocal function sun()\n  local year=clock.utc(\"year\")\n  local leap=year%4==0 and (year%100~=0 or year%400==0)\n  local hour=clock.utc(\"hour\")+clock.utc(\"minute\")/60+clock.utc(\"second\")/3600\n  local g=2*math.pi/(leap and 366 or 365)*(clock.utc(\"yearday\")-1+(hour-12)/24)\n  local c,s=math.cos,math.sin\n  local eq=229.18*(0.000075+0.001868*c(g)-0.032077*s(g)-0.014615*c(2*g)-0.040849*s(2*g))\n  local dec=0.006918-0.399912*c(g)+0.070257*s(g)-0.006758*c(2*g)+0.000907*s(2*g)-0.002697*c(3*g)+0.00148*s(3*g)\n  return dec*180/math.pi,(180-hour*15-eq/4+180)%360-180\nend\nfunction minute()\n  local dec,lon=sun()\n  media.draw(\"world-map\",0,0,0)\n  gfx.daylight(dec,lon,0,2,64,48)\n  layer.save(\"earth\")\n  media.release(\"world-map\")\n  telemetry.set(\"solar_declination\",dec)\n  telemetry.set(\"subsolar_longitude\",lon)\n  hm=clock.format(\"%H:%M\");dateText=clock.format(\"%m-%d\")\nend\nfunction start() minute() end\nfunction draw()\n  layer.draw(\"earth\",0,0)\n  gfx.rect(7,24,50,15,\"#06121c\")\n  gfx.text((64-gfx.text_width(hm,2))//2,26,hm,\"#e2f8f5\",2)\n  gfx.text((64-gfx.text_width(dateText))//2,42,dateText,\"#b3e6e6\")\nend\n",
+  "fidelity": "Natural Earth 地理数据；NOAA 太阳位置近似，每分钟刷新"
+}

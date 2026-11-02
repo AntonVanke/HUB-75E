@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Clockwise · 主题工坊</title><link rel="stylesheet" href="/studio/style.css">
+</head>
+<body><header class="topbar"><a class="brand" href="/" aria-label="主题工坊首页"><span class="brand-icon">◷</span><span>Clockwise <b>主题工坊</b></span></a><a class="secondary" href="/studio/device.html">设备管理 / 配网 / OTA</a><span class="device-label"><i></i> 电脑预览 · Lua 主题</span></header><nav class="statusbar"><span>♧ Firmware v0.8.7 · 主题工坊</span><span>Lua · 64 × 64</span></nav>
+<main><div class="workspace-heading"><div><p class="eyebrow">64 × 64 THEME STUDIO / V0.8</p><h1>像素主题工坊</h1><p id="theme-description" class="subtitle">Lua 脚本 · 原版像素素材 · 原生绘图</p></div><div class="example-picker"><label>示例主题 <select id="example"></select></label><button id="new-theme" class="secondary">＋ 新建主题</button></div></div>
+<div class="workspace">
+<section class="preview-panel" aria-label="实时预览">
+<div class="panel-heading"><h2><span class="status-dot"></span> 实时画面</h2><span class="mono">64 × 64 / RGB565</span></div>
+<div class="display-shell"><canvas id="display" width="64" height="64" aria-label="64 乘 64 LED 主题预览"></canvas></div>
+<div class="preview-meta"><span id="run-state">正在加载…</span><span id="frame-time" class="mono">— FPS</span></div>
+<div class="transport"><button id="pause" class="secondary">暂停</button><button id="step" class="secondary">单步</button><button id="reset" class="secondary">重新开始</button><label class="route-toggle"><input id="show-path" type="checkbox"> 显示路线</label></div>
+<section class="performance" aria-label="性能统计"><div class="perf-title"><span>性能</span><label>目标 <select id="fps" aria-label="目标帧率"><option value="60">60 FPS</option><option value="30">30 FPS</option></select></label></div><dl class="metrics"><div><dt>P95 帧计算</dt><dd id="perf-p95">—</dd></div><div><dt>最高帧计算</dt><dd id="perf-max">—</dd></div><div><dt>超时帧</dt><dd id="perf-late">0</dd></div><div><dt>显示未接收</dt><dd id="perf-delivery">0</dd></div></dl><p id="perf-note">电脑预览测量，不代表 ESP32 实机性能</p></section>
+<div id="pacman-details" hidden><div class="decision"><div class="decision-title"><span>当前决策</span><strong id="strategy">—</strong></div><p id="reason"></p><div class="power-track"><div id="power-fill"></div></div><span id="power-text"></span></div><dl class="metrics"><div><dt>得分</dt><dd id="score">0</dd></div><div><dt>剩余豆子</dt><dd id="remaining">—</dd></div><div><dt>吃掉幽灵</dt><dd id="ghosts">0</dd></div><div><dt>关卡 / 重生</dt><dd id="round">1 / 0</dd></div></dl></div>
+<details class="preview-data"><summary>模拟数据与按键</summary><p>这些数值用于主题调试，不来自在线服务。</p><label>温度 <input id="data-temperature" type="number" value="22"></label><label>湿度 <input id="data-humidity" type="number" value="60"></label><label>消息 <input id="data-message" value="HELLO PIXELS" maxlength="64"></label><div><button class="secondary" data-preview-key="A">按键 A</button> <button class="secondary" data-preview-key="B">按键 B</button></div></details>
+<div id="user-stats"></div><p class="preview-caption" id="preview-caption"></p>
+</section>
+<section class="editor-panel" aria-label="主题编辑器">
+<div class="editor-header"><div class="tabs"><button aria-selected="true">Lua 脚本</button></div><button id="run" class="primary">▶ 运行主题</button></div>
+<div class="editor-note"><span id="editor-note">直接编辑 Lua · 渲染与字体使用原生接口</span><kbd>Ctrl + Enter</kbd></div>
+<div class="editor-pane"><textarea id="source" aria-label="Lua 主题脚本" spellcheck="false"></textarea></div>
+<div class="editor-footer"><span id="compile-state">初始化执行器…</span><span id="source-label" class="mono">Lua 5.3</span></div><pre id="error" role="alert" hidden></pre>
+<div class="file-actions"><button id="export-package" class="text-button">↓ 导出完整主题包</button><button id="import-folder" class="text-button">↑ 导入文件夹</button><input id="folder-input" type="file" webkitdirectory multiple hidden><button id="export-project" class="text-button">↓ 保存工程</button><button id="import-project" class="text-button">↑ 导入 ZIP / 工程</button><button id="export-lua" class="text-button">↓ 导出 Lua 主题</button><button id="load-builtin" class="text-button">载入新版内置</button><input id="file-input" type="file" accept=".zip,.json,.lua" hidden><span id="draft-state">草稿自动保存到本机</span></div>
+<details class="help"><summary>像素资源与逐帧动画</summary><div id="asset-editor"></div></details>
+<details class="help"><summary>脚本 API / 动画资源 / 随机种子</summary>
+<p><code>start()</code> 初始化；<code>update(dt)</code> 更新；<code>draw()</code> 绘制；<code>second()</code> / <code>minute()</code> 时间事件；<code>button(key)</code> 按键。坐标 0–63；颜色支持 RGB565 数字与 #RRGGBB。</p>
+<p><code>media.draw(id,x,y,毫秒)</code> 播放原版动画；<code>font.draw("mario",x,y,内容,颜色,缩放)</code> 绘制原版字体，另有 pixel / segment / thin / sans / bold / italic 和 menu12 中文字体；<code>rng.int(a,b)</code> / <code>rng.float()</code> / <code>rng.seed(n)</code> 可复现的随机数。</p>
+<label>动画资源 ID（最多两个，逗号分隔）<input id="resource-ids" placeholder="例如 snoopy"></label>
+<label>随机种子（0 为每次随机）<input id="seed" type="number" min="0" max="4294967295" value="0"></label>
+<p>动画资源以 manifest 清单为准；自定义脚本可自由组合资源、图层和图形。静态背景缓存到 layer；不要在 draw 中创建表格、拼接资源或逐像素循环。</p><p><code>nav.bfs(w,h,map,start)</code> 返回网格距离；<code>nav.solve(w,h,map,start,costs)</code> 返回距离、首步、父节点三张表。网格最多 256 格，以 # 表示墙，索引从 1 开始。</p><div id="api-list"></div></details>
+</section></div>
+<section class="gallery" aria-label="主题库"><div class="gallery-heading"><div><h2>主题库 <span>50 款主题 · 64×64</span></h2><p>参考 <a href="https://topyuan.top/clock/" target="_blank" rel="noreferrer">ClockWise Plus 表盘全览</a> 像素素材；新增 20 款游戏与影视风景。新增风景动态由 Lua 与原生粒子驱动，世界地图按 UTC 计算晨昏线。</p></div><input id="gallery-filter" type="search" placeholder="搜索主题或分类" aria-label="搜索主题"></div><div id="theme-grid"></div></section>
+<footer class="bottomline"><span><i></i> 通用主题 API · 本地预览</span><span>64 × 64 · ESP32</span></footer></main><script type="module" src="/studio/app.mjs"></script></body></html>

@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Clockwise · 设备管理</title>
+<style>
+.app-compat{display:block;margin-top:5px}.app-compat.compatible{color:#167657}.app-compat.incompatible{color:#b3261e}.app-compat.unknown{color:#946610}.app-table td:first-child details{max-width:460px}.app-table details p{font-size:12px;margin:7px 0;overflow-wrap:anywhere}
+
+:root{color-scheme:light;font:14px/1.6 "Segoe UI","Microsoft YaHei",sans-serif;color:#17232b;background:#f4f7f8}*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0}header{padding:12px max(24px,calc((100vw - 1152px)/2));background:linear-gradient(110deg,#1b5796,#119454);color:#fff;display:flex;align-items:center;gap:20px}.factory-logo{font-size:36px;letter-spacing:-2px;line-height:1.3;margin:0}.factory-logo:first-letter{font-size:45px}.factory-title{font-size:17px}header a{color:#fff;margin-left:auto;font-size:13px}header #connection-state{font-size:13px;white-space:nowrap}.statusbar{background:#10191c;color:#fff;display:flex;justify-content:space-between;padding:5px max(24px,calc((100vw - 1152px)/2));font-size:12px}main{max-width:1200px;margin:16px auto;padding:0 24px}.connection,.card{padding:20px;background:#fff;border:1px solid #dce5e8;box-shadow:0 2px 8px #17232b0a;margin-bottom:16px}.connection{display:grid;grid-template-columns:1fr auto;align-items:end;gap:18px}.connection label{margin:0}.settings-tabs{display:flex;gap:4px;position:sticky;top:0;z-index:20;margin:0 0 16px;padding:7px;background:#f4f7f8f5;border-bottom:1px solid #d4e0e4;overflow-x:auto;scrollbar-width:thin}.settings-tabs button{flex:1;min-width:90px;white-space:nowrap;padding:11px 14px;background:transparent;border:1px solid transparent;color:#526b75}.settings-tabs button[aria-selected=true]{background:#fff;border-color:#b9d4d9;color:#087a61;box-shadow:inset 0 -3px #149772;font-weight:600}.panel{scroll-margin-top:75px}.card>h2{background:#607f8b;color:#fff;font-size:19px;font-weight:400;margin:-20px -20px 18px;padding:11px 18px}h3{font-size:16px;color:#1b5365;margin:0 0 10px}p{margin:10px 0;color:#304850}small,.muted{color:#607783}small{font-size:12px}.lead{font-size:15px;margin-top:0}.narrow{max-width:680px}.settings-grid,.plan-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}.plan-layout{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:26px}.plan-layout>div{min-width:0}.plan-defaults{border-right:1px solid #e2eaed;padding-right:26px}.section-intro{border-bottom:1px solid #e3ebed;padding-bottom:14px;margin-bottom:18px}.summary-box{background:#edf7f3;border-left:3px solid #129371;padding:12px 15px;margin-bottom:18px;white-space:pre-line}.summary-box p{margin:0}.warning-box{background:#fff7e8;border-left:3px solid #e0a436;padding:10px 14px;margin:12px 0;white-space:pre-line;color:#755019}.savebar{position:sticky;bottom:0;z-index:5;display:flex;align-items:center;justify-content:flex-end;gap:14px;padding:14px 0 0;margin-top:20px;background:#fff;border-top:1px solid #e2eaed}.savebar small{margin-right:auto}.savebar button{min-width:150px}label{display:block;margin:12px 0;color:#17232b}input,select,button{font:inherit;border-radius:3px}input,select{display:block;width:100%;margin-top:6px;padding:9px 11px;background:#f5f7f8;color:#17232b;border:1px solid #ccd9de;min-width:0}input:disabled,select:disabled{opacity:.7}button{padding:10px 17px;background:#87cfe6;color:#113342;border:0;cursor:pointer}button.secondary{background:#eaf0f3;color:#264752;border:1px solid #c8d8dd}button:disabled{opacity:.45;cursor:default}button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid #0079de;outline-offset:3px}fieldset{border:0;padding:0;margin:0;min-width:0}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.row>label{margin:0}.field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;margin:8px 0 18px}.metrics dt{color:#607783;font-size:12px}.metrics dd{margin:4px 0;font-size:17px;overflow-wrap:anywhere}.metrics .primary-value{font-size:22px;color:#0a775f;font-weight:600}.detail-metrics{padding-top:10px;border-top:1px solid #e4ecef}.detail-metrics .metrics{margin-bottom:4px}.performance-value{font-family:Consolas,monospace}#device-error{display:block;margin-top:8px}.theme-picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px;max-height:260px;overflow:auto;padding:3px}.theme-choice{display:flex;align-items:center;gap:9px;margin:0;padding:9px;border:1px solid #dce4e7;cursor:pointer;font-size:13px;line-height:1.4;background:#f7f9fa}.theme-choice:has(input:checked){border-color:#16845c;background:#e9f7f1}.theme-choice:focus-within{outline:2px solid #0079de;outline-offset:1px}.theme-choice input{flex:none;width:18px;height:18px;margin:0;accent-color:#078355;cursor:pointer}#pool-count{color:#26765b;font-size:12px;margin-left:8px}.schedule-rule{border:1px solid #d9e3e7;border-radius:4px;margin:8px 0;background:#fff}.schedule-rule>summary{padding:11px 12px;color:#213f49}.rule-summary{overflow-wrap:anywhere}.schedule-rule[open]>summary{border-bottom:1px solid #e2eaed;background:#f5f9fa}.rule-fields{padding:2px 12px 12px;display:grid;grid-template-columns:1fr 1fr;gap:0 12px}.rule-fields label{margin:9px 0}.rule-fields label:has(select),.rule-fields .rule-week,.rule-fields .rule-days,.rule-fields>.row,.rule-fields>button{grid-column:1/-1}.rule-days{display:flex;gap:5px;flex-wrap:wrap;padding:5px 0}.rule-days label{display:flex;align-items:center;gap:5px;margin:0;padding:5px 7px;background:#f1f6f7;border-radius:3px;font-size:12px}.rule-days input{width:15px;height:15px;margin:0;accent-color:#078355}.rule-days:has(input:checked){color:#1e6552}details>summary{cursor:pointer;color:#195d7a;padding:8px 0}details>p:last-child{margin-bottom:0}.pool-details{margin:10px 0 14px}.pool-details>summary{font-weight:500}.app-search{flex:1;min-width:160px}.app-table-wrap{overflow:auto;max-height:min(440px,55vh);margin:12px 0 16px;border:1px solid #e0e9ec}.app-table{border-collapse:collapse;width:100%;text-align:left}.app-table th,.app-table td{padding:10px;border-bottom:1px solid #e1e9ec;vertical-align:middle}.app-table th{background:#edf4f6;position:sticky;top:0;z-index:1}.app-table td>small{display:block}.app-table td:nth-child(2),.app-table td:nth-child(3){white-space:nowrap}.app-actions button{margin:3px;padding:6px 10px;font-size:13px}.app-table td:first-child{min-width:160px}#app-storage{color:#26765b}#app-empty{padding:15px;background:#f3f6f7}.install-details{border-top:1px solid #e2eaed;padding-top:5px}.serial-examples{white-space:pre-wrap;overflow-wrap:anywhere;background:#f1f5f6;padding:14px;font-size:13px}.maintenance-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;align-items:start}.maintenance-grid .card{margin-bottom:0}#toast{position:fixed;right:14px;bottom:max(16px,env(safe-area-inset-bottom));z-index:10000;display:flex;align-items:flex-start;width:460px;max-width:calc(100vw - 28px);max-height:45vh;overflow:auto;padding:12px 12px 12px 16px;background:#edf7fb;border-left:4px solid #16845c;box-shadow:0 4px 20px #0004;color:#203f50}#toast.error{background:#fff0ef;color:#9d2921;border-color:#c63b30}#message{white-space:pre-wrap;overflow-wrap:anywhere;flex:1;min-width:0}#dismiss-message{flex:none;margin:-4px -4px -4px 10px;padding:4px 10px;font-size:24px;line-height:1.2;background:transparent;color:inherit}#networks,#ssid,#wifi-password{font-size:16px}progress{width:100%;margin:12px 0;height:10px}code{color:#195d7a}a{color:#1a607f}input[type=file]{font-size:13px;padding:8px}.footer{font-size:12px;color:#7a8e96;margin:18px 0}.spaced{margin-top:18px}@media(max-width:800px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.plan-layout,.settings-grid,.maintenance-grid{grid-template-columns:1fr}.plan-defaults{border-right:0;border-bottom:1px solid #e2eaed;padding-right:0;padding-bottom:18px}.plan-layout{gap:18px}}@media(max-width:520px){header{flex-wrap:wrap;padding:12px 16px;gap:8px 14px}.factory-logo{font-size:30px}.factory-logo:first-letter{font-size:38px}.factory-title{font-size:15px}header a{margin-left:auto}header #connection-state{margin-left:auto}.statusbar{padding:5px 16px}main{padding:0 12px;margin-top:12px}.connection{grid-template-columns:1fr;gap:10px;padding:15px}.card{padding:16px}.card>h2{margin:-16px -16px 14px;padding:10px 14px}.settings-tabs{gap:0;margin-bottom:12px}.settings-tabs button{flex:none;min-width:78px;padding:10px 12px}.metrics{gap:12px}.metrics dd{font-size:15px}.metrics .primary-value{font-size:19px}.field-row{grid-template-columns:1fr;gap:0}.savebar{gap:8px;flex-wrap:wrap}.savebar button{width:100%}.savebar small{width:100%}.app-actions{min-width:180px}.app-table th,.app-table td{padding:8px}.row .app-search{flex-basis:100%}.rule-fields{gap:0 8px}.theme-picker{grid-template-columns:1fr}.rule-days{gap:4px}}
+</style>
+<header><h1 class="factory-logo">Clockwise</h1><span class="factory-title">设备管理</span><a id="studio-link" href="/">返回主题工坊</a><span id="connection-state">尚未连接</span></header>
+<nav class="statusbar"><span>♧ Firmware v0.9.7</span><span>⌁ Wi-Fi · OTA</span></nav>
+<main>
+<div class="connection" id="connection-form"><label>设备地址<input id="address" placeholder="http://设备 IP 或 VPN 地址" autocomplete="url"></label><button id="connect">连接设备</button></div>
+<aside id="toast" hidden><div id="message" role="status" aria-live="polite" aria-atomic="true"></div><button id="dismiss-message" type="button" aria-label="关闭提示">×</button></aside>
+<nav class="settings-tabs" role="tablist" aria-label="设备设置分类">
+<button id="tab-overview" data-panel="overview" role="tab" aria-controls="panel-overview" aria-selected="true" tabindex="0">概览</button>
+<button id="tab-display" data-panel="display" role="tab" aria-controls="panel-display" aria-selected="false" tabindex="-1">显示</button>
+<button id="tab-schedule" data-panel="schedule" role="tab" aria-controls="panel-schedule" aria-selected="false" tabindex="-1">播放计划</button>
+<button id="tab-apps" data-panel="apps" role="tab" aria-controls="panel-apps" aria-selected="false" tabindex="-1">主题应用</button>
+<button id="tab-network" data-panel="network" role="tab" aria-controls="panel-network" aria-selected="false" tabindex="-1">网络</button>
+<button id="tab-maintenance" data-panel="maintenance" role="tab" aria-controls="panel-maintenance" aria-selected="false" tabindex="-1">维护</button>
+</nav>
+<div id="panel-overview" class="panel" role="tabpanel" aria-labelledby="tab-overview">
+<section class="card"><h2>当前播放</h2><dl class="metrics"><div><dt>正在运行的主题</dt><dd id="active-theme" class="primary-value">—</dd></div><div><dt>设备时间</dt><dd id="device-time">—</dd></div><div><dt>播放来源</dt><dd id="playback-state">—</dd></div><div><dt>下次计划事件</dt><dd id="next-switch">—</dd></div></dl><small id="device-error"></small></section>
+<section class="card"><h2>设备状态</h2><dl class="metrics"><div><dt>固件 / 屏幕</dt><dd id="version">—</dd></div><div><dt>Wi-Fi / 信号</dt><dd id="wifi-status">—</dd></div><div><dt>运行时间</dt><dd id="uptime">—</dd></div><div><dt>可用内部内存</dt><dd id="heap">—</dd></div></dl><details class="detail-metrics"><summary>性能详情</summary><dl class="metrics performance-value"><div><dt>最近帧计算</dt><dd id="compute">—</dd></div><div><dt>最高帧总耗时</dt><dd id="maximum">—</dd></div><div><dt>累计超时帧</dt><dd id="late">—</dd></div><div><dt>累计调度遗漏</dt><dd id="missed">—</dd></div></dl></details></section>
+</div>
+<div id="panel-display" class="panel" role="tabpanel" aria-labelledby="tab-display" hidden>
+<section class="card narrow"><h2>显示设置</h2><form id="config"><fieldset disabled><label>默认主题（无指定时段时）<select id="theme" name="theme"></select></label><small>固定播放时使用此主题；轮换或指定时段可能显示其他主题，实际画面请查看“概览”。</small><div class="field-row"><label>固定亮度（1–255）<input id="brightness" name="brightness" type="number" min="1" max="255" value="80" required></label><label>时区（POSIX）<input id="timezone" name="timezone" value="CST-8" maxlength="63" required></label></div><input id="rotation" name="rotationMinutes" type="hidden" value="0"><p>中国标准时间为 <code>CST-8</code>，设备通过网络自动校时。</p><div class="savebar"><small id="config-dirty">显示设置已同步</small><button>保存显示设置</button></div></fieldset></form></section>
+<section class="card narrow"><h2>屏幕接口与颜色</h2><form id="panel-config"><fieldset disabled><p>64 × 64 · 1/32 扫描（HUB75E）</p><label>面板 RGB 颜色顺序<select id="color-order" name="colorOrder"><option>RGB</option><option>RBG</option><option>GRB</option><option>GBR</option><option>BRG</option><option>BGR</option></select></label><small>选择与面板实际接线对应的顺序；颜色配置在重启后生效，不增加逐像素转换开销。</small><details><summary>高级：屏幕时序兼容性</summary><fieldset id="panel-timing" disabled><label>屏幕驱动方式<select id="panel-driver" name="driver"><option value="0">0 · SHIFTREG（标准二进制行选）</option><option value="1">1 · FM6124</option><option value="2">2 · FM6126A</option><option value="3">3 · ICN2038S</option><option value="4">4 · MBI5124（强制正相位）</option><option value="5">5 · SM5266P（串行行选）</option><option value="6">6 · DP3246 + SM5368（串行行选）</option><option value="7">7 · GPIO 慢速扫描（S3，仅自检）</option><option value="8">8 · Clockwise 原版显示参数</option><option value="9">9 · Protomatter 独立驱动（S3）</option></select></label><small>GPIO 仅用于固定图形自检；Protomatter 支持正常主题播放。下方时序参数只作用于 DMA 驱动。Clockwise 基准使用 8 MHz、反相位、8 bit、单缓冲、最低刷新率 60 Hz。FM6124、FM6126A、ICN2038S 共用初始化程序。</small><fieldset id="dma-timing"><div class="field-row"><label>像素时钟<select id="panel-clock" name="clockMHz"><option value="4">4 MHz · 低速兼容（S3）</option><option value="8" selected>8 MHz · 标准</option><option value="16">16 MHz · 高速</option></select></label><label>采样相位<select id="panel-phase" name="clockPhase"><option value="1" selected>正相位（默认 / MBI5124）</option><option value="0">反相位</option></select></label></div><label>换行消隐<select id="panel-blank" name="latchBlanking"><option value="1">1 个时钟</option><option value="2" selected>2 个时钟（默认）</option><option value="3">3 个时钟</option><option value="4">4 个时钟</option></select></label></fieldset><small>出现乱码时可先尝试 4 MHz；拖影可增加消隐。低速时钟可能减少色阶，主题设定的帧率不变。保存后重启生效。</small></fieldset></details><p>自检时应看到完整白色边框和圆形，底部从左到右依次为 <span style="color:#c32626">红 R</span>、<span style="color:#087f35">绿 G</span>、<span style="color:#174ecc">蓝 B</span>。若边框断裂、图形拉长或分段错位，需要检查行选与排线，RGB 切换只修正颜色。</p><div class="row"><button id="panel-test" type="button" class="secondary">屏幕自检（30 秒）</button><small id="panel-state">连接支持屏幕设置的设备后可用</small></div><div class="savebar"><small id="panel-dirty">颜色设置未同步</small><button>保存屏幕设置并重启</button></div></fieldset></form></section>
+</div>
+<div id="panel-schedule" class="panel" role="tabpanel" aria-labelledby="tab-schedule" hidden>
+<section class="card"><h2>播放计划</h2><div class="summary-box" id="schedule-summary" role="status">连接设备后显示播放规则。</div><form id="schedule-form"><fieldset disabled><div class="plan-layout"><div class="plan-defaults"><div class="section-intro"><h3>未命中时段时</h3><small>先设置日常播放方式。下方指定时段可临时覆盖它。</small></div>
+<label>日常播放方式<select id="schedule-mode"><option value="0">固定默认主题</option><option value="1">按间隔轮换</option><option value="2">每天定点轮换</option></select></label>
+<label id="schedule-interval-field" hidden>每隔多少分钟切换<input id="schedule-interval" type="number" min="1" max="1440" value="1"></label>
+<label id="schedule-times-field" hidden>每天在哪些时间切换<input id="schedule-times" value="08:00,18:00" placeholder="08:00,18:00"><small>用逗号分隔，24 小时制，例如 08:00,18:00。</small></label>
+<div id="schedule-rotation-options" hidden><label>轮换顺序<select id="schedule-order"><option value="1">随机</option><option value="0">按列表顺序</option></select></label><details class="pool-details"><summary id="pool-title">参与日常轮换的主题 <span id="pool-count"></span></summary><div id="schedule-pool" class="theme-picker" role="group" aria-labelledby="pool-title"></div><small>只勾选日常参与轮换的主题。中午专用菜单可以只添加到右侧时段中。</small></details></div>
+</div><div class="plan-times"><div class="section-intro"><h3>指定时段优先播放</h3><small>到点后使用指定主题；结束后恢复左侧的日常播放方式。跨午夜时段会标注“次日”。</small></div><div id="schedule-rules"></div><div class="row"><button type="button" id="add-rule" class="secondary">添加时段</button><button type="button" id="lunch-rule" class="secondary">中午菜单</button></div><p class="muted">重叠时上方规则优先；设备完成校时后执行时段计划。</p></div></div><div id="schedule-warnings" class="warning-box" hidden></div><div class="savebar"><small id="schedule-dirty">播放计划已同步</small><button id="schedule-save" type="submit">保存播放计划</button></div></fieldset></form></section>
+</div>
+<div id="panel-apps" class="panel" role="tabpanel" aria-labelledby="tab-apps" hidden>
+<section class="card apps-section"><h2>主题应用</h2><fieldset id="app-controls" disabled><p class="lead">安装、运行和管理主题应用。</p><div class="row"><label>显示<select id="app-filter"><option value="installed">已安装</option><option value="all">全部应用</option><option value="available">未安装</option></select></label><label class="app-search">搜索<input id="app-search" type="search" placeholder="应用名称、包名或描述"></label><button id="app-refresh" class="secondary" type="button">刷新</button></div><p><a id="theme-guide" href="/studio/theme-guide.html" target="_blank" rel="noopener">编写主题：开发手册与示例</a></p><p id="app-storage">正在读取应用存储…</p><div class="app-table-wrap"><table class="app-table"><thead><tr><th>应用</th><th>状态</th><th>占用</th><th>操作</th></tr></thead><tbody id="app-list"></tbody></table></div><p id="app-empty" hidden>尚未安装主题应用。</p><details class="install-details"><summary>安装应用文件或主题文件夹</summary><p>支持 CWP 应用包、包含 theme.json 的 ZIP 或文件夹，以及单文件 Lua。</p><p id="app-limits">连接设备后显示该设备的实际容量限制。</p><label>应用文件<input id="app-file" type="file" accept=".cwp,.zip,.lua"></label><label>或选择主题文件夹<input id="app-folder" type="file" webkitdirectory multiple></label><button id="app-install" type="button">安装并运行</button></details><p><small>主题和素材独立保存在设备中。卸载会释放空间；卸载正在运行的主题会切回基础时钟并清理相关计划。导出应用可备份，导出源码可修改后重新导入。</small></p></fieldset></section>
+</div>
+<div id="panel-network" class="panel" role="tabpanel" aria-labelledby="tab-network" hidden>
+<section class="card narrow"><h2>Wi-Fi 配网</h2><form id="wifi"><fieldset disabled><div class="row"><button id="scan" type="button" class="secondary">扫描 2.4 GHz 网络</button><span id="scan-state"></span></div><label>扫描到的网络<select id="networks" disabled aria-describedby="network-help"><option value="">请先扫描附近网络</option></select></label><label>网络名称（也可手动输入）<input name="ssid" id="ssid" maxlength="32" autocomplete="off" autocapitalize="none" spellcheck="false" required></label><small id="network-help">选择扫描结果会填入网络名称；隐藏网络可手动输入。</small><label>密码<input name="password" id="wifi-password" type="password" maxlength="63" autocomplete="new-password"></label><p>连接成功后保存。失败时保留原网络，仍可通过设备热点重新配网。</p><div class="savebar"><button>连接并保存</button></div></fieldset></form></section>
+</div>
+<div id="panel-maintenance" class="panel" role="tabpanel" aria-labelledby="tab-maintenance" hidden>
+<div class="maintenance-grid"><section class="card"><h2>固件更新与重启</h2><fieldset id="ota-controls" disabled><p>选择本设备对应的应用固件 <code>firmware.bin</code>，通过局域网或 VPN 更新，保留已保存的设置。</p><label>应用固件<input id="firmware" type="file" accept=".bin"></label><small id="ota-size"></small><progress id="ota-progress" max="100" value="0"></progress><div class="row"><button id="send-ota">上传并更新</button><button id="restart" class="secondary">重启设备</button></div><small>更新时保留最后一帧并暂停主题；完整校验通过后重启。</small></fieldset></section><section class="card"><h2>应用存储</h2><fieldset id="storage-controls" disabled><p id="storage-state">存储状态未读取。</p><button id="init-storage" class="secondary" type="button">初始化应用存储</button><p><small>设备存储已就绪时无需初始化，应用容量和占用可在“主题应用”查看。</small></p></fieldset></section></div><section class="card spaced"><h2>串口设置</h2><p>串口选择设备端口和 <code>115200</code> 波特率，每条 JSON 命令以换行结束。输入 <code>{"cmd":"help"}</code> 查看命令；回复以 <code>CWJSON:</code> 开头。</p><details><summary>常用命令示例</summary><pre class="serial-examples">{"cmd":"status"}
+{"cmd":"ap"}
+{"cmd":"wifi","ssid":"你的WiFi名称","password":"你的WiFi密码"}
+{"cmd":"config","brightness":80,"timezone":"CST-8"}
+{"cmd":"apps"}
+{"cmd":"app.run","packageName":"org.clockwise.pacman"}
+{"cmd":"app.uninstall","packageName":"org.clockwise.pacman"}
+{"cmd":"panel","colorOrder":"RGB","clockMHz":8,"clockPhase":1,"latchBlanking":2}
+{"cmd":"panel.test","action":"start"}
+{"cmd":"restart"}</pre><small>优先使用 apps 返回的 packageName；数字位置仅为旧接口兼容。设备不会回显家庭 Wi-Fi 密码。</small></details></section>
+</div>
+<p class="footer">Clockwise · 64 × 64 · Lua 主题引擎</p>
+</main>
+<script type="module">
+import {applicationControls} from "./device-apps.mjs";
+import {scheduleControls} from "./device-schedule.mjs";
+const $=id=>document.getElementById(id);
+let base='',connected=false,timer,failures=0,maxFirmware=0,deviceChip='ESP32',configDirty=false,panelDirty=false,panelSupported=false,panelTimingSupported=false;
+const tabs=[...document.querySelectorAll('[role="tab"][data-panel]')];
+function showPanel(name,focus=false){
+ const selected=tabs.find(tab=>tab.dataset.panel===name)||tabs[0];if(!selected)return;
+ for(const tab of tabs){const active=tab===selected;tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;$(tab.getAttribute('aria-controls')).hidden=!active;}
+ if(focus)selected.focus();
+}
+for(const [index,tab] of tabs.entries()){
+ tab.onclick=()=>{showPanel(tab.dataset.panel);history.replaceState(null,'','#'+tab.dataset.panel);};
+ tab.onkeydown=e=>{let next;if(e.key==='ArrowRight')next=(index+1)%tabs.length;else if(e.key==='ArrowLeft')next=(index+tabs.length-1)%tabs.length;else if(e.key==='Home')next=0;else if(e.key==='End')next=tabs.length-1;else return;e.preventDefault();showPanel(tabs[next].dataset.panel,true);history.replaceState(null,'','#'+tabs[next].dataset.panel);};
+}
+showPanel(location.hash.slice(1));window.addEventListener('hashchange',()=>showPanel(location.hash.slice(1)));
+function configDraft(dirty){configDirty=dirty;$('config-dirty').textContent=dirty?'有未保存的修改':'显示设置已与设备同步';}
+function themeOptions(list){const selected=$('theme').value;$('theme').replaceChildren(...list.map(x=>new Option(x.title,x.index)));if(configDirty&&list.some(x=>String(x.index)===selected))$('theme').value=selected;else if(configDirty)configDraft(false);}
+$('config').addEventListener('input',()=>configDraft(true));$('config').addEventListener('change',()=>configDraft(true));
+const onDevice=!['localhost','127.0.0.1','[::1]'].includes(location.hostname);
+if(onDevice){$('theme-guide').href='/guide';$('address').value=location.origin;$('connection-form').hidden=true;$('studio-link').hidden=true;}
+else{try{$('address').value=localStorage.getItem('clockwise-device-address')||'';}catch{}}
+let toastTimer,toastGeneration=0,lastThemeError='';
+function message(text,error=false){
+ const generation=++toastGeneration;clearTimeout(toastTimer);$('message').textContent=text||'';$('message').setAttribute('role',error?'alert':'status');$('message').setAttribute('aria-live',error?'assertive':'polite');$('toast').classList.toggle('error',error);$('toast').hidden=!text;
+ if(text&&!error)toastTimer=setTimeout(()=>{if(generation===toastGeneration)$('toast').hidden=true;},6000);
+}
+$('dismiss-message').onclick=()=>{++toastGeneration;clearTimeout(toastTimer);$('toast').hidden=true;};
+function enable(value){for(const f of document.querySelectorAll('fieldset'))f.disabled=!value; $('panel-config').querySelector('fieldset').disabled=!value||!panelSupported;$('panel-timing').disabled=!value||!panelTimingSupported;if(value)panelDriverFields();else $('dma-timing').disabled=true;}
+async function request(path,options={}){
+ const response=await fetch(base+'/api/'+path,{...options,credentials:'omit',signal:AbortSignal.timeout(10000)});
+ const body=await response.json().catch(()=>({error:'返回内容不是 Studio API 数据'}));
+ if(!response.ok)throw new Error(body.error||'HTTP '+response.status);return body;
+}
+function status(data,initial=false){
+ if(!/^0\.[5-9]\.\d+$/.test(data.version||''))throw new Error('设备固件不是受支持的 Studio 版本，当前固件不会被自动替换。');
+ deviceChip=data.chip||'ESP32';$('version').textContent=data.version+' / '+deviceChip+' / 64×64';$('wifi-status').textContent=data.connected?data.ssid+' · '+data.rssi+' dBm':data.networkState;
+ $('uptime').textContent=Math.floor(data.uptime/3600)+'h '+Math.floor(data.uptime%3600/60)+'m';$('heap').textContent=(data.heap/1024).toFixed(1)+' KiB';
+ panelSupported=!!data.panel;panelTimingSupported=Number.isInteger(data.panel?.clockMHz);$('panel-config').querySelector('fieldset').disabled=!panelSupported;$('panel-timing').disabled=!panelTimingSupported;$('panel-clock').querySelector('option[value="4"]').disabled=!deviceChip.includes('S3');$('panel-driver').disabled=!Number.isInteger(data.panel?.driver);for(const value of ['7','9'])$('panel-driver').querySelector('option[value="'+value+'"]').disabled=!deviceChip.includes('S3');
+ if(data.panel){if(!panelDirty){$('color-order').value=data.panel.colorOrder;$('panel-driver').value=data.panel.driver??0;$('panel-clock').value=data.panel.clockMHz??8;$('panel-phase').value=data.panel.clockPhase??1;$('panel-blank').value=data.panel.latchBlanking??2;panelDriverFields();$('panel-dirty').textContent='屏幕设置已与设备同步';}$('panel-test').dataset.testing=String(!!data.panel.testing);$('panel-test').textContent=data.panel.testing?'结束自检，恢复主题':'屏幕自检（30 秒）';$('panel-state').textContent=data.panel.testing?'自检中，30 秒后自动恢复主题':'自检不会修改主题和播放计划';}else $('panel-state').textContent='需要 v0.9.4 或更新固件';
+ const p=data.performance||{};$('compute').textContent=((p.computeUs||0)/1000).toFixed(2)+' ms';$('maximum').textContent=((p.maxUs||0)/1000).toFixed(2)+' ms';$('late').textContent=p.late??'—';$('missed').textContent=p.missed??'—';const pending=data.generation!==undefined&&(p.generation!==data.generation||p.theme!==data.theme);
+ const title=[...$('theme').options].find(option=>Number(option.value)===Number(data.theme))?.text||'主题 '+data.theme;
+ $('active-theme').textContent=pending?'正在切换 → '+title:title;$('device-time').textContent=data.timeValid?data.localTime:'等待网络校时';loadSchedule.status(data);
+ $('device-error').textContent=data.panel?.active?.diagnostic?'屏幕驱动自检中 · 原主题已保留':pending?'正在应用主题…':data.error?'主题运行失败：'+data.error:'主题运行正常 · '+([...$('theme').options].find(option=>Number(option.value)===Number(data.theme))?.text||'');
+ const themeError=!pending&&data.error?data.error:'';
+ if(themeError&&themeError!==lastThemeError)message('主题未能运行：'+themeError,true);
+ else if(!pending&&!themeError&&(lastThemeError||$('message').textContent==='设置已保存，正在应用主题…'))message('当前主题已运行。');
+ if(!pending)lastThemeError=themeError;
+ $('storage-state').textContent=data.storage?'应用存储已就绪，已安装主题可断电保存。':'应用存储尚未初始化，初始化后可安装主题。';$('init-storage').disabled=data.storage;
+ maxFirmware=data.otaMaxBytes;$('ota-size').textContent='备用分区容量：'+Math.floor(maxFirmware/1024)+' KiB';
+ appManager.device(data);appManager.current(data.theme);$('rotation').value=data.rotationMinutes;
+ if(!configDirty){$('theme').value=data.baseTheme??data.theme;$('brightness').value=data.brightness;$('timezone').value=data.timezone;configDraft(false);}
+}
+async function poll(){
+ if(!connected)return;
+ try{status(await request('status'));failures=0;$('connection-state').textContent='已连接';}
+ catch(e){failures++;$('connection-state').textContent='连接中断 · 正在重试';if(failures===3)message(e.message,true);}
+ timer=setTimeout(poll,5000);
+}
+$('connect').onclick=async()=>{
+ clearTimeout(timer);connected=false;enable(false);configDraft(false);panelDirty=false;
+ try{
+  const url=new URL(onDevice?location.origin:$('address').value);if(!['http:','https:'].includes(url.protocol)||url.username||url.password||url.search||url.hash)throw new Error('请输入 HTTP / HTTPS 设备地址');
+  base=url.origin;
+  const list=await request('themes');themeOptions(list);
+  const data=await request('status');status(data,true);connected=true;enable(true);if(/^0\.9\./.test(data.version))await appManager.refresh();else $('app-controls').disabled=true;if(/^0\.[7-9]\./.test(data.version))await loadSchedule(list);else $('schedule-form').querySelector('fieldset').disabled=true;$('init-storage').disabled=data.storage;$('connection-state').textContent='已连接';if(!data.error)message('已连接 '+base+'，设备状态已更新。');
+  if(!onDevice){try{localStorage.setItem('clockwise-device-address',base);}catch{}}timer=setTimeout(poll,5000);
+ }catch(e){message(e.message,true);$('connection-state').textContent='连接失败';}
+};
+function panelDriverFields(){
+ const driver=Number($('panel-driver').value),positive=driver===4||driver===6;
+ $('dma-timing').disabled=!panelTimingSupported||driver===7||driver===8||driver===9;
+ $('panel-phase').querySelector('option[value="0"]').disabled=positive;
+ if(positive)$('panel-phase').value='1';
+ if(driver===8){$('panel-clock').value='8';$('panel-phase').value='0';$('panel-blank').value='2';}
+}
+$('panel-driver').addEventListener('change',panelDriverFields);
+$('panel-config').addEventListener('change',()=>{panelDirty=true;$('panel-dirty').textContent='屏幕设置有未保存的修改';});
+$('panel-config').onsubmit=async e=>{
+ e.preventDefault();const button=e.target.querySelector('button:not([type])');button.disabled=true;
+ try{const data=await request('panel',{method:'POST',body:new URLSearchParams(new FormData(e.target))});panelDirty=false;message(data.message);$('panel-dirty').textContent='已保存，正在重启设备…';clearTimeout(timer);timer=setTimeout(poll,7000);}
+ catch(e){message(e.message,true);}finally{button.disabled=false;}
+};
+$('panel-test').onclick=async()=>{
+ const button=$('panel-test');button.disabled=true;
+ try{const data=await request('panel/test',{method:'POST',body:new URLSearchParams({action:button.dataset.testing==='true'?'stop':'start'})});message(data.message);clearTimeout(timer);timer=setTimeout(poll,500);}
+ catch(e){message(e.message,true);}finally{button.disabled=false;}
+};
+for(const name of ['config','wifi'])$(name).onsubmit=async e=>{
+ e.preventDefault();const button=e.target.querySelector('button[type=submit],button:not([type])');button.disabled=true;
+ try{const data=await request(name,{method:'POST',body:new URLSearchParams(new FormData(e.target))});message(name==='config'?'默认主题和显示设置已保存；指定时段仍优先播放。':data.message);if(name==='config'){configDraft(false);if(/^0\.9\./.test($('version').textContent))await appManager.refresh();clearTimeout(timer);timer=setTimeout(poll,1200);}if(name==='wifi')$('wifi-password').value='';}
+ catch(e){message(e.message,true);}finally{button.disabled=false;}
+};
+$('networks').onchange=()=>{if($('networks').value)$('ssid').value=$('networks').value;};
+$('ssid').oninput=()=>{if($('networks').value!==$('ssid').value)$('networks').value='';};
+$('scan').onclick=async()=>{
+ $('scan').disabled=true;$('networks').disabled=true;$('scan-state').textContent='扫描中…';
+ try{
+  const deadline=Date.now()+30000;
+  while(Date.now()<deadline){
+   let data;
+   try{data=await request('networks');}catch(e){if(!['TimeoutError','AbortError','TypeError'].includes(e.name))throw e;$('scan-state').textContent='扫描期间连接暂时中断，正在重试…';}
+   if(data?.state==='ready'){
+    const unique=new Map();for(const network of data.networks||[]){if(typeof network.ssid==='string'&&network.ssid.length&&(!unique.has(network.ssid)||network.rssi>unique.get(network.ssid).rssi))unique.set(network.ssid,network);}
+    const networks=[...unique.values()].sort((a,b)=>b.rssi-a.rssi);
+    $('networks').replaceChildren(new Option(networks.length?'请选择网络':'未发现公开网络，可手动输入',''),...networks.map(x=>new Option(x.ssid+' ('+x.rssi+' dBm)',x.ssid)));
+    if(unique.has($('ssid').value))$('networks').value=$('ssid').value;
+    $('scan-state').textContent='找到 '+networks.length+' 个网络';message(networks.length?'扫描完成，请从列表选择网络，或手动输入名称。':'未发现公开网络，可直接手动输入网络名称。');return;
+   }
+   if(Date.now()>=deadline)break;
+   await new Promise(r=>setTimeout(r,Math.min(1000,deadline-Date.now())));
+  }
+  throw new Error('扫描超时，可手动输入网络名称或重新扫描');
+ }catch(e){message(e.message,true);$('scan-state').textContent='扫描失败，可手动输入';}finally{$('scan').disabled=false;$('networks').disabled=$('networks').options.length<2;}
+};
+function upload(path,file,headers={}){
+ return new Promise((resolve,reject)=>{
+  const xhr=new XMLHttpRequest();xhr.open('POST',base+'/api/'+path);xhr.timeout=180000;
+  for(const [key,value] of Object.entries(headers))xhr.setRequestHeader(key,value);
+  xhr.upload.onprogress=e=>{if(e.lengthComputable&&path==='ota')$('ota-progress').value=e.loaded*100/e.total;};
+  xhr.onload=()=>{let body;try{body=JSON.parse(xhr.responseText);}catch{return reject(new Error('设备响应无效'));}xhr.status<300?resolve(body):reject(new Error(body.error||'上传失败'));};
+  xhr.onerror=()=>reject(new Error('连接中断，请重新读取设备状态'));xhr.ontimeout=()=>reject(new Error('上传超时'));
+  const form=new FormData();form.append(path==='ota'?'firmware':'script',file);xhr.send(form);
+ });
+}
+const appManager=applicationControls($,()=>base,request,upload,message,{local:!onDevice,changed:async()=>{
+ const list=await request('themes');themeOptions(list);const data=await request('status');status(data,true);await loadSchedule(list);
+}});
+const loadSchedule=scheduleControls($,()=>base,request,message);
+$('init-storage').onclick=async()=>{
+ if(!confirm('初始化应用存储将清除该分区内容。继续？'))return;
+ try{message((await request('storage',{method:'POST'})).message);status(await request('status'));await appManager.refresh();}catch(e){message(e.message,true);}
+};
+$('restart').onclick=async()=>{try{message((await request('restart',{method:'POST'})).message);}catch(e){message(e.message,true);}};
+async function sha256(bytes){
+ if(globalThis.crypto?.subtle){const h=new Uint8Array(await crypto.subtle.digest('SHA-256',bytes));return [...h].map(x=>x.toString(16).padStart(2,'0')).join('');}
+ const K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+ const H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19],n=bytes.length,data=new Uint8Array(Math.ceil((n+9)/64)*64);data.set(bytes);data[n]=128;
+ const v=new DataView(data.buffer);v.setUint32(data.length-4,n*8);const w=new Uint32Array(64),rr=(x,n)=>(x>>>n)|(x<<(32-n));
+ for(let offset=0;offset<data.length;offset+=64){
+  for(let i=0;i<16;i++)w[i]=v.getUint32(offset+i*4);
+  for(let i=16;i<64;i++){const a=w[i-15],b=w[i-2];w[i]=w[i-16]+(rr(a,7)^rr(a,18)^(a>>>3))+w[i-7]+(rr(b,17)^rr(b,19)^(b>>>10));}
+  let [a,b,c,d,e,f,g,h]=H;
+  for(let i=0;i<64;i++){const t1=(h+(rr(e,6)^rr(e,11)^rr(e,25))+((e&f)^(~e&g))+K[i]+w[i])>>>0,t2=((rr(a,2)^rr(a,13)^rr(a,22))+((a&b)^(a&c)^(b&c)))>>>0;h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0;}
+  [a,b,c,d,e,f,g,h].forEach((x,i)=>H[i]=(H[i]+x)>>>0);
+ }
+ return H.map(x=>x.toString(16).padStart(8,'0')).join('');
+}
+$('send-ota').onclick=async()=>{
+ try{
+  const file=$('firmware').files[0];if(!file||file.size<24||file.size>maxFirmware)throw new Error('选择容量范围内的 ESP32 应用固件');
+  $('send-ota').disabled=true;clearTimeout(timer);message('计算固件 SHA-256…');
+  const bytes=new Uint8Array(await file.arrayBuffer());const expectedChip=deviceChip.includes('S3')?9:0;if(bytes[0]!==0xe9||(bytes[12]|bytes[13]<<8)!==expectedChip)throw new Error('固件芯片型号不匹配：当前设备为 '+deviceChip);
+  const hash=await sha256(bytes);message('正在上传；设备保留最后一帧。');
+  message((await upload('ota',file,{'X-SHA256':hash})).message);
+ }catch(e){message(e.message,true);}finally{$('send-ota').disabled=false;if(connected)timer=setTimeout(poll,5000);}
+};
+if($('address').value)$('connect').onclick();else message('首次从电脑工坊管理设备时填写地址；以后自动连接。直接访问设备网页无需填写。');
+</script></html>
+

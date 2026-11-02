@@ -1,0 +1,15 @@
+{
+  "name": "HUB-75E ESP32-S3",
+  "version": "0.9.7",
+  "builds": [
+    {
+      "chipFamily": "ESP32-S3",
+      "parts": [
+        {
+          "path": "merged.bin",
+          "offset": 0
+        }
+      ]
+    }
+  ]
+}

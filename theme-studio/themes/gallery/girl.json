@@ -1,0 +1,28 @@
+{
+  "format": "clockwise-theme-project",
+  "version": 3,
+  "id": "girl",
+  "title": "Girl",
+  "width": 64,
+  "height": 64,
+  "fps": 60,
+  "reference": "https://topyuan.top/clock/",
+  "description": "Lua 一秒一拍，保留原版动作像素",
+  "category": "角色",
+  "sourceMode": "lua",
+  "libraries": [
+    "core"
+  ],
+  "assets": [],
+  "data": {
+    "temperature": 22,
+    "humidity": 60,
+    "weather": "CLEAR",
+    "message": "HELLO PIXELS"
+  },
+  "media": [
+    "girl"
+  ],
+  "source": "-- Lua 5.3 · 64×64 · all composition is controlled here.\n-- Native RGB565 delta decoder and native glyph spans.\nlocal hour, minute, secondText, hm\nlocal phase = 0\nlocal week = {\"SUN\",\"MON\",\"TUE\",\"WED\",\"THU\",\"FRI\",\"SAT\"}\nfunction second()\n  hour, minute = clock.format(\"%H\"), clock.format(\"%M\")\n  secondText = clock.format(\"%S\")\n  hm = hour .. \":\" .. minute\nend\nfunction start()\n  second()\n  phase = rng.int(0, 20)\nend\nfunction button(key)\n  if key == \"A\" then phase = rng.int(0, 20) end\nend\nfunction draw()\n  media.draw(\"girl\", 0, 0, (math.floor(clock.millis()/1000) + phase) * 90)\n  font.draw(\"sans\",39,3,hour,\"#ffffff\")\n  font.draw(\"sans\",39,23,minute,\"#ffffff\")\n  gfx.text(50,43,secondText,\"#ffffff\",1)\nend\n",
+  "fidelity": "原版动作帧，由 Lua 每 1000ms 选择下一姿态"
+}

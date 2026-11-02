@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#248eb1">
+  <meta name="description" content="Clockwise HUB75 像素时钟：ESP32 / ESP32-S3 在线烧录、主题应用下载与 USB 串口配置。">
+  <title>Clockwise · HUB75 像素时钟</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="https://unpkg.com/esp-web-tools@10.1.0/dist/web/install-button.js?module"></script>
+  <script type="module" src="app.mjs"></script>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <a class="brand" href="./" aria-label="Clockwise 首页"><span class="brand-icon">◷</span><span>Clockwise <small>HUB75 像素时钟</small></span></a>
+      <a class="github-link" href="https://github.com/AntonVanke/HUB-75E" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+    </div>
+    <div class="hero-copy"><p class="eyebrow">64 × 64 · LUA 主题 · 开源固件</p><h1>给时钟换一种表情</h1><p>连接你的像素时钟，安装固件、挑选主题，再把一切设为你喜欢的样子。</p></div>
+  </header>
+
+  <main class="shell">
+    <nav class="tabs" role="tablist" aria-label="时钟工具">
+      <button id="tab-flash" type="button" role="tab" aria-selected="true" aria-controls="panel-flash" data-tab="flash"><span>01</span> 在线烧录</button>
+      <button id="tab-themes" type="button" role="tab" aria-selected="false" aria-controls="panel-themes" data-tab="themes" tabindex="-1"><span>02</span> 主题应用 <b id="theme-tab-count">—</b></button>
+      <button id="tab-config" type="button" role="tab" aria-selected="false" aria-controls="panel-config" data-tab="config" tabindex="-1"><span>03</span> 设备配置</button>
+    </nav>
+
+    <section id="panel-flash" role="tabpanel" aria-labelledby="tab-flash">
+      <div class="section-heading"><div><p class="eyebrow">FIRMWARE</p><h2>从这里点亮屏幕</h2><p>使用 USB 数据线连接开发板，再选择对应的硬件版本。</p></div><span class="tag">手动连接 · 浏览器烧录</span></div>
+      <div class="flash-grid">
+        <article class="card flash-card">
+          <h3>选择你的开发板</h3>
+          <fieldset class="board-picker"><legend class="sr-only">固件版本</legend>
+            <label class="board-option"><input type="radio" name="board" value="esp32" checked><span><strong>ESP32 <b>v0.9.3</b></strong><small>经典 ESP32 · 4 MB Flash · 无 PSRAM</small></span></label>
+            <label class="board-option"><input type="radio" name="board" value="esp32s3"><span><strong>ESP32-S3 <b>v0.9.7</b></strong><small>本项目 S3 板 · 8 MB Flash · OPI PSRAM</small></span></label>
+          </fieldset>
+          <p id="board-note" class="note">适用于本项目经典 ESP32 接线与 4 MB Flash 分区。</p>
+          <div class="install-row">
+            <esp-web-install-button id="installer" manifest="firmware/esp32-v0.9.3/manifest.json">
+              <button id="install-button" class="primary" slot="activate" type="button">连接并烧录 ESP32</button>
+              <span slot="unsupported" class="note">此浏览器不支持在线烧录，请下载离线包。</span>
+              <span slot="not-allowed" class="note">请通过 HTTPS 或 localhost 打开此页。</span>
+            </esp-web-install-button>
+            <a id="release-link" class="button secondary" href="https://github.com/AntonVanke/HUB-75E/releases/tag/esp32-v0.9.3" target="_blank" rel="noopener noreferrer">下载离线包 ↗</a>
+          </div>
+          <p id="flash-support" class="small" role="status"></p>
+        </article>
+        <aside class="card steps-card"><h3>烧录前看这里</h3><ol class="steps"><li><span>1</span><div><strong>核对 Flash 与 PSRAM</strong><p>S3 固件面向 8 MB Flash + OPI PSRAM 本板；S3 N4（4 MB）不能刷此包。</p></div></li><li><span>2</span><div><strong>选择开发板的 USB 串口</strong><p>使用支持 Web Serial 的桌面 Chrome / Edge。若串口被占用，请关闭串口监视器。</p></div></li><li><span>3</span><div><strong>安装后配置 Wi-Fi</strong><p>进入「设备配置」手动连接串口，或打开设备自己的网页后台。</p></div></li></ol><p class="note">USB 合并固件写入 0x0，会覆盖 NVS / OTA 元数据；即使不勾选整片擦除，也会重置 Wi-Fi 与设置。已有设备如需保留配置，请在设备网页后台使用 app.bin 进行 OTA。整片擦除还会清空已安装应用。</p></aside>
+      </div>
+      <div class="quick-links"><a href="studio/theme-guide.html">阅读使用手册 <span>↗</span></a><a href="studio/index.html">打开主题工坊 <span>↗</span></a><a href="studio/device.html">打开设备管理 <span>↗</span></a></div>
+    </section>
+
+    <section id="panel-themes" role="tabpanel" aria-labelledby="tab-themes" hidden>
+      <div class="section-heading"><div><p class="eyebrow">THEME LIBRARY</p><h2>小屏幕，大世界 <span id="theme-count" class="count">—</span></h2><p>下载 CWP 应用包，在设备自己的网页后台安装；源码 ZIP 可在主题工坊继续编辑。</p></div><a class="button secondary" href="studio/index.html">进入主题工坊 ↗</a></div>
+      <div class="card theme-toolbar"><label class="search"><span class="sr-only">搜索主题</span><input id="theme-search" type="search" placeholder="搜索名称、描述或分类…" autocomplete="off"></label><label>芯片 <select id="theme-chip"><option value="all">全部</option><option value="esp32">ESP32</option><option value="esp32s3">ESP32-S3</option></select></label><label>PSRAM <select id="theme-memory"><option value="all">全部需求</option><option value="none">无需 PSRAM</option><option value="required">需要 PSRAM</option></select></label></div>
+      <p id="theme-result" class="small" role="status">正在读取主题目录…</p>
+      <div id="theme-list" class="theme-list" aria-live="polite"></div>
+      <div class="library-note"><span>◇</span><p>芯片与内存筛选来自应用包的需求声明。实际帧率以设备运行结果为准；应用安装与空间管理请使用设备网页后台。</p><a href="studio/theme-guide.html">主题手册 ↗</a></div>
+    </section>
+
+    <section id="panel-config" role="tabpanel" aria-labelledby="tab-config" hidden>
+      <div class="section-heading"><div><p class="eyebrow">DEVICE SETTINGS</p><h2>把时钟设为你喜欢的样子</h2><p>USB 串口直连设备，115200 波特率。只有你点击操作后才会连接或写入。</p></div><span id="connection-state" class="tag">未连接</span></div>
+      <div class="card connection-card"><div class="connection-actions"><button id="connect" class="primary" type="button">连接 USB 串口</button><button id="disconnect" class="secondary" type="button" disabled>断开</button><button id="read-status" class="secondary" type="button" data-connected disabled>读取状态</button><button id="read-apps" class="secondary" type="button" data-connected disabled>读取应用</button><a id="device-link" class="button secondary" target="_blank" rel="noopener noreferrer" hidden>打开设备后台 ↗</a></div><p id="serial-support" class="small"></p><p id="config-message" class="notice" role="status">连接后可读取设备信息；配置不会自动写入。</p><dl class="device-stats"><div><dt>芯片</dt><dd id="status-chip">—</dd></div><div><dt>固件</dt><dd id="status-version">—</dd></div><div><dt>IP</dt><dd id="status-ip">—</dd></div><div><dt>亮度</dt><dd id="status-brightness">—</dd></div><div><dt>默认主题</dt><dd id="status-theme">—</dd></div><div><dt>时区</dt><dd id="status-timezone">—</dd></div></dl></div>
+      <div class="config-grid">
+        <article class="card"><div class="card-heading"><h3>显示与播放</h3><span class="small">非密码设置</span></div><form id="settings-form"><div class="form-grid"><label>亮度 <span class="field-hint">1–255</span><input id="brightness" type="number" min="1" max="255" value="80" required></label><label>时区 <span class="field-hint">POSIX</span><input id="timezone" value="CST-8" maxlength="63" required spellcheck="false"></label><label class="full">默认主题<select id="device-theme"><option value="-1">内置基础时钟</option></select></label><label class="full">轮换间隔（分钟）<input id="rotation" type="number" min="0" max="1440" value="0" required><small>0 为固定主题；轮换主题池需在设备后台设置。</small></label></div><button class="primary" type="submit" data-connected disabled>保存显示设置</button></form><div class="file-actions"><button id="export-settings" type="button" class="text-button">↓ 导出配置</button><button id="import-settings" type="button" class="text-button">↑ 导入草稿</button><input id="settings-file" type="file" accept="application/json,.json" hidden><span>导入后需手动保存</span></div></article>
+        <article class="card"><h3>Wi-Fi 配网</h3><form id="wifi-form" autocomplete="off"><label>网络名称（SSID）<input id="wifi-ssid" maxlength="32" required autocomplete="off"></label><label>密码<input id="wifi-password" type="password" maxlength="63" autocomplete="new-password" placeholder="开放网络可留空"></label><p class="note">连接成功后由设备保存。密码不包含在导出文件中，发送后输入框会清空。</p><button class="primary" type="submit" data-connected disabled>连接此 Wi-Fi</button></form><div class="backend-note"><strong>在设备后台安装主题</strong><p>配网完成后读取状态，点击「打开设备后台」。此 HTTPS 页面通过 USB 串口配置设备；设备后台在本地 HTTP 新标签页打开。</p></div></article>
+        <article class="card panel-card"><h3>屏幕颜色与驱动 <span class="tag">S3 v0.9.7+</span></h3><p id="panel-support" class="note">读取设备状态后，支持的 ESP32-S3 固件将开放此设置。</p><form id="panel-form"><fieldset id="panel-fields" disabled><div class="form-grid"><label>RGB 颜色顺序<select id="panel-rgb"><option>RGB</option><option>RBG</option><option>GRB</option><option>GBR</option><option>BRG</option><option>BGR</option></select></label><label>屏幕驱动<select id="panel-driver"><option value="0">SHIFTREG</option><option value="1">FM6124</option><option value="2">FM6126A</option><option value="3">ICN2038S</option><option value="4">MBI5124</option><option value="5">SM5266P</option><option value="6">DP3246 / SM5368</option><option value="7">GPIO_SCAN</option><option value="8">CLOCKWISE</option><option value="9">PROTOMATTER</option></select></label></div><button type="submit" class="secondary">保存屏幕设置并重启</button></fieldset></form></article>
+        <article class="card log-card"><div class="card-heading"><h3>串口记录</h3><button id="clear-log" class="text-button" type="button">清空</button></div><p class="small">只显示操作与必要的协议响应，省略普通设备日志内容；最多保留 200 条。</p><div id="serial-log" class="serial-log" role="log" aria-label="串口操作记录"></div></article>
+      </div>
+    </section>
+    <footer class="footer"><span><i></i> Clockwise · 64 × 64 像素时钟</span><a href="https://github.com/AntonVanke/HUB-75E" target="_blank" rel="noopener noreferrer">开源项目 ↗</a></footer>
+  </main>
+</body>
+</html>

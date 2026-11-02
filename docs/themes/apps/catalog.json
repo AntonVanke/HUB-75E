@@ -1,0 +1,1478 @@
+{
+  "format": "clockwise-theme-app-catalog",
+  "version": 1,
+  "width": 64,
+  "height": 64,
+  "apps": [
+    {
+      "index": 0,
+      "packageName": "org.clockwise.particle-time",
+      "id": "particle-time",
+      "title": "Particle Time",
+      "appVersion": "1.0.0",
+      "description": "流动星尘与大字时钟",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "粒子",
+      "path": "/HUB-75E/themes/apps/particle-time.cwp",
+      "archivePath": "/HUB-75E/themes/apps/particle-time.zip",
+      "bytes": 82115,
+      "preinstalled": false
+    },
+    {
+      "index": 1,
+      "packageName": "org.clockwise.zelda-sunrise",
+      "id": "zelda-sunrise",
+      "title": "Zelda-Sunrise",
+      "appVersion": "1.0.0",
+      "description": "原版风景 · 缓慢分层流云 · 独立滑翔与振翅",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "风景",
+      "path": "/HUB-75E/themes/apps/zelda-sunrise.cwp",
+      "archivePath": "/HUB-75E/themes/apps/zelda-sunrise.zip",
+      "bytes": 14773,
+      "preinstalled": false
+    },
+    {
+      "index": 2,
+      "packageName": "org.clockwise.gta-vi",
+      "id": "gta-vi",
+      "title": "GTA · 罪城海岸",
+      "appVersion": "1.0.0",
+      "description": "罪城海岸 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "游戏风景",
+      "path": "/HUB-75E/themes/apps/gta-vi.cwp",
+      "archivePath": "/HUB-75E/themes/apps/gta-vi.zip",
+      "bytes": 10476,
+      "preinstalled": false
+    },
+    {
+      "index": 3,
+      "packageName": "org.clockwise.rainy-window",
+      "id": "rainy-window",
+      "title": "Rainy Window",
+      "appVersion": "1.0.0",
+      "description": "窗外落雨、摇曳烛火与数字时钟",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "粒子",
+      "path": "/HUB-75E/themes/apps/rainy-window.cwp",
+      "archivePath": "/HUB-75E/themes/apps/rainy-window.zip",
+      "bytes": 13177,
+      "preinstalled": false
+    },
+    {
+      "index": 4,
+      "packageName": "org.clockwise.codex",
+      "id": "codex",
+      "title": "Codex",
+      "appVersion": "1.0.0",
+      "description": "终端打字、闪烁光标与状态数据",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "文字",
+      "path": "/HUB-75E/themes/apps/codex.cwp",
+      "archivePath": "/HUB-75E/themes/apps/codex.zip",
+      "bytes": 14759,
+      "preinstalled": false
+    },
+    {
+      "index": 5,
+      "packageName": "org.clockwise.minecraft-village",
+      "id": "minecraft-village",
+      "title": "Minecraft · 山谷村庄",
+      "appVersion": "1.0.0",
+      "description": "山谷村庄 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "游戏风景",
+      "path": "/HUB-75E/themes/apps/minecraft-village.cwp",
+      "archivePath": "/HUB-75E/themes/apps/minecraft-village.zip",
+      "bytes": 10846,
+      "preinstalled": false
+    },
+    {
+      "index": 6,
+      "packageName": "org.clockwise.zootopia",
+      "id": "zootopia",
+      "title": "Zootopia",
+      "appVersion": "1.0.0",
+      "description": "原版像素肖像 · Lua 心跳、独立眨眼、分钟互动",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "角色",
+      "path": "/HUB-75E/themes/apps/zootopia.cwp",
+      "archivePath": "/HUB-75E/themes/apps/zootopia.zip",
+      "bytes": 16564,
+      "preinstalled": false
+    },
+    {
+      "index": 7,
+      "packageName": "org.clockwise.twinkle-twinkle",
+      "id": "twinkle-twinkle",
+      "title": "Twinkle Twinkle",
+      "appVersion": "1.0.0",
+      "description": "小星星、浮动角色与时间",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "粒子",
+      "path": "/HUB-75E/themes/apps/twinkle-twinkle.cwp",
+      "archivePath": "/HUB-75E/themes/apps/twinkle-twinkle.zip",
+      "bytes": 11670,
+      "preinstalled": false
+    },
+    {
+      "index": 8,
+      "packageName": "org.clockwise.hello-kitty",
+      "id": "hello-kitty",
+      "title": "Hello Kitty",
+      "appVersion": "1.0.0",
+      "description": "猫咪眨眼与粉色日期",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "角色",
+      "path": "/HUB-75E/themes/apps/hello-kitty.cwp",
+      "archivePath": "/HUB-75E/themes/apps/hello-kitty.zip",
+      "bytes": 19123,
+      "preinstalled": false
+    },
+    {
+      "index": 9,
+      "packageName": "org.clockwise.labubu-zimomo",
+      "id": "labubu-zimomo",
+      "title": "Labubu-Zimomo",
+      "appVersion": "1.0.0",
+      "description": "长耳角色与呼吸动画",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "角色",
+      "path": "/HUB-75E/themes/apps/labubu-zimomo.cwp",
+      "archivePath": "/HUB-75E/themes/apps/labubu-zimomo.zip",
+      "bytes": 12962,
+      "preinstalled": false
+    },
+    {
+      "index": 10,
+      "packageName": "org.clockwise.kirby",
+      "id": "kirby",
+      "title": "Kirby",
+      "appVersion": "1.0.0",
+      "description": "粉色圆球角色与弹跳",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "角色",
+      "path": "/HUB-75E/themes/apps/kirby.cwp",
+      "archivePath": "/HUB-75E/themes/apps/kirby.zip",
+      "bytes": 43718,
+      "preinstalled": false
+    },
+    {
+      "index": 11,
+      "packageName": "org.clockwise.girl",
+      "id": "girl",
+      "title": "Girl",
+      "appVersion": "1.0.0",
+      "description": "Lua 一秒一拍，保留原版动作像素",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "角色",
+      "path": "/HUB-75E/themes/apps/girl.cwp",
+      "archivePath": "/HUB-75E/themes/apps/girl.zip",
+      "bytes": 23220,
+      "preinstalled": false
+    },
+    {
+      "index": 12,
+      "packageName": "org.clockwise.shar-pei-dog",
+      "id": "shar-pei-dog",
+      "title": "Shar Pei Dog",
+      "appVersion": "1.0.0",
+      "description": "小狗眨眼与轻微起伏",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "角色",
+      "path": "/HUB-75E/themes/apps/shar-pei-dog.cwp",
+      "archivePath": "/HUB-75E/themes/apps/shar-pei-dog.zip",
+      "bytes": 19830,
+      "preinstalled": false
+    },
+    {
+      "index": 13,
+      "packageName": "org.clockwise.pikachu",
+      "id": "pikachu",
+      "title": "Pikachu",
+      "appVersion": "1.0.0",
+      "description": "Lua 一秒一拍，保留原版动作像素",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "角色",
+      "path": "/HUB-75E/themes/apps/pikachu.cwp",
+      "archivePath": "/HUB-75E/themes/apps/pikachu.zip",
+      "bytes": 39956,
+      "preinstalled": false
+    },
+    {
+      "index": 14,
+      "packageName": "org.clockwise.pepsi",
+      "id": "pepsi",
+      "title": "Pepsi",
+      "appVersion": "1.0.0",
+      "description": "双色徽章、气泡与秒钟",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "生活",
+      "path": "/HUB-75E/themes/apps/pepsi.cwp",
+      "archivePath": "/HUB-75E/themes/apps/pepsi.zip",
+      "bytes": 11231,
+      "preinstalled": false
+    },
+    {
+      "index": 15,
+      "packageName": "org.clockwise.coffee",
+      "id": "coffee",
+      "title": "Coffee",
+      "appVersion": "1.0.0",
+      "description": "咖啡杯、蒸汽与温度数据",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "生活",
+      "path": "/HUB-75E/themes/apps/coffee.cwp",
+      "archivePath": "/HUB-75E/themes/apps/coffee.zip",
+      "bytes": 9964,
+      "preinstalled": false
+    },
+    {
+      "index": 16,
+      "packageName": "org.clockwise.minecraft-torch",
+      "id": "minecraft-torch",
+      "title": "Minecraft-Torch",
+      "appVersion": "1.0.0",
+      "description": "砖墙缓存与火焰粒子",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "粒子",
+      "path": "/HUB-75E/themes/apps/minecraft-torch.cwp",
+      "archivePath": "/HUB-75E/themes/apps/minecraft-torch.zip",
+      "bytes": 43043,
+      "preinstalled": false
+    },
+    {
+      "index": 17,
+      "packageName": "org.clockwise.transformer",
+      "id": "transformer",
+      "title": "Transformer",
+      "appVersion": "1.0.0",
+      "description": "卡车与机器人定时变形",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "角色",
+      "path": "/HUB-75E/themes/apps/transformer.cwp",
+      "archivePath": "/HUB-75E/themes/apps/transformer.zip",
+      "bytes": 122760,
+      "preinstalled": false
+    },
+    {
+      "index": 18,
+      "packageName": "org.clockwise.nyan-cat",
+      "id": "nyan-cat",
+      "title": "Nyan Cat",
+      "appVersion": "1.0.0",
+      "description": "彩虹拖尾、星空与滚动文字",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "角色",
+      "path": "/HUB-75E/themes/apps/nyan-cat.cwp",
+      "archivePath": "/HUB-75E/themes/apps/nyan-cat.zip",
+      "bytes": 19326,
+      "preinstalled": false
+    },
+    {
+      "index": 19,
+      "packageName": "org.clockwise.snoopy",
+      "id": "snoopy",
+      "title": "Snoopy",
+      "appVersion": "1.0.0",
+      "description": "屋顶小狗与飘动睡眠符号",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "角色",
+      "path": "/HUB-75E/themes/apps/snoopy.cwp",
+      "archivePath": "/HUB-75E/themes/apps/snoopy.zip",
+      "bytes": 6205,
+      "preinstalled": false
+    },
+    {
+      "index": 20,
+      "packageName": "org.clockwise.retro-computer",
+      "id": "retro-computer",
+      "title": "Retro Computer",
+      "appVersion": "1.0.0",
+      "description": "CRT 显示器与扫描线",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "文字",
+      "path": "/HUB-75E/themes/apps/retro-computer.cwp",
+      "archivePath": "/HUB-75E/themes/apps/retro-computer.zip",
+      "bytes": 8494,
+      "preinstalled": false
+    },
+    {
+      "index": 21,
+      "packageName": "org.clockwise.pokedex",
+      "id": "pokedex",
+      "title": "Pokedex",
+      "appVersion": "1.0.0",
+      "description": "双屏图鉴、指示灯与交互按钮",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "角色",
+      "path": "/HUB-75E/themes/apps/pokedex.cwp",
+      "archivePath": "/HUB-75E/themes/apps/pokedex.zip",
+      "bytes": 17718,
+      "preinstalled": false
+    },
+    {
+      "index": 22,
+      "packageName": "org.clockwise.clock-tower",
+      "id": "clock-tower",
+      "title": "Clock Tower",
+      "appVersion": "1.0.0",
+      "description": "模拟表盘与连续秒针",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "时钟",
+      "path": "/HUB-75E/themes/apps/clock-tower.cwp",
+      "archivePath": "/HUB-75E/themes/apps/clock-tower.zip",
+      "bytes": 8191,
+      "preinstalled": false
+    },
+    {
+      "index": 23,
+      "packageName": "org.clockwise.time-in-words",
+      "id": "time-in-words",
+      "title": "Time In Words",
+      "appVersion": "1.0.0",
+      "description": "时间映射、单词排版与日期",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "文字",
+      "path": "/HUB-75E/themes/apps/time-in-words.cwp",
+      "archivePath": "/HUB-75E/themes/apps/time-in-words.zip",
+      "bytes": 4557,
+      "preinstalled": false
+    },
+    {
+      "index": 24,
+      "packageName": "org.clockwise.world-map",
+      "id": "world-map",
+      "title": "World Map",
+      "appVersion": "1.0.0",
+      "description": "UTC 太阳赤纬与均时差 · 真实晨昏线及民用曙暮光",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "风景",
+      "path": "/HUB-75E/themes/apps/world-map.cwp",
+      "archivePath": "/HUB-75E/themes/apps/world-map.zip",
+      "bytes": 6213,
+      "preinstalled": true
+    },
+    {
+      "index": 25,
+      "packageName": "org.clockwise.pacman",
+      "id": "pacman",
+      "title": "Pac-Man",
+      "appVersion": "1.0.0",
+      "description": "原版蓝黄迷宫 · 强化六色闪烁 · 自主觅食、避险与追击",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "游戏",
+      "path": "/HUB-75E/themes/apps/pacman.cwp",
+      "archivePath": "/HUB-75E/themes/apps/pacman.zip",
+      "bytes": 23755,
+      "preinstalled": true
+    },
+    {
+      "index": 26,
+      "packageName": "org.clockwise.super-mario",
+      "id": "super-mario",
+      "title": "Super Mario",
+      "appVersion": "1.0.0",
+      "description": "持续奔跑与独立视差图层；仅在小时或分钟变化时跳起顶对应时间方块",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "游戏",
+      "path": "/HUB-75E/themes/apps/super-mario.cwp",
+      "archivePath": "/HUB-75E/themes/apps/super-mario.zip",
+      "bytes": 12321,
+      "preinstalled": true
+    },
+    {
+      "index": 27,
+      "packageName": "org.clockwise.cyberpunk-night-city",
+      "id": "cyberpunk-night-city",
+      "title": "赛博朋克 · 夜之城",
+      "appVersion": "1.0.0",
+      "description": "夜之城 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "游戏风景",
+      "path": "/HUB-75E/themes/apps/cyberpunk-night-city.cwp",
+      "archivePath": "/HUB-75E/themes/apps/cyberpunk-night-city.zip",
+      "bytes": 11495,
+      "preinstalled": false
+    },
+    {
+      "index": 28,
+      "packageName": "org.clockwise.elden-ring",
+      "id": "elden-ring",
+      "title": "艾尔登法环 · 黄金树",
+      "appVersion": "1.0.0",
+      "description": "黄金树 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "游戏风景",
+      "path": "/HUB-75E/themes/apps/elden-ring.cwp",
+      "archivePath": "/HUB-75E/themes/apps/elden-ring.zip",
+      "bytes": 10829,
+      "preinstalled": false
+    },
+    {
+      "index": 29,
+      "packageName": "org.clockwise.hollow-knight-silksong",
+      "id": "hollow-knight-silksong",
+      "title": "空洞骑士 · 丝之歌",
+      "appVersion": "1.0.0",
+      "description": "丝之歌 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "游戏风景",
+      "path": "/HUB-75E/themes/apps/hollow-knight-silksong.cwp",
+      "archivePath": "/HUB-75E/themes/apps/hollow-knight-silksong.zip",
+      "bytes": 11626,
+      "preinstalled": false
+    },
+    {
+      "index": 30,
+      "packageName": "org.clockwise.stardew-valley",
+      "id": "stardew-valley",
+      "title": "星露谷 · 秋日农场",
+      "appVersion": "1.0.0",
+      "description": "秋日农场 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "游戏风景",
+      "path": "/HUB-75E/themes/apps/stardew-valley.cwp",
+      "archivePath": "/HUB-75E/themes/apps/stardew-valley.zip",
+      "bytes": 10800,
+      "preinstalled": false
+    },
+    {
+      "index": 31,
+      "packageName": "org.clockwise.terraria",
+      "id": "terraria",
+      "title": "泰拉瑞亚 · 空岛",
+      "appVersion": "1.0.0",
+      "description": "空岛 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "游戏风景",
+      "path": "/HUB-75E/themes/apps/terraria.cwp",
+      "archivePath": "/HUB-75E/themes/apps/terraria.zip",
+      "bytes": 10501,
+      "preinstalled": false
+    },
+    {
+      "index": 32,
+      "packageName": "org.clockwise.genshin-impact",
+      "id": "genshin-impact",
+      "title": "原神 · 蒙德城",
+      "appVersion": "1.0.0",
+      "description": "蒙德城 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "游戏风景",
+      "path": "/HUB-75E/themes/apps/genshin-impact.cwp",
+      "archivePath": "/HUB-75E/themes/apps/genshin-impact.zip",
+      "bytes": 10892,
+      "preinstalled": false
+    },
+    {
+      "index": 33,
+      "packageName": "org.clockwise.final-fantasy-vii",
+      "id": "final-fantasy-vii",
+      "title": "最终幻想 VII · 米德加",
+      "appVersion": "1.0.0",
+      "description": "米德加 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "游戏风景",
+      "path": "/HUB-75E/themes/apps/final-fantasy-vii.cwp",
+      "archivePath": "/HUB-75E/themes/apps/final-fantasy-vii.zip",
+      "bytes": 10967,
+      "preinstalled": false
+    },
+    {
+      "index": 34,
+      "packageName": "org.clockwise.black-myth-wukong",
+      "id": "black-myth-wukong",
+      "title": "黑神话悟空 · 山寺",
+      "appVersion": "1.0.0",
+      "description": "山寺 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "游戏风景",
+      "path": "/HUB-75E/themes/apps/black-myth-wukong.cwp",
+      "archivePath": "/HUB-75E/themes/apps/black-myth-wukong.zip",
+      "bytes": 11085,
+      "preinstalled": false
+    },
+    {
+      "index": 35,
+      "packageName": "org.clockwise.monster-hunter",
+      "id": "monster-hunter",
+      "title": "怪物猎人 · 古代森林",
+      "appVersion": "1.0.0",
+      "description": "古代森林 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "游戏风景",
+      "path": "/HUB-75E/themes/apps/monster-hunter.cwp",
+      "archivePath": "/HUB-75E/themes/apps/monster-hunter.zip",
+      "bytes": 11173,
+      "preinstalled": false
+    },
+    {
+      "index": 36,
+      "packageName": "org.clockwise.death-stranding",
+      "id": "death-stranding",
+      "title": "死亡搁浅 · 寂静山谷",
+      "appVersion": "1.0.0",
+      "description": "寂静山谷 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "游戏风景",
+      "path": "/HUB-75E/themes/apps/death-stranding.cwp",
+      "archivePath": "/HUB-75E/themes/apps/death-stranding.zip",
+      "bytes": 11357,
+      "preinstalled": false
+    },
+    {
+      "index": 37,
+      "packageName": "org.clockwise.star-wars",
+      "id": "star-wars",
+      "title": "星球大战 · 双日落",
+      "appVersion": "1.0.0",
+      "description": "双日落 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "影视风景",
+      "path": "/HUB-75E/themes/apps/star-wars.cwp",
+      "archivePath": "/HUB-75E/themes/apps/star-wars.zip",
+      "bytes": 9306,
+      "preinstalled": false
+    },
+    {
+      "index": 38,
+      "packageName": "org.clockwise.blade-runner",
+      "id": "blade-runner",
+      "title": "银翼杀手 · 雨夜城市",
+      "appVersion": "1.0.0",
+      "description": "雨夜城市 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "影视风景",
+      "path": "/HUB-75E/themes/apps/blade-runner.cwp",
+      "archivePath": "/HUB-75E/themes/apps/blade-runner.zip",
+      "bytes": 11441,
+      "preinstalled": false
+    },
+    {
+      "index": 39,
+      "packageName": "org.clockwise.dune",
+      "id": "dune",
+      "title": "沙丘 · 厄拉科斯",
+      "appVersion": "1.0.0",
+      "description": "厄拉科斯 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "影视风景",
+      "path": "/HUB-75E/themes/apps/dune.cwp",
+      "archivePath": "/HUB-75E/themes/apps/dune.zip",
+      "bytes": 9708,
+      "preinstalled": false
+    },
+    {
+      "index": 40,
+      "packageName": "org.clockwise.lord-of-the-rings",
+      "id": "lord-of-the-rings",
+      "title": "指环王 · 瑞文戴尔",
+      "appVersion": "1.0.0",
+      "description": "瑞文戴尔 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "影视风景",
+      "path": "/HUB-75E/themes/apps/lord-of-the-rings.cwp",
+      "archivePath": "/HUB-75E/themes/apps/lord-of-the-rings.zip",
+      "bytes": 11316,
+      "preinstalled": false
+    },
+    {
+      "index": 41,
+      "packageName": "org.clockwise.avatar-pandora",
+      "id": "avatar-pandora",
+      "title": "阿凡达 · 潘多拉",
+      "appVersion": "1.0.0",
+      "description": "潘多拉 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "影视风景",
+      "path": "/HUB-75E/themes/apps/avatar-pandora.cwp",
+      "archivePath": "/HUB-75E/themes/apps/avatar-pandora.zip",
+      "bytes": 11323,
+      "preinstalled": false
+    },
+    {
+      "index": 42,
+      "packageName": "org.clockwise.stranger-things",
+      "id": "stranger-things",
+      "title": "怪奇物语 · 颠倒世界",
+      "appVersion": "1.0.0",
+      "description": "颠倒世界 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "影视风景",
+      "path": "/HUB-75E/themes/apps/stranger-things.cwp",
+      "archivePath": "/HUB-75E/themes/apps/stranger-things.zip",
+      "bytes": 10917,
+      "preinstalled": false
+    },
+    {
+      "index": 43,
+      "packageName": "org.clockwise.wednesday",
+      "id": "wednesday",
+      "title": "星期三 · 永封学院",
+      "appVersion": "1.0.0",
+      "description": "永封学院 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "影视风景",
+      "path": "/HUB-75E/themes/apps/wednesday.cwp",
+      "archivePath": "/HUB-75E/themes/apps/wednesday.zip",
+      "bytes": 11071,
+      "preinstalled": false
+    },
+    {
+      "index": 44,
+      "packageName": "org.clockwise.arcane",
+      "id": "arcane",
+      "title": "双城之战 · 皮城与祖安",
+      "appVersion": "1.0.0",
+      "description": "皮城与祖安 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "影视风景",
+      "path": "/HUB-75E/themes/apps/arcane.cwp",
+      "archivePath": "/HUB-75E/themes/apps/arcane.zip",
+      "bytes": 11270,
+      "preinstalled": false
+    },
+    {
+      "index": 45,
+      "packageName": "org.clockwise.one-piece",
+      "id": "one-piece",
+      "title": "海贼王 · 千阳号",
+      "appVersion": "1.0.0",
+      "description": "千阳号 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "影视风景",
+      "path": "/HUB-75E/themes/apps/one-piece.cwp",
+      "archivePath": "/HUB-75E/themes/apps/one-piece.zip",
+      "bytes": 10535,
+      "preinstalled": false
+    },
+    {
+      "index": 46,
+      "packageName": "org.clockwise.harry-potter",
+      "id": "harry-potter",
+      "title": "哈利波特 · 霍格沃茨",
+      "appVersion": "1.0.0",
+      "description": "霍格沃茨 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "影视风景",
+      "path": "/HUB-75E/themes/apps/harry-potter.cwp",
+      "archivePath": "/HUB-75E/themes/apps/harry-potter.zip",
+      "bytes": 10725,
+      "preinstalled": false
+    },
+    {
+      "index": 47,
+      "packageName": "org.clockwise.mario-1-1",
+      "id": "mario-1-1",
+      "title": "超级马里奥 · 全 32 关",
+      "appVersion": "1.4.0",
+      "description": "1-1 至 8-4 · 32 关连续通关 · 碰撞、踩怪、移动平台与水下操作 · 当前区域按需加载；低内存设备以 30 FPS 运行，复杂场景建议使用 ESP32-S3；性能尚未逐关实机认证。",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 32768,
+        "targetFps": 30
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "游戏",
+      "path": "/HUB-75E/themes/apps/mario-1-1.cwp",
+      "archivePath": "/HUB-75E/themes/apps/mario-1-1.zip",
+      "bytes": 67262,
+      "preinstalled": false
+    },
+    {
+      "index": 48,
+      "packageName": "org.clockwise.spider-man-2",
+      "id": "spider-man-2",
+      "title": "漫威蜘蛛侠 2 · 纽约守望",
+      "appVersion": "1.0.0",
+      "description": "纽约屋顶 · 十二个独立人体姿势 · 蓄力、起跳、射丝、摆荡、松手、三点落地",
+      "author": "Clockwise Theme Studio",
+      "runtimeApi": 1,
+      "requirements": {
+        "chips": [
+          "esp32",
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "luaHeapBytes": 131072,
+        "luaWorkingBytes": 65536,
+        "graphicsBytes": 49152,
+        "targetFps": 60
+      },
+      "requirementsDeclared": true,
+      "verification": {
+        "status": "unverified"
+      },
+      "category": "游戏",
+      "path": "/HUB-75E/themes/apps/spider-man-2.cwp",
+      "archivePath": "/HUB-75E/themes/apps/spider-man-2.zip",
+      "bytes": 36653,
+      "preinstalled": false
+    }
+  ]
+}

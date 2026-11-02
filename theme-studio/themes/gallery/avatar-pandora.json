@@ -1,0 +1,23 @@
+{
+  "format": "clockwise-theme-project",
+  "version": 3,
+  "id": "avatar-pandora",
+  "title": "阿凡达 · 潘多拉",
+  "width": 64,
+  "height": 64,
+  "fps": 60,
+  "reference": "",
+  "category": "影视风景",
+  "description": "潘多拉 · 局部水波、场景动效与随机相位",
+  "sourceMode": "lua",
+  "libraries": [
+    "core"
+  ],
+  "assets": [],
+  "media": [
+    "avatar-pandora"
+  ],
+  "data": {},
+  "source": "local hm,phase,nextFlash,flashEnd\nfunction minute() hm=clock.format(\"%H:%M\") end\nfunction start()\n  minute();phase=rng.int(0,63);nextFlash=rng.int(3,7);flashEnd=0\n  fx.create(\"atmosphere\",14,0,0,64,48,0.2,-0.5,\"#7af0df\",\"dot\")\nend\nfunction button(key) if key==\"A\" then phase=rng.int(0,63) end end\nfunction draw()\n  local t=clock.millis()/1000\n  media.draw(\"avatar-pandora\",0,0,0)\n  local q=(t*5+phase)%16\n  gfx.wave(23,37,30,13,q,1,12,7)\n  for i=0,4 do local y=46-(t*1.4+i*8)%39;local x=10+i*10+math.sin(t*.6+i)*3\n    gfx.pixel(x,y,\"#c4efe8\");gfx.pixel(x,y+1,\"#66bfb8\") end\n  local a=t*.5;gfx.pixel(14+math.sin(a)*3,35,\"#e699d8\")\n  fx.draw(\"atmosphere\")\n  gfx.text(14,54,hm,\"#041019\",2)\n  gfx.text(13,53,hm,\"#7af0df\",2)\nend\n",
+  "fidelity": "64×64 像素风景，Lua 场景运动与原生 RGB565 局部特效"
+}

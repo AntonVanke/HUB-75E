@@ -1,0 +1,23 @@
+{
+  "format": "clockwise-theme-project",
+  "version": 3,
+  "id": "harry-potter",
+  "title": "哈利波特 · 霍格沃茨",
+  "width": 64,
+  "height": 64,
+  "fps": 60,
+  "reference": "",
+  "category": "影视风景",
+  "description": "霍格沃茨 · 局部水波、场景动效与随机相位",
+  "sourceMode": "lua",
+  "libraries": [
+    "core"
+  ],
+  "assets": [],
+  "media": [
+    "harry-potter"
+  ],
+  "data": {},
+  "source": "local hm,phase,nextFlash,flashEnd\nfunction minute() hm=clock.format(\"%H:%M\") end\nfunction start()\n  minute();phase=rng.int(0,63);nextFlash=rng.int(3,7);flashEnd=0\n  fx.create(\"atmosphere\",9,0,0,64,48,0.3,1,\"#e3d9fa\",\"dot\")\nend\nfunction button(key) if key==\"A\" then phase=rng.int(0,63) end end\nfunction draw()\n  local t=clock.millis()/1000\n  media.draw(\"harry-potter\",0,0,0)\n  local q=(t*5+phase)%16\n  gfx.wave(11,40,43,10,q,1,10,6)\n  local x=(t*2+phase)%76-6;local y=12+math.sin(t*.5)*2;local w=math.floor(t*3)%3-1\n  gfx.rect(x,y,2,2,\"#d0d0dc\");gfx.line(x-2,y+w,x,y,\"#aaafca\");gfx.line(x+1,y,x+3,y+w,\"#aaafca\")\n  if math.floor(t)%4<2 then gfx.pixel(40,28,\"#edc895\");gfx.pixel(48,30,\"#dfbb89\") end\n  fx.draw(\"atmosphere\")\n  gfx.text(14,54,hm,\"#041019\",2)\n  gfx.text(13,53,hm,\"#e3d9fa\",2)\nend\n",
+  "fidelity": "64×64 像素风景，Lua 场景运动与原生 RGB565 局部特效"
+}

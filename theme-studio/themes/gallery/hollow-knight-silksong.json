@@ -1,0 +1,23 @@
+{
+  "format": "clockwise-theme-project",
+  "version": 3,
+  "id": "hollow-knight-silksong",
+  "title": "空洞骑士 · 丝之歌",
+  "width": 64,
+  "height": 64,
+  "fps": 60,
+  "reference": "",
+  "category": "游戏风景",
+  "description": "丝之歌 · 局部水波、场景动效与随机相位",
+  "sourceMode": "lua",
+  "libraries": [
+    "core"
+  ],
+  "assets": [],
+  "media": [
+    "hollow-knight-silksong"
+  ],
+  "data": {},
+  "source": "local hm,phase,nextFlash,flashEnd\nfunction minute() hm=clock.format(\"%H:%M\") end\nfunction start()\n  minute();phase=rng.int(0,63);nextFlash=rng.int(3,7);flashEnd=0\n  fx.create(\"atmosphere\",13,0,0,64,49,0.25,-0.6,\"#8de9df\",\"dot\")\nend\nfunction button(key) if key==\"A\" then phase=rng.int(0,63) end end\nfunction draw()\n  local t=clock.millis()/1000\n  media.draw(\"hollow-knight-silksong\",0,0,0)\n  local q=(t*5+phase)%16\n  gfx.wave(27,37,24,13,q,1,10,5)\n  for i=0,2 do local x=15+i*16+math.sin(t*.6+i)\n    gfx.line(x,0,x,6+i*2,\"#6f9baf\");gfx.pixel(x,7+i*2,\"#bedee7\") end\n  local x=31+math.sin(t*.9)*6;local y=23+math.sin(t*1.3)*2\n  gfx.pixel(x,y,\"#a9d5df\");gfx.pixel(x-1,y-math.floor(t*4)%2,\"#719eb5\")\n  fx.draw(\"atmosphere\")\n  gfx.text(14,54,hm,\"#041019\",2)\n  gfx.text(13,53,hm,\"#8de9df\",2)\nend\n",
+  "fidelity": "64×64 像素风景，Lua 场景运动与原生 RGB565 局部特效"
+}

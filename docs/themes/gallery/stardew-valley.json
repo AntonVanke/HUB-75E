@@ -1,0 +1,23 @@
+{
+  "format": "clockwise-theme-project",
+  "version": 3,
+  "id": "stardew-valley",
+  "title": "星露谷 · 秋日农场",
+  "width": 64,
+  "height": 64,
+  "fps": 60,
+  "reference": "",
+  "category": "游戏风景",
+  "description": "秋日农场 · 局部水波、场景动效与随机相位",
+  "sourceMode": "lua",
+  "libraries": [
+    "core"
+  ],
+  "assets": [],
+  "media": [
+    "stardew-valley"
+  ],
+  "data": {},
+  "source": "local hm,phase,nextFlash,flashEnd\nfunction minute() hm=clock.format(\"%H:%M\") end\nfunction start()\n  minute();phase=rng.int(0,63);nextFlash=rng.int(3,7);flashEnd=0\n  fx.create(\"atmosphere\",8,0,10,64,38,0.65,1.1,\"#ffcf7f\",\"dot\")\nend\nfunction button(key) if key==\"A\" then phase=rng.int(0,63) end end\nfunction draw()\n  local t=clock.millis()/1000\n  media.draw(\"stardew-valley\",0,0,0)\n  local q=(t*5+phase)%16\n  gfx.wave(10,34,14,16,q,1,10,5)\n  for i=0,4 do local y=9+(t*2+i*8)%38;local x=9+i*10+math.sin(t*.7+i)*3\n    gfx.line(x,y,x+1,y+math.floor(t*2+i)%2,\"#d99c51\") end\n  fx.draw(\"atmosphere\")\n  gfx.text(14,54,hm,\"#041019\",2)\n  gfx.text(13,53,hm,\"#ffcf7f\",2)\nend\n",
+  "fidelity": "64×64 像素风景，Lua 场景运动与原生 RGB565 局部特效"
+}

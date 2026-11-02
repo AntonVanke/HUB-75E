@@ -1,0 +1,23 @@
+{
+  "format": "clockwise-theme-project",
+  "version": 3,
+  "id": "star-wars",
+  "title": "星球大战 · 双日落",
+  "width": 64,
+  "height": 64,
+  "fps": 60,
+  "reference": "",
+  "category": "影视风景",
+  "description": "双日落 · 局部水波、场景动效与随机相位",
+  "sourceMode": "lua",
+  "libraries": [
+    "core"
+  ],
+  "assets": [],
+  "media": [
+    "star-wars"
+  ],
+  "data": {},
+  "source": "local hm,phase,nextFlash,flashEnd\nfunction minute() hm=clock.format(\"%H:%M\") end\nfunction start()\n  minute();phase=rng.int(0,63);nextFlash=rng.int(3,7);flashEnd=0\n  fx.create(\"atmosphere\",5,0,3,64,16,0.15,0,\"#f6bd7b\",\"dot\")\nend\nfunction button(key) if key==\"A\" then phase=rng.int(0,63) end end\nfunction draw()\n  local t=clock.millis()/1000\n  media.draw(\"star-wars\",0,0,0)\n  local q=(t*5+phase)%16\n  gfx.wave(14,34,43,5,(t*3)%16,1,14,0)\n  local x=(t*4+phase)%80-8\n  gfx.line(x,43,x+6,43,\"#835b53\");gfx.line(x+1,42,x+4,42,\"#c99877\");gfx.pixel(x+4,41,\"#574c4b\")\n  gfx.line(x-3,44,x-1,44,\"#c38462\")\n  for i=0,2 do local x=(t*1.8+i*21+phase)%64;gfx.pixel(x,47+i,\"#b27c63\") end\n  fx.draw(\"atmosphere\")\n  gfx.text(14,54,hm,\"#041019\",2)\n  gfx.text(13,53,hm,\"#f6bd7b\",2)\nend\n",
+  "fidelity": "64×64 像素风景，Lua 场景运动与原生 RGB565 局部特效"
+}

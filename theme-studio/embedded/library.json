@@ -1,0 +1,11 @@
+{
+  "name": "ClockwiseThemeRuntime",
+  "version": "0.4.0",
+  "description": "Lua 5.3 theme execution and graphics host for a 64x64 matrix",
+  "build": {
+    "srcDir": "src",
+    "flags": "-DLUA_INT_TYPE=LUA_INT_INT"
+  },
+  "frameworks": "*",
+  "platforms": "*"
+}

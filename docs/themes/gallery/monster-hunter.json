@@ -1,0 +1,23 @@
+{
+  "format": "clockwise-theme-project",
+  "version": 3,
+  "id": "monster-hunter",
+  "title": "怪物猎人 · 古代森林",
+  "width": 64,
+  "height": 64,
+  "fps": 60,
+  "reference": "",
+  "category": "游戏风景",
+  "description": "古代森林 · 局部水波、场景动效与随机相位",
+  "sourceMode": "lua",
+  "libraries": [
+    "core"
+  ],
+  "assets": [],
+  "media": [
+    "monster-hunter"
+  ],
+  "data": {},
+  "source": "local hm,phase,nextFlash,flashEnd\nfunction minute() hm=clock.format(\"%H:%M\") end\nfunction start()\n  minute();phase=rng.int(0,63);nextFlash=rng.int(3,7);flashEnd=0\n  fx.create(\"atmosphere\",9,0,15,64,32,0.4,-0.6,\"#b3d68f\",\"dot\")\nend\nfunction button(key) if key==\"A\" then phase=rng.int(0,63) end end\nfunction draw()\n  local t=clock.millis()/1000\n  media.draw(\"monster-hunter\",0,0,0)\n  local q=(t*5+phase)%16\n  gfx.wave(21,36,29,14,q,1,12,5)\n  local x=(t*2.2+phase)%78-7;local y=13+math.sin(t*.4)*2;local w=math.floor(t*3)%3-1\n  gfx.line(x-2,y,x+2,y,\"#456d76\");gfx.line(x-4,y-2*w,x,y,\"#456d76\");gfx.line(x,y,x+4,y-2*w,\"#456d76\")\n  gfx.pixel(x+3,y-1,\"#456d76\")\n  fx.draw(\"atmosphere\")\n  gfx.text(14,54,hm,\"#041019\",2)\n  gfx.text(13,53,hm,\"#b3d68f\",2)\nend\n",
+  "fidelity": "64×64 像素风景，Lua 场景运动与原生 RGB565 局部特效"
+}

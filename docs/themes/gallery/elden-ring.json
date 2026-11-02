@@ -1,0 +1,23 @@
+{
+  "format": "clockwise-theme-project",
+  "version": 3,
+  "id": "elden-ring",
+  "title": "艾尔登法环 · 黄金树",
+  "width": 64,
+  "height": 64,
+  "fps": 60,
+  "reference": "",
+  "category": "游戏风景",
+  "description": "黄金树 · 局部水波、场景动效与随机相位",
+  "sourceMode": "lua",
+  "libraries": [
+    "core"
+  ],
+  "assets": [],
+  "media": [
+    "elden-ring"
+  ],
+  "data": {},
+  "source": "local hm,phase,nextFlash,flashEnd\nfunction minute() hm=clock.format(\"%H:%M\") end\nfunction start()\n  minute();phase=rng.int(0,63);nextFlash=rng.int(3,7);flashEnd=0\n  fx.create(\"atmosphere\",12,0,5,64,43,0.7,1.2,\"#eaca79\",\"dot\")\nend\nfunction button(key) if key==\"A\" then phase=rng.int(0,63) end end\nfunction draw()\n  local t=clock.millis()/1000\n  media.draw(\"elden-ring\",0,0,0)\n  local q=(t*5+phase)%16\n  gfx.wave(19,39,31,11,q,1,12,5)\n  for i=0,4 do local y=32-(t*1.6+i*7)%28;local x=26+i*4+math.sin(t*.6+i)*2\n    gfx.pixel(x,y,\"#ffea9d\");if (math.floor(t*3)+i)%4==0 then gfx.pixel(x+1,y,\"#fff4cc\") end end\n  fx.draw(\"atmosphere\")\n  gfx.text(14,54,hm,\"#041019\",2)\n  gfx.text(13,53,hm,\"#eaca79\",2)\nend\n",
+  "fidelity": "64×64 像素风景，Lua 场景运动与原生 RGB565 局部特效"
+}

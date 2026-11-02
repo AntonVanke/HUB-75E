@@ -1,0 +1,28 @@
+{
+  "format": "clockwise-theme-project",
+  "version": 3,
+  "id": "time-in-words",
+  "title": "Time In Words",
+  "width": 64,
+  "height": 64,
+  "fps": 60,
+  "reference": "https://topyuan.top/clock/",
+  "description": "时间映射、单词排版与日期",
+  "category": "文字",
+  "sourceMode": "lua",
+  "libraries": [
+    "core"
+  ],
+  "assets": [],
+  "data": {
+    "temperature": 22,
+    "humidity": 60,
+    "weather": "CLEAR",
+    "message": "HELLO PIXELS"
+  },
+  "media": [
+    "time-in-words"
+  ],
+  "source": "-- Lua 5.3 · 64×64 · all composition is controlled here.\n-- Native RGB565 delta decoder and native glyph spans.\nlocal hour, minute, secondText, hm\nlocal phase = 0\nlocal week = {\"SUN\",\"MON\",\"TUE\",\"WED\",\"THU\",\"FRI\",\"SAT\"}\nfunction second()\n  hour, minute = clock.format(\"%H\"), clock.format(\"%M\")\n  secondText = clock.format(\"%S\")\n  hm = hour .. \":\" .. minute\nend\nfunction start()\n  second()\n  phase = rng.int(0, 2000)\nend\nfunction button(key)\n  if key == \"A\" then phase = rng.int(0, 10000) end\nend\nfunction draw()\n  media.draw(\"time-in-words\", 0, 0, clock.millis() + phase)\n  local h=clock.value(\"hour\")%12\n  local m=clock.value(\"minute\")\n  local names={\"TWELVE\",\"ONE\",\"TWO\",\"THREE\",\"FOUR\",\"FIVE\",\"SIX\",\"SEVEN\",\"EIGHT\",\"NINE\",\"TEN\",\"ELEVEN\"}\n  font.draw(\"mario\",1,3,names[h+1],\"#078f3f\")\n  gfx.text(2,20,m==0 and \"O CLOCK\" or string.format(\"%02d MINUTES\",m),\"#ffffff\")\n  gfx.line(0,39,63,39,\"#d5d6c6\")\n  font.draw(\"mario\",1,45,clock.format(\"%m/%d\"),\"#048735\")\n  gfx.text(39,49,week[clock.value(\"weekday\")+1],\"#ffffff\")\nend\n",
+  "fidelity": "原版布局参考，实时词语逻辑重写"
+}

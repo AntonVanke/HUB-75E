@@ -1,0 +1,134 @@
+[
+  {
+    "id": "gta-vi",
+    "prompt": "Create ONE exquisite 64x64 logical-pixel art background for a square RGB565 LED clock, enlarged with crisp nearest-neighbor pixels. Full-bleed square composition, hand-placed chunky pixels, limited harmonious palette, classic high quality pixel adventure game scenery with foreground/middle/background. Must remain beautiful and recognizable after reduction to EXACTLY 64x64. No lettering, logo, clock, numerals, border, HUD, grids, collage, watermark or mockup. Keep bottom 12 logical pixels relatively dark and quiet so code can later draw a small clock. Keep top quarter relatively open for a separately animated sky overlay. Image content: Grand Theft Auto Vice City / GTA VI: an atmospheric playable-game landscape, a Miami waterfront boulevard at sunset, pastel art deco hotels receding in perspective on right, two detailed palm silhouettes at left, a tiny sports coupe at lower left, turquoise ocean and pink sunset sky, distant skyline. Not a giant VI logo or poster; scenic depth like a classic adventure game.",
+    "path": "C:\\Users\\anton\\.codex\\generated_images\\01a15be5-3fb4-72f1-8fd4-248dab108738\\exec-648ade63-64f7-4056-ae4a-0e17ecf8cb5b.png",
+    "mode": "built-in imagegen"
+  },
+  {
+    "id": "minecraft-village",
+    "prompt": "Create ONE exquisite 64x64 logical-pixel art background for a square RGB565 LED clock, enlarged with crisp nearest-neighbor pixels. Full-bleed square composition, hand-placed chunky pixels, limited harmonious palette, classic high quality pixel adventure game scenery with foreground/middle/background. Must remain beautiful and recognizable after reduction to EXACTLY 64x64. No lettering, logo, clock, numerals, border, HUD, grids, collage, watermark or mockup. Keep bottom 12 logical pixels relatively dark and quiet so code can later draw a small clock. Keep top quarter relatively open for a separately animated sky overlay. Image content: Minecraft: lush block-built valley at sunset from an elevated hillside, distinctive detailed oak and cobblestone village houses with lit windows, wheat terraces and a little river crossing with bridge, distant voxel mountains, oak trees, a small Steve near the foreground. Actual textured voxel scenery, not generic flat rectangles.",
+    "path": "C:\\Users\\anton\\.codex\\generated_images\\01a15be5-3fb4-72f1-8fd4-248dab108738\\exec-6f02cb10-bbd0-43b7-98c6-fa948e04e67d.png",
+    "mode": "built-in imagegen"
+  },
+  {
+    "id": "cyberpunk-night-city",
+    "prompt": "Create ONE exquisite 64x64 logical-pixel art background for a square RGB565 LED clock, enlarged with crisp nearest-neighbor pixels. Full-bleed square composition, hand-placed chunky pixels, limited harmonious palette, classic high quality pixel adventure game scenery with foreground/middle/background. Must remain beautiful and recognizable after reduction to EXACTLY 64x64. No lettering, logo, clock, numerals, border, HUD, grids, collage, watermark or mockup. Keep bottom 12 logical pixels relatively dark and quiet so code can later draw a small clock. Keep top quarter relatively open for a separately animated sky overlay. Image content: Cyberpunk 2077 Night City: a richly composed rain-wet narrow street descending into immense neon towers, dense cyan and magenta signs without readable writing, one small yellow sports car at foreground edge, overhead cables, glowing windows and reflected light. Atmospheric cyberpunk game scenery.",
+    "path": "C:\\Users\\anton\\.codex\\generated_images\\01a15be5-3fb4-72f1-8fd4-248dab108738\\exec-9ec783cb-8653-4928-9595-356d9452dddf.png",
+    "mode": "built-in imagegen"
+  },
+  {
+    "id": "elden-ring",
+    "prompt": "Create ONE exquisite 64x64 logical-pixel art background for a square RGB565 LED clock, enlarged with crisp nearest-neighbor pixels. Full-bleed square composition, hand-placed chunky pixels, limited harmonious palette, classic high quality pixel adventure game scenery with foreground/middle/background. Must remain beautiful and recognizable after reduction to EXACTLY 64x64. No lettering, logo, clock, numerals, border, HUD, grids, collage, watermark or mockup. Keep bottom 12 logical pixels relatively dark and quiet so code can later draw a small clock. Keep top quarter relatively open for a separately animated sky overlay. Image content: Elden Ring: a tiny cloaked Tarnished at lower left gazing across misty ancient ruined cliffs toward a monumental luminous gold Erdtree and a distant gothic citadel, subdued deep teal stone and warm golden foliage, layered fantasy landscape with elegant silhouettes.",
+    "path": "C:\\Users\\anton\\.codex\\generated_images\\01a15be5-3fb4-72f1-8fd4-248dab108738\\exec-2cf5fbe8-3730-45a5-9693-90e85bfaae25.png",
+    "mode": "built-in imagegen"
+  },
+  {
+    "id": "hollow-knight-silksong",
+    "prompt": "Create ONE exquisite 64x64 logical-pixel art background for a square RGB565 LED clock, enlarged with crisp nearest-neighbor pixels. Full-bleed square composition, hand-placed chunky pixels, limited harmonious palette, classic high quality pixel adventure game scenery with foreground/middle/background. Must remain beautiful and recognizable after reduction to EXACTLY 64x64. No lettering, logo, clock, numerals, border, HUD, grids, collage, watermark or mockup. Keep bottom 12 logical pixels relatively dark and quiet so code can later draw a small clock. Keep top quarter relatively open for a separately animated sky overlay. Image content: Hollow Knight Silksong: tiny red-cloaked Hornet standing on a curved mossy branch, glowing turquoise fungal grotto, hanging silk threads, delicate pale bells and ruined insect kingdom arches fading into cool blue mist. Mysterious storybook underground game landscape.",
+    "path": "C:\\Users\\anton\\.codex\\generated_images\\01a15be5-3fb4-72f1-8fd4-248dab108738\\exec-d5014cdc-2bf2-432f-ab37-552e29e72f23.png",
+    "mode": "built-in imagegen"
+  },
+  {
+    "id": "stardew-valley",
+    "prompt": "Create ONE exquisite 64x64 logical-pixel art background for a square RGB565 LED clock, enlarged with crisp nearest-neighbor pixels. Full-bleed square composition, hand-placed chunky pixels, limited harmonious palette, classic high quality pixel adventure game scenery with foreground/middle/background. Must remain beautiful and recognizable after reduction to EXACTLY 64x64. No lettering, logo, clock, numerals, border, HUD, grids, collage, watermark or mockup. Keep bottom 12 logical pixels relatively dark and quiet so code can later draw a small clock. Keep top quarter relatively open for a separately animated sky overlay. Image content: Stardew Valley: inviting autumn farm at golden hour, richly detailed red-roof wooden cottage, neat pumpkin crops, wooden fence, stream and stone bridge, orange maple trees and distant mountains. Cozy peaceful farming landscape.",
+    "path": "C:\\Users\\anton\\.codex\\generated_images\\01a15be5-3fb4-72f1-8fd4-248dab108738\\exec-f81d0a54-f5f3-4075-a56a-edabc49d8162.png",
+    "mode": "built-in imagegen"
+  },
+  {
+    "id": "terraria",
+    "prompt": "Create ONE exquisite 64x64 logical-pixel art background for a square RGB565 LED clock, enlarged with crisp nearest-neighbor pixels. Full-bleed square composition, hand-placed chunky pixels, limited harmonious palette, classic high quality pixel adventure game scenery with foreground/middle/background. Must remain beautiful and recognizable after reduction to EXACTLY 64x64. No lettering, logo, clock, numerals, border, HUD, grids, collage, watermark or mockup. Keep bottom 12 logical pixels relatively dark and quiet so code can later draw a small clock. Keep top quarter relatively open for a separately animated sky overlay. Image content: Terraria: side-view adventure world, floating lush grassy islands with cutaway ochre earth and visible underground glowing crystal cave, tiny wooden house, waterfall cascading through floating platforms, luminous sunset sky. Distinctive layered 2D sandbox adventure scenery.",
+    "path": "C:\\Users\\anton\\.codex\\generated_images\\01a15be5-3fb4-72f1-8fd4-248dab108738\\exec-acc682cd-e5bc-4d7a-917c-eb2d47436b7c.png",
+    "mode": "built-in imagegen"
+  },
+  {
+    "id": "genshin-impact",
+    "prompt": "Create ONE exquisite 64x64 logical-pixel art background for a square RGB565 LED clock, enlarged with crisp nearest-neighbor pixels. Full-bleed square composition, hand-placed chunky pixels, limited harmonious palette, classic high quality pixel adventure game scenery with foreground/middle/background. Must remain beautiful and recognizable after reduction to EXACTLY 64x64. No lettering, logo, clock, numerals, border, HUD, grids, collage, watermark or mockup. Keep bottom 12 logical pixels relatively dark and quiet so code can later draw a small clock. Keep top quarter relatively open for a separately animated sky overlay. Image content: Genshin Impact Mondstadt: peaceful green cliff looking over a lake toward medieval white-stone city with red roofs, windmills and cathedral towers, distant blue mountains and broad airy sky. Tiny traveler silhouette in foreground, luminous anime fantasy landscape.",
+    "path": "C:\\Users\\anton\\.codex\\generated_images\\01a15be5-3fb4-72f1-8fd4-248dab108738\\exec-0455f6fc-2dad-45a8-9ed7-9a9d31281533.png",
+    "mode": "built-in imagegen"
+  },
+  {
+    "id": "final-fantasy-vii",
+    "prompt": "Create ONE exquisite 64x64 logical-pixel art background for a square RGB565 LED clock, enlarged with crisp nearest-neighbor pixels. Full-bleed square composition, hand-placed chunky pixels, limited harmonious palette, classic high quality pixel adventure game scenery with foreground/middle/background. Must remain beautiful and recognizable after reduction to EXACTLY 64x64. No lettering, logo, clock, numerals, border, HUD, grids, collage, watermark or mockup. Keep bottom 12 logical pixels relatively dark and quiet so code can later draw a small clock. Keep top quarter relatively open for a separately animated sky overlay. Image content: Final Fantasy VII: small spiky blond Cloud with huge Buster Sword seen from behind at lower left looking toward Midgar industrial skyline, monumental circular steel reactor towers glowing green mako, smokestacks and pipes in blue-black night, detailed atmospheric JRPG landscape.",
+    "path": "C:\\Users\\anton\\.codex\\generated_images\\01a15be5-3fb4-72f1-8fd4-248dab108738\\exec-5b913c80-c986-4013-9c93-8c2a805466be.png",
+    "mode": "built-in imagegen"
+  },
+  {
+    "id": "black-myth-wukong",
+    "prompt": "Create ONE exquisite 64x64 logical-pixel art background for a square RGB565 LED clock, enlarged with crisp nearest-neighbor pixels. Full-bleed square composition, hand-placed chunky pixels, limited harmonious palette, classic high quality pixel adventure game scenery with foreground/middle/background. Must remain beautiful and recognizable after reduction to EXACTLY 64x64. No lettering, logo, clock, numerals, border, HUD, grids, collage, watermark or mockup. Keep bottom 12 logical pixels relatively dark and quiet so code can later draw a small clock. Keep top quarter relatively open for a separately animated sky overlay. Image content: Black Myth Wukong: small monkey warrior with staff on a rocky ridge overlooking ancient Chinese mountain temples, red wooden pagoda amid pine trees, massive stone Buddha half hidden by layered mist, warm ochre sunset and teal mountains, solemn richly textured eastern fantasy landscape.",
+    "path": "C:\\Users\\anton\\.codex\\generated_images\\01a15be5-3fb4-72f1-8fd4-248dab108738\\exec-9141bedf-5038-438a-a079-d1ca53ba0267.png",
+    "mode": "built-in imagegen"
+  },
+  {
+    "id": "harry-potter",
+    "prompt": "Create ONE exquisite 64x64 logical-pixel art background for a square RGB565 LED clock, enlarged with crisp nearest-neighbor pixels. Full-bleed square composition, hand-placed chunky pixels, limited harmonious palette, classic high quality pixel adventure game scenery with foreground/middle/background. Must remain beautiful and recognizable after reduction to EXACTLY 64x64. No lettering, logo, clock, numerals, border, HUD, grids, collage, watermark or mockup. Keep bottom 12 logical pixels relatively dark and quiet so code can later draw a small clock. Keep top quarter relatively open for a separately animated sky overlay. Image content: Harry Potter Hogwarts at blue hour: grand magical castle with many narrow turrets and warmly lit windows on a rocky headland above the Black Lake, a tiny rowboat in foreground, moonlit clouds, snowy distant mountains, enchanting navy violet and golden palette.",
+    "mode": "built-in imagegen",
+    "path": "C:\\Users\\anton\\.codex\\generated_images\\01a15be5-3fb4-72f1-8fd4-248dab108738\\exec-96567428-2286-4614-b098-cd2f0dd94885.png"
+  },
+  {
+    "id": "avatar-pandora",
+    "prompt": "Create ONE exquisite 64x64 logical-pixel art background for a square RGB565 LED clock, enlarged with crisp nearest-neighbor pixels. Full-bleed square composition, hand-placed chunky pixels, limited harmonious palette, classic high quality pixel adventure game scenery with foreground/middle/background. Must remain beautiful and recognizable after reduction to EXACTLY 64x64. No lettering, logo, clock, numerals, border, HUD, grids, collage, watermark or mockup. Keep bottom 12 logical pixels relatively dark and quiet so code can later draw a small clock. Keep top quarter relatively open for a separately animated sky overlay. Image content: Avatar Pandora: floating Hallelujah Mountains with trailing waterfalls at twilight, giant bioluminescent trees and glowing cyan purple ferns in foreground, two tiny blue Na'vi silhouettes on a branch, distant emerald flying creatures, magical alien jungle landscape.",
+    "path": "C:\\Users\\anton\\.codex\\generated_images\\01a15be5-3fb4-72f1-8fd4-248dab108738\\exec-09448567-5083-4fc8-8df7-12c76ecd7531.png",
+    "mode": "built-in imagegen"
+  },
+  {
+    "id": "stranger-things",
+    "prompt": "Create ONE exquisite 64x64 logical-pixel art background for a square RGB565 LED clock, enlarged with crisp nearest-neighbor pixels. Full-bleed square composition, hand-placed chunky pixels, limited harmonious palette, classic high quality pixel adventure game scenery with foreground/middle/background. Must remain beautiful and recognizable after reduction to EXACTLY 64x64. No lettering, logo, clock, numerals, border, HUD, grids, collage, watermark or mockup. Keep bottom 12 logical pixels relatively dark and quiet so code can later draw a small clock. Keep top quarter relatively open for a separately animated sky overlay. Image content: Stranger Things Hawkins Upside Down: three children on bicycles silhouetted on a small-town road, dark pine forest and modest houses, mirror-like puddle reflecting an ominous crimson sky, branching vine-like forms framing sides, distant red storm glow, eerie 1980s landscape.",
+    "path": "C:\\Users\\anton\\.codex\\generated_images\\01a15be5-3fb4-72f1-8fd4-248dab108738\\exec-67ed5398-89a1-446a-9f06-aa710c5c2fa2.png",
+    "mode": "built-in imagegen"
+  },
+  {
+    "id": "wednesday",
+    "prompt": "Create ONE exquisite 64x64 logical-pixel art background for a square RGB565 LED clock, enlarged with crisp nearest-neighbor pixels. Full-bleed square composition, hand-placed chunky pixels, limited harmonious palette, classic high quality pixel adventure game scenery with foreground/middle/background. Must remain beautiful and recognizable after reduction to EXACTLY 64x64. No lettering, logo, clock, numerals, border, HUD, grids, collage, watermark or mockup. Keep bottom 12 logical pixels relatively dark and quiet so code can later draw a small clock. Keep top quarter relatively open for a separately animated sky overlay. Image content: Wednesday Addams Nevermore Academy: a gothic stone boarding school with spires and a dramatic round stained-glass window, misty moonlit courtyard, black bare trees, tiny dark-haired girl silhouette beside a railing, black-violet and icy silver palette with one warm window.",
+    "path": "C:\\Users\\anton\\.codex\\generated_images\\01a15be5-3fb4-72f1-8fd4-248dab108738\\exec-213837bd-31e9-4924-985e-a0573202972a.png",
+    "mode": "built-in imagegen"
+  },
+  {
+    "id": "arcane",
+    "prompt": "Create ONE exquisite 64x64 logical-pixel art background for a square RGB565 LED clock, enlarged with crisp nearest-neighbor pixels. Full-bleed square composition, hand-placed chunky pixels, limited harmonious palette, classic high quality pixel adventure game scenery with foreground/middle/background. Must remain beautiful and recognizable after reduction to EXACTLY 64x64. No lettering, logo, clock, numerals, border, HUD, grids, collage, watermark or mockup. Keep bottom 12 logical pixels relatively dark and quiet so code can later draw a small clock. Keep top quarter relatively open for a separately animated sky overlay. Image content: Arcane League of Legends: layered Piltover above and Zaun below, elegant golden art-deco bridge connecting ornate towers, teal fog and tiny emerald chemical glows in underground streets, a tiny blue-haired Jinx silhouette at lower left, painterly but crisp pixel-game scenic composition.",
+    "path": "C:\\Users\\anton\\.codex\\generated_images\\01a15be5-3fb4-72f1-8fd4-248dab108738\\exec-eb55228c-63b4-4857-ba6f-e69ba8023e7c.png",
+    "mode": "built-in imagegen"
+  },
+  {
+    "id": "one-piece",
+    "prompt": "Create ONE exquisite 64x64 logical-pixel art background for a square RGB565 LED clock, enlarged with crisp nearest-neighbor pixels. Full-bleed square composition, hand-placed chunky pixels, limited harmonious palette, classic high quality pixel adventure game scenery with foreground/middle/background. Must remain beautiful and recognizable after reduction to EXACTLY 64x64. No lettering, logo, clock, numerals, border, HUD, grids, collage, watermark or mockup. Keep bottom 12 logical pixels relatively dark and quiet so code can later draw a small clock. Keep top quarter relatively open for a separately animated sky overlay. Image content: One Piece: Thousand Sunny pirate ship, recognizable sunny lion figurehead and striped sails, anchored off a lush tropical island with a harbor town and turquoise sea, small straw-hat Luffy silhouette on foreground jetty, adventurous brilliant cerulean sky and warm sunset highlights.",
+    "path": "C:\\Users\\anton\\.codex\\generated_images\\01a15be5-3fb4-72f1-8fd4-248dab108738\\exec-f010a26c-1068-4046-9c39-5f187499047a.png",
+    "mode": "built-in imagegen"
+  },
+  {
+    "id": "monster-hunter",
+    "prompt": "Create ONE exquisite 64x64 logical-pixel art background for a square RGB565 LED clock, enlarged with crisp nearest-neighbor pixels. Full-bleed square composition, hand-placed chunky pixels, limited harmonious palette, classic high quality pixel adventure game scenery with foreground/middle/background. Must remain beautiful and recognizable after reduction to EXACTLY 64x64. No lettering, logo, clock, numerals, border, HUD, grids, collage, watermark or mockup. Keep bottom 12 logical pixels relatively dark and quiet so code can later draw a small clock. Keep top quarter relatively open for a separately animated sky overlay. Image content: Monster Hunter: lush ancient jungle ruins opening onto a sunlit valley, a mighty Rathalos wyvern perched on a far rocky ledge (a small readable silhouette), tiny hunter beside oversized sword in foreground, moss, giant ferns, blue sky. Rich green cinematic game landscape.",
+    "path": "C:\\Users\\anton\\.codex\\generated_images\\01a15be5-3fb4-72f1-8fd4-248dab108738\\exec-5421ad5d-6ae9-4116-9b13-9460e319a22d.png",
+    "mode": "built-in imagegen"
+  },
+  {
+    "id": "death-stranding",
+    "prompt": "Create ONE exquisite 64x64 logical-pixel art background for a square RGB565 LED clock, enlarged with crisp nearest-neighbor pixels. Full-bleed square composition, hand-placed chunky pixels, limited harmonious palette, classic high quality pixel adventure game scenery with foreground/middle/background. Must remain beautiful and recognizable after reduction to EXACTLY 64x64. No lettering, logo, clock, numerals, border, HUD, grids, collage, watermark or mockup. Keep bottom 12 logical pixels relatively dark and quiet so code can later draw a small clock. Keep top quarter relatively open for a separately animated sky overlay. Image content: Death Stranding: lone porter with stacked yellow delivery cargo walking an isolated moss-green Icelandic valley, dark volcanic rocks, a narrow river and distant waterfalls, stormy desaturated gray-blue sky, remote futuristic waystation with one warm lamp. Melancholic expansive wilderness.",
+    "path": "C:\\Users\\anton\\.codex\\generated_images\\01a15be5-3fb4-72f1-8fd4-248dab108738\\exec-b78c827b-4a49-48f2-8f39-b0b14d2db312.png",
+    "mode": "built-in imagegen"
+  },
+  {
+    "id": "star-wars",
+    "prompt": "Create ONE exquisite 64x64 logical-pixel art background for a square RGB565 LED clock, enlarged with crisp nearest-neighbor pixels. Full-bleed square composition, hand-placed chunky pixels, limited harmonious palette, classic high quality pixel adventure game scenery with foreground/middle/background. Must remain beautiful and recognizable after reduction to EXACTLY 64x64. No lettering, logo, clock, numerals, border, HUD, grids, collage, watermark or mockup. Keep bottom 12 logical pixels relatively dark and quiet so code can later draw a small clock. Keep top quarter relatively open for a separately animated sky overlay. Image content: Star Wars Tatooine: desert homestead with rounded white adobe domes, a small cloaked figure at lower left and two suns setting over orange dunes, distant canyon and tiny vaporators. Atmospheric cinematic landscape with burnt orange, mauve shadows and dark foreground.",
+    "path": "C:\\Users\\anton\\.codex\\generated_images\\01a15be5-3fb4-72f1-8fd4-248dab108738\\exec-0ac2c770-bd89-49ed-a0e0-5722dbdc7832.png",
+    "mode": "built-in imagegen"
+  },
+  {
+    "id": "blade-runner",
+    "prompt": "Create ONE exquisite 64x64 logical-pixel art background for a square RGB565 LED clock, enlarged with crisp nearest-neighbor pixels. Full-bleed square composition, hand-placed chunky pixels, limited harmonious palette, classic high quality pixel adventure game scenery with foreground/middle/background. Must remain beautiful and recognizable after reduction to EXACTLY 64x64. No lettering, logo, clock, numerals, border, HUD, grids, collage, watermark or mockup. Keep bottom 12 logical pixels relatively dark and quiet so code can later draw a small clock. Keep top quarter relatively open for a separately animated sky overlay. Image content: Blade Runner 2049: rain-soaked neo-noir future Los Angeles, immense layered skyscrapers and cyan amber neon lights, a small flying police spinner in distant haze, lone coat-wearing figure under an overhang, dark indigo foreground puddles, cinematic city street landscape.",
+    "path": "C:\\Users\\anton\\.codex\\generated_images\\01a15be5-3fb4-72f1-8fd4-248dab108738\\exec-4e2aeaa4-8d1d-466a-b1c9-ded675fc6acb.png",
+    "mode": "built-in imagegen"
+  },
+  {
+    "id": "dune",
+    "prompt": "Create ONE exquisite 64x64 logical-pixel art background for a square RGB565 LED clock, enlarged with crisp nearest-neighbor pixels. Full-bleed square composition, hand-placed chunky pixels, limited harmonious palette, classic high quality pixel adventure game scenery with foreground/middle/background. Must remain beautiful and recognizable after reduction to EXACTLY 64x64. No lettering, logo, clock, numerals, border, HUD, grids, collage, watermark or mockup. Keep bottom 12 logical pixels relatively dark and quiet so code can later draw a small clock. Keep top quarter relatively open for a separately animated sky overlay. Image content: Dune: immense sweeping Arrakis sand dunes with elegant wind-shaped ridges, a tiny cloaked Fremen on a rocky ledge, monumental ancient stone desert city at right distance and a small dragonfly ornithopter silhouette, amber sunlight, rust shadows and pale desert sky.",
+    "path": "C:\\Users\\anton\\.codex\\generated_images\\01a15be5-3fb4-72f1-8fd4-248dab108738\\exec-44bd9e1e-f398-43d7-86bd-49f4639da56c.png",
+    "mode": "built-in imagegen"
+  },
+  {
+    "id": "lord-of-the-rings",
+    "prompt": "Create ONE exquisite 64x64 logical-pixel art background for a square RGB565 LED clock, enlarged with crisp nearest-neighbor pixels. Full-bleed square composition, hand-placed chunky pixels, limited harmonious palette, classic high quality pixel adventure game scenery with foreground/middle/background. Must remain beautiful and recognizable after reduction to EXACTLY 64x64. No lettering, logo, clock, numerals, border, HUD, grids, collage, watermark or mockup. Keep bottom 12 logical pixels relatively dark and quiet so code can later draw a small clock. Keep top quarter relatively open for a separately animated sky overlay. Image content: The Lord of the Rings: beautiful Rivendell elven valley, delicate white bridges and pointed silver-roof palaces nestled among orange and gold trees, towering cliffs with slender waterfalls, tiny traveler at lower left, emerald river, warm autumn light and blue mountain distance.",
+    "path": "C:\\Users\\anton\\.codex\\generated_images\\01a15be5-3fb4-72f1-8fd4-248dab108738\\exec-0e9b7b67-be39-4da1-aa03-bad817d367c8.png",
+    "mode": "built-in imagegen"
+  }
+]

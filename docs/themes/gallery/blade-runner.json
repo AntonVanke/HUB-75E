@@ -1,0 +1,23 @@
+{
+  "format": "clockwise-theme-project",
+  "version": 3,
+  "id": "blade-runner",
+  "title": "银翼杀手 · 雨夜城市",
+  "width": 64,
+  "height": 64,
+  "fps": 60,
+  "reference": "",
+  "category": "影视风景",
+  "description": "雨夜城市 · 局部水波、场景动效与随机相位",
+  "sourceMode": "lua",
+  "libraries": [
+    "core"
+  ],
+  "assets": [],
+  "media": [
+    "blade-runner"
+  ],
+  "data": {},
+  "source": "local hm,phase,nextFlash,flashEnd\nfunction minute() hm=clock.format(\"%H:%M\") end\nfunction start()\n  minute();phase=rng.int(0,63);nextFlash=rng.int(3,7);flashEnd=0\n  fx.create(\"atmosphere\",21,0,0,64,49,-2,16,\"#69cee2\",\"rain\")\nend\nfunction button(key) if key==\"A\" then phase=rng.int(0,63) end end\nfunction draw()\n  local t=clock.millis()/1000\n  media.draw(\"blade-runner\",0,0,0)\n  local q=(t*5+phase)%16\n  gfx.wave(20,39,31,11,q,1,8,7)\n  local x=(t*2.8+phase)%78-7\n  gfx.line(x,16,x+5,16,\"#304962\");gfx.line(x+1,15,x+3,15,\"#647e92\")\n  gfx.pixel(x,17,\"#79d5d8\");gfx.pixel(x+5,17,\"#ebaf9b\")\n  if math.floor(t*2)%7~=0 then gfx.line(52,22,52,28,\"#92c9d6\") end\n  fx.draw(\"atmosphere\")\n  gfx.text(14,54,hm,\"#041019\",2)\n  gfx.text(13,53,hm,\"#69cee2\",2)\nend\n",
+  "fidelity": "64×64 像素风景，Lua 场景运动与原生 RGB565 局部特效"
+}

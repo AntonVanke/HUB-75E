@@ -1,0 +1,31 @@
+{
+  "format": "clockwise-theme-package",
+  "version": 1,
+  "id": "hello-clock",
+  "packageName": "org.clockwise.examples.hello-clock",
+  "title": "星点时钟",
+  "appVersion": "1.0.0",
+  "description": "适合低内存设备的64×64时钟：每秒换色、缓慢星点、按键交互，无外部素材。",
+  "author": "Clockwise 示例",
+  "runtimeApi": 1,
+  "width": 64,
+  "height": 64,
+  "fps": 30,
+  "entry": "main.lua",
+  "scripts": [],
+  "assets": [],
+  "media": [],
+  "resources": [],
+  "data": {},
+  "requirements": {
+    "chips": [
+      "esp32",
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "luaHeapBytes": 49152,
+    "luaWorkingBytes": 32768,
+    "graphicsBytes": 12288,
+    "targetFps": 30
+  }
+}

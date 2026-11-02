@@ -1,0 +1,23 @@
+{
+  "format": "clockwise-theme-project",
+  "version": 3,
+  "id": "genshin-impact",
+  "title": "原神 · 蒙德城",
+  "width": 64,
+  "height": 64,
+  "fps": 60,
+  "reference": "",
+  "category": "游戏风景",
+  "description": "蒙德城 · 局部水波、场景动效与随机相位",
+  "sourceMode": "lua",
+  "libraries": [
+    "core"
+  ],
+  "assets": [],
+  "media": [
+    "genshin-impact"
+  ],
+  "data": {},
+  "source": "local hm,phase,nextFlash,flashEnd\nfunction minute() hm=clock.format(\"%H:%M\") end\nfunction start()\n  minute();phase=rng.int(0,63);nextFlash=rng.int(3,7);flashEnd=0\n  fx.create(\"atmosphere\",6,0,12,64,34,0.9,-0.35,\"#f2e8a9\",\"dot\")\nend\nfunction button(key) if key==\"A\" then phase=rng.int(0,63) end end\nfunction draw()\n  local t=clock.millis()/1000\n  media.draw(\"genshin-impact\",0,0,0)\n  local q=(t*5+phase)%16\n  gfx.wave(14,37,36,13,q,1,12,6)\n  local a=t*.7;local c=math.cos(a)*3;local s=math.sin(a)*3\n  gfx.line(39-c,31-s,39+c,31+s,\"#e2dfc8\");gfx.line(39-s,31+c,39+s,31-c,\"#e2dfc8\")\n  local x=(t*1.5+phase)%72-4;local y=13+math.sin(t*.4)\n  gfx.line(x,y,x+2,y+1,\"#6c9dbb\");gfx.line(x+2,y+1,x+4,y,\"#6c9dbb\")\n  fx.draw(\"atmosphere\")\n  gfx.text(14,54,hm,\"#041019\",2)\n  gfx.text(13,53,hm,\"#f2e8a9\",2)\nend\n",
+  "fidelity": "64×64 像素风景，Lua 场景运动与原生 RGB565 局部特效"
+}

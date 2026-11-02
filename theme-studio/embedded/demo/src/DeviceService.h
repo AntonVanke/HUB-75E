@@ -1,0 +1,102 @@
+#pragma once
+#include <Arduino.h>
+#include <WebServer.h>
+#include <Preferences.h>
+#include <FS.h>
+#include <DNSServer.h>
+#include <functional>
+#include <mbedtls/sha256.h>
+#include "ThemeSchedule.h"
+#include "DeviceLimits.h"
+#include "AppManifest.h"
+#include "PanelSettings.h"
+class DeviceService {
+  class UploadServer final:public WebServer {
+  public:
+    explicit UploadServer(int port):WebServer(port){}
+    void releaseParsedUpload(){_currentUpload.reset();_currentRaw.reset();}
+  };
+public:
+  int theme=0,brightness=80,rotationMinutes=0,themeCount=0;
+  String lastError,networkState="idle";
+  char metrics[512]="{}";
+  bool hasCustom=false;
+  uint32_t generation=0,buttonAUntil=0,buttonBUntil=0,panelTestUntil=0;
+  std::function<bool(const char*,String&)> applyScript;
+  std::function<void()> stopScript;
+  std::function<bool(bool)> renderLock;
+  std::function<const uint16_t*()> framePixels;
+  std::function<String()> sensorStatus;
+  std::function<String()> panelStatus;
+  void begin(int count,const char* titlesJson);
+  void poll();
+  void pollSerial();
+  bool appInstalled(int index)const;
+  String appPath(int index)const;
+  bool checkPackage(const char* path,String& error,int* targetFps=nullptr);
+private:
+  UploadServer web_{80};
+  Preferences prefs_;
+  DNSServer dns_;
+  String ssid_,password_,pendingSsid_,pendingPassword_,uploadError_,expectedHash_;
+  File scriptFile_;
+  size_t scriptBytes_=0;
+  String apName_,apPassword_;
+  bool ap_=false,connecting_=false,ota_=false,locked_=false,fs_=false,scriptLocked_=false;
+  uint32_t connectAt_=0,retryAt_=0,restartAt_=0,rotateAt_=0,otaAt_=0;
+  mbedtls_sha256_context hash_;
+  void reply(int code,const String& body);
+  void sendFlash(const char* type,const char* data,size_t size);
+  void access();
+  void startAP();
+  void finishOTA();
+  void uploadScript();
+  void finishScript();
+  void uploadOTA();
+  const char* titlesJson_=nullptr;
+  uint64_t installed_=0;
+  uint64_t incompatible_=0;
+  DeviceLimits limits_;
+  uint32_t appBytes_[64]={};
+  uint8_t appTargetFps_[64]={};
+  uint8_t candidateTargetFps_=60;
+  bool candidateChecked_=false;
+  char serialLine_[512]={};
+  uint16_t serialLength_=0;
+  bool serialOverflow_=false;
+  bool scanPending_=false;
+  uint32_t scanStartedAt_=0;
+  int installIndex_=-1;
+  String installId_,installTitle_,installPackageName_;
+  bool legacyUpload_=false;
+  String appId(int index);
+  String appTitle(int index);
+  String appPackageName(int index);
+  int appIndex(const String& identity);
+  int requestAppIndex(String& error);
+  bool readManifest(const char* path,AppManifest& manifest,String& error);
+  bool catalogManifest(int index,AppManifest& manifest);
+  bool compatible(const AppManifest& manifest,String& error)const;
+  bool appCompatible(int index,String& error);
+  String catalogField(int index,const char* key)const;
+  String catalogJson(int index)const;
+  void refreshApps();
+  void sendApps(bool serial=false);
+  void exportApp(int index,bool archive=false,bool source=false);
+  void finishInstall();
+  bool uninstallApp(int index,String& error);
+  bool runApp(int index,String& error);
+  bool connectWifi(const String& ssid,const String& password,String& error);
+  bool saveConfig(int nextTheme,int nextBrightness,int nextRotation,const String& tz,String& error);
+  bool savePanel(const String& order,PanelTiming timing,String& error);
+  String panelOrder_="RGB";
+  PanelTiming panelTiming_;
+  String statusJson();
+  void serialCommand(const String& line);
+  void pruneSchedule();
+  ThemeSchedule schedule_;
+  int baseTheme_=0,windowTheme_=-1;int64_t lastDaily_=-1;
+  bool readSchedule(const String& text,ThemeSchedule& out,bool allowMissing=false,bool migrateLegacy=false);
+  String scheduleText()const;
+  void pollSchedule(uint32_t now);
+};
