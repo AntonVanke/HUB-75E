@@ -62,24 +62,24 @@ int main(){
   AutoBrightnessController missing;missing.settings.enabled=true;for(int i=0;i<20;i++)missing.sample(1500,1200,i*100);assert(!missing.present&&missing.tick(80,2000)==80);
   std::filesystem::create_directories("theme-studio/native/build/ferrofluid");assert(start(&s,&a));
   double maxDistance=0,restDistance=0,recoveryDistance=0,us=0,restEnergy=0,recoveredEnergy=0;int captured=0,recoveryFrame=-1;
-  for(int frame=0;frame<1560;frame++){
-    h.gx=0;h.gy=1;if(frame>=240&&frame<360){h.gx=3.2f*std::sin(frame*.25f);h.gy=1+2.2f*std::cos(frame*.22f);}
-    if(frame>=840&&frame<1080){h.gx=.8f;h.gy=.3f;}
-    if(frame==1080)button(&s,&a,0);if(frame==1200)button(&s,&a,0);
+  for(int frame=0;frame<2400;frame++){
+    h.gx=0;h.gy=1;if(frame>=960&&frame<1080){h.gx=3.2f*std::sin(frame*.25f);h.gy=1+2.2f*std::cos(frame*.22f);}
+    if(frame>=1560&&frame<1800){h.gx=.8f;h.gy=.3f;}
+    if(frame==1800)button(&s,&a,0);if(frame==1920)button(&s,&a,0);
     auto begin=std::chrono::steady_clock::now();assert(update(&s,&a,frame%3?8:9));assert(draw(&s,&a));us+=std::chrono::duration<double,std::micro>(std::chrono::steady_clock::now()-begin).count();
     double distance=0;for(auto p:s.fluid.particles){assert(std::isfinite(p.x)&&std::isfinite(p.y)&&std::isfinite(p.vx)&&std::isfinite(p.vy));assert(p.x>=1&&p.x<=62&&p.y>=1&&p.y<=62);int at=s.fluid.nearest[int(p.y+.5f)*64+int(p.x+.5f)];distance+=std::hypot((at&63)-p.x,(at>>6)-p.y);}distance/=Ferrofluid::N;
-    if(frame<240){restDistance=distance;restEnergy=s.fluid.energy;}if(frame>=240&&frame<360)maxDistance=std::max(maxDistance,distance);if(frame==839){recoveryDistance=distance;recoveredEnergy=s.fluid.energy;}
-    if(frame>=360&&frame<840&&recoveryFrame<0&&distance<restDistance+.4)recoveryFrame=frame;
+    if(frame<960){restDistance=distance;restEnergy=s.fluid.energy;}if(frame>=960&&frame<1080)maxDistance=std::max(maxDistance,distance);if(frame==1559){recoveryDistance=distance;recoveredEnergy=s.fluid.energy;}
+    if(frame>=1080&&frame<1560&&recoveryFrame<0&&distance<restDistance+.4)recoveryFrame=frame;
     if(frame%6==0){char path[160];snprintf(path,sizeof(path),"theme-studio/native/build/ferrofluid/%04d.ppm",captured++);std::ofstream f(path,std::ios::binary);f<<"P6\n64 64\n255\n";for(auto c:h.raster.pixels){char rgb[3]={char(((c>>11)&31)*255/31),char(((c>>5)&63)*255/63),char((c&31)*255/31)};f.write(rgb,3);}}
   }
   assert(maxDistance>restDistance+1);assert(recoveryDistance<maxDistance*.65);
-  printf("Ferrofluid: rest distance %.3f px, shake peak %.3f px, recovered %.3f px; CPU mean %.1f us/frame (PC only); state=%zu; %d preview frames. Brightness absence/presence/slew/disconnect/stale PASS\n",restDistance,maxDistance,recoveryDistance,us/1560,sizeof(s),captured);
-  printf("Reaggregation %.3f s, resting/recovered mean squared speed %.2f / %.2f\n",(recoveryFrame-360)/120.f,restEnergy,recoveredEnergy);
+  printf("Ferrofluid: rest distance %.3f px, shake peak %.3f px, recovered %.3f px; CPU mean %.1f us/frame (PC only); state=%zu; %d preview frames. Brightness absence/presence/slew/disconnect/stale PASS\n",restDistance,maxDistance,recoveryDistance,us/2400,sizeof(s),captured);
+  printf("Reaggregation %.3f s, resting/recovered mean squared speed %.2f / %.2f\n",(recoveryFrame-1080)/120.f,restEnergy,recoveredEnergy);
   for(int time:{0,1111,2359}){s.fluid.clock(time/100,time%100);for(int frame=0;frame<360;frame++){if(frame%90==0)s.fluid.rotate(1);s.fluid.advance(frame%11?8.333f:100.f,std::sin(frame*.05f)*4,std::cos(frame*.07f)*4,300*std::sin(frame*.02f));s.fluid.render(a.pixels);for(auto p:s.fluid.particles)assert(std::isfinite(p.x)&&std::isfinite(p.vy)&&p.x>=1&&p.x<=62&&p.y>=1&&p.y<=62);}}
   auto data=a.data;a.data=[](void*,const char*,float fallback){return fallback;};float x=s.fluid.particles[0].x;assert(update(&s,&a,50));assert(!s.valid&&s.fluid.particles[0].x==x);a.data=data;
-  s.fluid.reset(12,34);
-  for(int frame=0;frame<1080;frame++){
-    if(frame==240)s.fluid.clock(12,35);if(frame==660)s.fluid.clock(12,36);
+  s.fluid.reset(12,42);
+  for(int frame=0;frame<2640;frame++){
+    if(frame==960)s.fluid.clock(12,43);if(frame==1800)s.fluid.clock(12,44);
     s.fluid.advance(8.333f,0,1,0);s.fluid.render(a.pixels);
     if(frame%6==0){char path[160];snprintf(path,sizeof(path),"theme-studio/native/build/ferrofluid/%04d.ppm",captured++);std::ofstream f(path,std::ios::binary);f<<"P6\n64 64\n255\n";for(auto c:h.raster.pixels){char rgb[3]={char(((c>>11)&31)*255/31),char(((c>>5)&63)*255/63),char((c&31)*255/31)};f.write(rgb,3);}}
   }

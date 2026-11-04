@@ -2,6 +2,39 @@
   "schema": 1,
   "releases": [
     {
+      "version": "1.2.0",
+      "runtimeApi": 4,
+      "nativeAbi": 1,
+      "notes": "烧录完成直达 USB 配网与驱动设置、串口 Wi-Fi 扫描、工坊串口安装、交互式 Codex 提示词、实拍磁流体重制与首次启动修复。",
+      "catalog": "applications/1.2.0/catalog.json",
+      "targets": {
+        "esp32": {
+          "chip": "esp32",
+          "flashBytes": 4194304,
+          "psramBytes": 0,
+          "manifest": "firmware/esp32-v1.2.0/manifest.json",
+          "updateManifest": "firmware/esp32-v1.2.0/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32-v1.2.0/app.bin",
+            "bytes": 1262256,
+            "sha256": "3277850e8a78facc3815439ad57de9be2ebf04b73075016b30c34b3da55a5570"
+          }
+        },
+        "esp32s3": {
+          "chip": "esp32s3",
+          "flashBytes": 8388608,
+          "psramBytes": 8388608,
+          "manifest": "firmware/esp32s3-v1.2.0/manifest.json",
+          "updateManifest": "firmware/esp32s3-v1.2.0/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32s3-v1.2.0/app.bin",
+            "bytes": 1256672,
+            "sha256": "ef9a6a419e41926250b4b081387c00390de5759857e041d3800165e28e8602e8"
+          }
+        }
+      }
+    },
+    {
       "version": "1.1.2",
       "runtimeApi": 4,
       "nativeAbi": 1,
@@ -68,5 +101,5 @@
       }
     }
   ],
-  "latest": "1.1.2"
+  "latest": "1.2.0"
 }

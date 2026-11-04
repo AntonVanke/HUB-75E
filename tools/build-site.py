@@ -72,7 +72,7 @@ def main():
     (appdir / "catalog.json").write_text(encoded, encoding="utf-8")
     indexPath=output / "releases.json"
     index=json.loads(indexPath.read_text(encoding="utf-8")) if indexPath.exists() else {"schema":1,"releases":[]}
-    release={"version":version,"runtimeApi":4,"nativeAbi":1,"notes":"磁流体时钟重制、传感器自动亮度、扫码配网与驱动轮测，修复后台乱码和地址输入。", "catalog":"applications/"+version+"/catalog.json","targets":{}}
+    release={"version":version,"runtimeApi":4,"nativeAbi":1,"notes":"烧录完成直达 USB 配网与驱动设置、串口 Wi-Fi 扫描、工坊串口安装、交互式 Codex 提示词、实拍磁流体重制与首次启动修复。", "catalog":"applications/"+version+"/catalog.json","targets":{}}
     for chip in ("esp32", "esp32s3"):
         name=chip+"-v"+version
         source=ROOT / "releases" / name

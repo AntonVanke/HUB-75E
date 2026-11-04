@@ -532,7 +532,7 @@ import{e,_ as t,o as i,r,x as upstreamHtml,i as a,n as s,t as n,m as l,a as d,E 
           ${this._isSameVersion?"":o`
                 <ew-list-item
                   type="button"
-                  @click=${()=>{this._isSameFirmware?this._startInstall(!1):this._manifest.new_install_prompt_erase?this._state="ASK_ERASE":this._startInstall(!0)}}
+                  @click=${()=>{this._isSameFirmware?this._startInstall(!1):this._manifest.new_install_prompt_erase?this._state="ASK_ERASE":this._startInstall(!this._manifest.hub75_preserve)}}
                 >
                   ${Qt}
                   <div slot="headline">
@@ -603,7 +603,7 @@ import{e,_ as t,o as i,r,x as upstreamHtml,i as a,n as s,t as n,m as l,a as d,E 
         <ew-list>
           <ew-list-item
             type="button"
-            @click=${()=>{this._manifest.new_install_prompt_erase?this._state="ASK_ERASE":this._startInstall(!0)}}
+            @click=${()=>{this._manifest.new_install_prompt_erase?this._state="ASK_ERASE":this._startInstall(!this._manifest.hub75_preserve)}}
           >
             ${Qt}
             <div slot="headline">${vendorText(`Install ${this._manifest.name}`)}</div>
@@ -764,7 +764,7 @@ import{e,_ as t,o as i,r,x as upstreamHtml,i as a,n as s,t as n,m as l,a as d,E 
 
         <div slot="actions">
           <ew-text-button
-            @click=${()=>{this._state=i&&this._installErase?"PROVISION":"DASHBOARD"}}
+            @click=${()=>{if(this._manifest.hub75_config){this._hub75Configure=true;this._closeDialog();}else this._state=i&&this._installErase?"PROVISION":"DASHBOARD"}}
           >
             Next
           </ew-text-button>

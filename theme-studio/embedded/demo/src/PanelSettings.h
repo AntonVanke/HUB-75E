@@ -1,11 +1,13 @@
 #pragma once
 #include <Preferences.h>
 #include <utility>
+#include <nvs.h>
+inline bool openExistingPreferences(Preferences& settings,const char* name){nvs_handle_t handle;if(nvs_open(name,NVS_READONLY,&handle)!=ESP_OK)return false;nvs_close(handle);return settings.begin(name,true);}
 #include "PanelOrientation.h"
 
 inline PanelOrientation panelOrientation(){
   PanelOrientation value;Preferences settings;
-  if(settings.begin("cwstudio",true)){value.rotation=settings.getInt("panelRotation",3);value.autoRotate=settings.getBool("panelAutoRotate",false);value.gravityRotation=settings.getInt("gravityRotation",0);value.zeroX=settings.getFloat("gravityZeroX",0);value.zeroY=settings.getFloat("gravityZeroY",0);settings.end();}
+  if(openExistingPreferences(settings,"cwstudio")){value.rotation=settings.getInt("panelRotation",3);value.autoRotate=settings.getBool("panelAutoRotate",false);value.gravityRotation=settings.getInt("gravityRotation",0);value.zeroX=(settings.isKey("gravityZeroX")?settings.getFloat("gravityZeroX",0):0);value.zeroY=(settings.isKey("gravityZeroY")?settings.getFloat("gravityZeroY",0):0);settings.end();}
   return validPanelOrientation(value)?value:PanelOrientation{};
 }
 inline bool savePanelOrientation(Preferences& settings,const PanelOrientation& value){
@@ -35,7 +37,7 @@ inline bool validPanelTiming(const PanelTiming& timing){
 }
 inline PanelTiming panelTiming(){
   PanelTiming timing;Preferences settings;
-  if(settings.begin("cwstudio",true)){
+  if(openExistingPreferences(settings,"cwstudio")){
     timing.clockMHz=settings.getInt("panelMHz",8);timing.clockPhase=settings.getInt("panelPhase",1);timing.latchBlanking=settings.getInt("panelBlank",2);timing.driver=settings.getInt("panelDriver",0);timing.refreshHz=settings.getInt("panelRefresh",0);settings.end();
   }
   return validPanelTiming(timing)?normalizePanelTiming(timing):PanelTiming{};
@@ -46,10 +48,10 @@ inline bool validPanelColorOrder(const String& order){
 }
 inline String panelColorOrder(){
   Preferences settings;String order;
-  if(settings.begin("cwstudio",true)){order=settings.getString("rgbOrder","");settings.end();}
+  if(openExistingPreferences(settings,"cwstudio")){if(settings.isKey("rgbOrder"))order=settings.getString("rgbOrder","");settings.end();}
   if(validPanelColorOrder(order))return order;
   int pins[3]={0,1,2};
-  if(settings.begin("clockwise",true)){
+  if(openExistingPreferences(settings,"clockwise")){
     if(settings.getBool("swapBlueGreen",false))std::swap(pins[2],pins[1]);
     if(settings.getBool("swapBlueRed",false))std::swap(pins[2],pins[0]);
     settings.end();

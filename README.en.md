@@ -8,12 +8,14 @@ Ferrofluid CPU preview: rest, shake, magnetic reassembly and changing digits, re
 
 ![Ferrofluid Clock](web/previews/ferrofluid-clock.gif)
 
-## Current release: 1.1.2
+## Current release: 1.2.0
 
-- [Release downloads](https://github.com/AntonVanke/HUB-75E/releases/tag/v1.1.2): ESP32 4 MB and ESP32-S3 8 MB Flash + 8 MB OPI PSRAM.
+- [Release downloads](https://github.com/AntonVanke/HUB-75E/releases/tag/v1.2.0): ESP32 4 MB and ESP32-S3 8 MB Flash + 8 MB OPI PSRAM.
 - Five native applications: Super Mario (32 levels), Pac-Man, Gravity Water, Ball Maze and Ferrofluid Clock. Gravity applications require a detected IMU.
-- Ferrofluid Clock: curved liquid numerals, shake dispersal, magnetic reassembly and flowing digit changes; sensor-gated automatic brightness.
-- First setup: common drivers first, then a Wi-Fi QR code; fixes embedded-page corruption and redundant address entry.
+- Ferrofluid Clock v1.2.0: reference-video analysis, warm backing, side highlights and shadows, large drops slowly forming numerals, gravity dispersal and magnetic return.
+- Installer Next transfers the released port into USB configuration, reads device status and offers Wi-Fi scanning and panel settings.
+- Install CWP apps and image clocks directly from the workshop over USB. Generate a complete Codex prompt with project, SDK, ABI and build links interactively.
+- Initialize only completely erased application storage; preserve damaged existing data. Probe IMU addresses 0x6A/0x6B with retries and report actual sensor absence.
 - Image editor: up to 32 slides, mouse/touch positioning, text layers, five clock fonts, seconds, 12/24-hour time, shadows, crossfades and editable project export/import.
 - Version selection, USB installation/update and matching applications on Pages. Device maintenance downloads and verifies firmware through the browser before OTA.
 - Hardware tests for IMU, buzzer, temperature/humidity, display, light ADC and buttons. Unsupported hardware is reported explicitly.
@@ -21,7 +23,7 @@ Ferrofluid CPU preview: rest, shake, magnetic reassembly and changing digits, re
 
 [Native SDK and Codex prompt](theme-studio/native/README.md) · [Image clock studio](https://antonvanke.github.io/HUB-75E/studio/index.html)
 
-The 0.9.x information below is retained as historical documentation. Legacy Lua/CWP2 applications do not run on the 1.1.2 native runtime.
+The 0.9.x information below is retained as historical documentation. Legacy Lua/CWP2 applications do not run on the 1.2.0 native runtime.
 
 **[Web installer, theme downloads and USB configuration](https://antonvanke.github.io/HUB-75E/)** · **[Firmware releases](https://github.com/AntonVanke/HUB-75E/releases)** · **[Flashing guide](FLASHING.en.md)**
 

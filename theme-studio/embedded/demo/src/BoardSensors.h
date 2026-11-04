@@ -16,6 +16,8 @@ public:
   bool testImu();
 private:
   uint32_t ahtAt_=0,ahtReady_=0,imuAt_=0,reportAt_=0,ahtGood_=0,imuGood_=0;
+  uint8_t imuAddress_=0x6a;uint32_t probeAt_=0;
+  void probe(bool startup);
   bool waiting_=false;
   bool writeRegister(uint8_t reg,uint8_t value);
   bool readRegisters(uint8_t reg,uint8_t* data,size_t count);

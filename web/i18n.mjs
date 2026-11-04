@@ -6,6 +6,17 @@ try { current = localStorage.getItem(languageKey) || (navigator.language?.starts
 if (!['zh-CN', 'en'].includes(current)) current = 'zh-CN';
 
 export const translations = {
+  "搜索附近 Wi-Fi":"Scan nearby Wi-Fi",
+  "搜索结果":"Scan results",
+  "先搜索，再选择网络":"Scan first, then select a network",
+  "请选择网络":"Select a network",
+  "正在搜索…":"Scanning\u2026",
+  "个网络":"networks",
+  "搜索超时，请重试":"Scan timed out; try again",
+  "请更新至 1.2.0 或更新固件以使用 USB Wi-Fi 扫描。":"Update to firmware 1.2.0 or later for USB Wi-Fi scanning.",
+  "USB 已连接，可搜索 Wi-Fi 并配置屏幕驱动。":"USB connected. Scan Wi-Fi and configure your panel driver.",
+  "烧录完成后在此设置 Wi-Fi 和屏幕驱动；配置不会自动写入。":"Set Wi-Fi and the panel driver here after installation; changes are not saved automatically.",
+
   '64 × 64 · C/C++ 原生主题 · 开源固件': '64 × 64 · NATIVE C/C++ THEMES · OPEN-SOURCE FIRMWARE',
   '发布版本': 'Release version', '对应固件版本': 'Matching firmware version', '烧录方式': 'Installation mode',
   '更新固件，保留设置和应用': 'Update firmware, keep settings and apps', '全新安装，重置设置': 'Fresh install, reset settings',

@@ -27,11 +27,11 @@ public:
   }
   void begin(){
     Preferences settings;String ssid;bool chosen=false,hasKey=false;
-    if(settings.begin("cwstudio",true)){
-      hasKey=settings.isKey("ssid");ssid=settings.getString("ssid","");
+    if(openExistingPreferences(settings,"cwstudio")){
+      hasKey=settings.isKey("ssid");if(hasKey)ssid=settings.getString("ssid","");
       chosen=settings.getBool("panelChosen",settings.isKey("panelDriver"));settings.end();
     }
-    if(!hasKey&&settings.begin("clockwise",true)){ssid=settings.getString("wifiSsid","");settings.end();}
+    if(!hasKey&&openExistingPreferences(settings,"clockwise")){if(settings.isKey("wifiSsid"))ssid=settings.getString("wifiSsid","");settings.end();}
     onboarding=ssid.isEmpty();timing=panelTiming();driver=timing.driver;
     if(!state_.begin("cwtrial",false))return;
     mode=state_.getInt("mode",0);paused=state_.getBool("paused",false);

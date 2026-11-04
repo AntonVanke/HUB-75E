@@ -1,14 +1,14 @@
 #include "BoardSensors.h"
 #include <Wire.h>
 
-static constexpr uint8_t IMU=0x6a,AHT=0x38;
+static constexpr uint8_t AHT=0x38;
 bool BoardSensors::writeRegister(uint8_t reg,uint8_t value){
-  Wire.beginTransmission(IMU);Wire.write(reg);Wire.write(value);return Wire.endTransmission()==0;
+  Wire.beginTransmission(imuAddress_);Wire.write(reg);Wire.write(value);return Wire.endTransmission()==0;
 }
 bool BoardSensors::readRegisters(uint8_t reg,uint8_t* data,size_t count){
-  Wire.beginTransmission(IMU);Wire.write(reg);
+  Wire.beginTransmission(imuAddress_);Wire.write(reg);
   if(Wire.endTransmission(false)!=0)return false;
-  if(Wire.requestFrom(IMU,uint8_t(count))!=count)return false;
+  if(Wire.requestFrom(imuAddress_,uint8_t(count))!=count)return false;
   for(size_t i=0;i<count;i++)data[i]=Wire.read();return true;
 }
 bool BoardSensors::average(uint8_t ready,uint8_t reg,float* values){
@@ -38,17 +38,27 @@ void BoardSensors::begin(){
   Wire.begin(1,2,100000);Wire.setTimeOut(25);
   Serial.println("[SENSORS] SDA=GPIO1 SCL=GPIO2 I2C=100000");
   for(uint8_t address=1;address<127;address++){Wire.beginTransmission(address);if(Wire.endTransmission()==0)Serial.printf("[I2C] found 0x%02X\n",address);}
-  Wire.beginTransmission(AHT);ahtPresent=Wire.endTransmission()==0;
-  uint8_t id=0;imuPresent=readRegisters(0x0f,&id,1)&&id==0x6a;
-  Serial.printf("[SENSORS] AHT30=%s LSM6DS3TR-C WHO_AM_I=0x%02X %s\n",ahtPresent?"present":"MISSING",id,imuPresent?"PASS":"FAIL");
-  if(imuPresent){
-    bool ready=writeRegister(0x12,0x01);const uint32_t start=millis();uint8_t control=1;
-    do{delay(1);ready=ready&&readRegisters(0x12,&control,1);}while(ready&&(control&1)&&millis()-start<100);
-    ready=ready&&!(control&1)&&writeRegister(0x12,0x44);
-    if(ready){accelSelfTest=selfTest(false);gyroSelfTest=selfTest(true);}
-    imuPresent=ready&&writeRegister(0x14,0)&&writeRegister(0x10,0x40)&&writeRegister(0x11,0x40);
-  }
+  delay(50);probe(true);
   ahtAt_=millis()-2000;reportAt_=millis();
+}
+void BoardSensors::probe(bool startup){
+  probeAt_=millis();
+  if(!ahtPresent){Wire.beginTransmission(AHT);ahtPresent=Wire.endTransmission()==0;}
+  if(!imuPresent){
+    uint8_t id=0;
+    for(uint8_t address:{uint8_t(0x6a),uint8_t(0x6b)}){
+      Wire.beginTransmission(address);if(Wire.endTransmission()!=0)continue;
+      imuAddress_=address;if(readRegisters(0x0f,&id,1)&&id==0x6a){imuPresent=true;break;}
+    }
+    if(imuPresent){
+      bool ready=writeRegister(0x12,0x01);const uint32_t start=millis();uint8_t control=1;
+      do{delay(1);ready=ready&&readRegisters(0x12,&control,1);}while(ready&&(control&1)&&millis()-start<100);
+      ready=ready&&!(control&1)&&writeRegister(0x12,0x44);
+      if(ready&&startup){accelSelfTest=selfTest(false);gyroSelfTest=selfTest(true);}
+      imuPresent=ready&&writeRegister(0x14,0)&&writeRegister(0x10,0x40)&&writeRegister(0x11,0x40);
+    }
+    if(startup||imuPresent)Serial.printf("[SENSORS] AHT30=%s IMU=0x%02X WHO_AM_I=0x%02X %s SDA=%d SCL=%d\n",ahtPresent?"present":"MISSING",imuAddress_,id,imuPresent?"ready":"MISSING",digitalRead(1),digitalRead(2));
+  }
 }
 bool BoardSensors::testImu(){
   if(!imuPresent)return false;
@@ -58,6 +68,7 @@ bool BoardSensors::testImu(){
 }
 void BoardSensors::poll(){
   const uint32_t now=millis();
+  if((!ahtPresent||!imuPresent)&&now-probeAt_>=5000)probe(false);
   if(ahtPresent&&!waiting_&&now-ahtAt_>=2000){
     Wire.beginTransmission(AHT);Wire.write(0xac);Wire.write(0x33);Wire.write(0);
     waiting_=Wire.endTransmission()==0;ahtAt_=now;ahtReady_=now+85;if(!waiting_)ahtErrors++;
@@ -84,5 +95,5 @@ String BoardSensors::json()const{
   if(tv)snprintf(t,sizeof(t),"%.3f",temperature);
   if(hv)snprintf(h,sizeof(h),"%.3f",humidity);
   if(iv){snprintf(a,sizeof(a),"[%.5f,%.5f,%.5f]",accel[0],accel[1],accel[2]);snprintf(g,sizeof(g),"[%.4f,%.4f,%.4f]",gyro[0],gyro[1],gyro[2]);}
-  snprintf(body,sizeof(body),"{\"temperature\":%s,\"humidity\":%s,\"ahtPresent\":%s,\"imuPresent\":%s,\"imuSupported\":true,\"temperatureValid\":%s,\"humidityValid\":%s,\"imuValid\":%s,\"ahtSamples\":%u,\"ahtErrors\":%u,\"ahtHealthy\":%s,\"accelG\":%s,\"gyroDps\":%s,\"imuSamples\":%u,\"imuErrors\":%u,\"imuHealthy\":%s,\"accelSelfTest\":%s,\"gyroSelfTest\":%s}",t,h,ahtPresent?"true":"false",imuPresent?"true":"false",tv?"true":"false",hv?"true":"false",iv?"true":"false",ahtSamples,ahtErrors,tv&&hv?"true":"false",a,g,imuSamples,imuErrors,iv?"true":"false",accelSelfTest?"true":"false",gyroSelfTest?"true":"false");return String(body);
+  snprintf(body,sizeof(body),"{\"temperature\":%s,\"humidity\":%s,\"ahtPresent\":%s,\"imuPresent\":%s,\"imuSupported\":true,\"temperatureValid\":%s,\"humidityValid\":%s,\"imuValid\":%s,\"ahtSamples\":%u,\"ahtErrors\":%u,\"ahtHealthy\":%s,\"accelG\":%s,\"gyroDps\":%s,\"imuSamples\":%u,\"imuErrors\":%u,\"imuHealthy\":%s,\"accelSelfTest\":%s,\"gyroSelfTest\":%s}",t,h,ahtPresent?"true":"false",imuPresent?"true":"false",tv?"true":"false",hv?"true":"false",iv?"true":"false",ahtSamples,ahtErrors,tv&&hv?"true":"false",a,g,imuSamples,imuErrors,iv?"true":"false",accelSelfTest?"true":"false",gyroSelfTest?"true":"false");String result(body);result.remove(result.length()-1);return result+",\"imuAddress\":"+String(imuAddress_)+",\"sdaPin\":1,\"sclPin\":2,\"sdaHigh\":"+(digitalRead(1)?"true":"false")+",\"sclHigh\":"+(digitalRead(2)?"true":"false")+"}";
 }

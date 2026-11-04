@@ -90,6 +90,7 @@ private:
   char serialLine_[512]={};
   uint16_t serialLength_=0;
   bool serialOverflow_=false;
+  String networksJson(int& code);
   bool scanPending_=false;
   uint32_t scanStartedAt_=0;
   int installIndex_=-1;

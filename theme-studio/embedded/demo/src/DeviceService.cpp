@@ -57,7 +57,7 @@ bool DeviceService::saveOrientation(int degrees,bool automatic,int gravityDegree
 }
 String DeviceService::discoveryIdentity()const{
   char id[17];snprintf(id,sizeof(id),"%012llx",ESP.getEfuseMac()&0xffffffffffffULL);
-  return "{\"product\":\"clockwise-hub75\",\"id\":"+quote(id)+",\"chip\":"+quote(ESP.getChipModel())+",\"version\":\"1.1.2\"}";
+  return "{\"product\":\"clockwise-hub75\",\"id\":"+quote(id)+",\"chip\":"+quote(ESP.getChipModel())+",\"version\":\"1.2.0\"}";
 }
 bool DeviceService::startDiscovery(String& error){
   if(WiFi.status()!=WL_CONNECTED){error="请先让设备连接局域网 Wi-Fi";return false;}
@@ -128,12 +128,26 @@ void DeviceService::startAP(){
   WiFi.mode(WIFI_AP_STA);
   if(WiFi.softAP(apName_.c_str(),apPassword_.c_str())){ap_=true;dns_.start(53,"*",WiFi.softAPIP());}
 }
+// Only a completely erased partition is initialized automatically. Preserve damaged user data.
+static bool mountAppStorage(){
+  const esp_partition_t* part=esp_partition_find_first(ESP_PARTITION_TYPE_DATA,ESP_PARTITION_SUBTYPE_DATA_SPIFFS,nullptr);
+  bool erased=part!=nullptr;uint8_t bytes[512];
+  for(size_t offset=0;erased&&offset<part->size;offset+=sizeof(bytes)){
+    const size_t n=std::min(sizeof(bytes),size_t(part->size-offset));
+    if(esp_partition_read(part,offset,bytes,n)!=ESP_OK){erased=false;break;}
+    for(size_t i=0;i<n;i++)if(bytes[i]!=0xff){erased=false;break;}
+  }
+  if(erased){Serial.println("[STORAGE] First use: initializing empty application storage");if(!LittleFS.format())return false;}
+  const bool mounted=LittleFS.begin(false);
+  if(!mounted)Serial.println("[STORAGE] Mount failed; existing data preserved. Use maintenance to format explicitly.");
+  return mounted;
+}
 void DeviceService::begin(int count,const char* titlesJson){
   themeCount=count;titlesJson_=titlesJson;indexCatalog();panelOrder_=panelColorOrder();panelTiming_=panelTiming();prefs_.begin("cwstudio",false);
   if(!prefs_.isKey("ssid")){
     Preferences legacy;
-    if(legacy.begin("clockwise",true)){
-      String ssid=legacy.getString("wifiSsid","");
+    if(openExistingPreferences(legacy,"clockwise")){
+      String ssid=legacy.isKey("wifiSsid")?legacy.getString("wifiSsid",""):String();
       if(ssid.length()){
         prefs_.putString("ssid",ssid);
         prefs_.putString("wifiPass",legacy.getString("wifiPwd",""));
@@ -142,8 +156,8 @@ void DeviceService::begin(int count,const char* titlesJson){
       legacy.end();
     }
   }
-  ssid_=prefs_.getString("ssid");
-  apPassword_=prefs_.getString("apPass");
+  ssid_=(prefs_.isKey("ssid")?prefs_.getString("ssid",""):String());
+  apPassword_=(prefs_.isKey("apPass")?prefs_.getString("apPass",""):String());
   if(apPassword_.isEmpty()||ssid_.isEmpty()){apPassword_="12345678";prefs_.putString("apPass",apPassword_);}
   char apSuffix[5];snprintf(apSuffix,sizeof(apSuffix),"%04X",unsigned((ESP.getEfuseMac()>>32)&0xffff));
   apName_="HUB75-"+String(apSuffix);
@@ -151,7 +165,7 @@ void DeviceService::begin(int count,const char* titlesJson){
   theme=prefs_.getInt("theme",26);brightness=constrain(prefs_.getInt("bright",80),1,255);
   AutoBrightnessSettings light;light.enabled=prefs_.getBool("lightAuto",false);light.minimum=prefs_.getInt("lightMin",12);light.maximum=prefs_.getInt("lightMax",180);light.dark=prefs_.getInt("lightDark",100);light.bright=prefs_.getInt("lightBright",3500);ambient.settings=light.valid()?light:AutoBrightnessSettings{};
   rotationMinutes=prefs_.getInt("rotate",0);
-  fs_=LittleFS.begin(false);
+  fs_=mountAppStorage();
   limits_=DeviceLimits::detect(fs_?LittleFS.totalBytes():0);
   bool migratedLegacy=false;
   if(fs_){
@@ -169,9 +183,9 @@ void DeviceService::begin(int count,const char* titlesJson){
   {String error;if(!appInstalled(theme)||!appCompatible(theme,error))theme=-1;}
   baseTheme_=theme;for(int i=0;i<64;i++)if(appInstalled(i))schedule_.pool[schedule_.poolCount++]=i;
   schedule_.interval=rotationMinutes?rotationMinutes:1;schedule_.mode=rotationMinutes?1:0;
-  ThemeSchedule restored;if(readSchedule(prefs_.getString("schedule"),restored,true,migratedLegacy)){schedule_=restored;pruneSchedule();}
+  ThemeSchedule restored;if(readSchedule((prefs_.isKey("schedule")?prefs_.getString("schedule",""):String()),restored,true,migratedLegacy)){schedule_=restored;pruneSchedule();}
   rotationMinutes=schedule_.mode==1?schedule_.interval:0;
-  ssid_=prefs_.getString("ssid");password_=prefs_.getString("wifiPass");
+  ssid_=(prefs_.isKey("ssid")?prefs_.getString("ssid",""):String());password_=(prefs_.isKey("wifiPass")?prefs_.getString("wifiPass",""):String());
   WiFi.persistent(false);WiFi.mode(WIFI_STA);WiFi.setSleep(false);
   if(ssid_.length()){WiFi.begin(ssid_.c_str(),password_.c_str());retryAt_=millis();networkState="connecting";}
   else{startAP();networkState="setup-ap";}
@@ -219,27 +233,7 @@ void DeviceService::begin(int count,const char* titlesJson){
     for(int offset=0;offset<8192;offset+=512)if(web_.client().write(pixels+offset,512)!=512){web_.client().stop();break;}
     renderLock(false);
   });
-  web_.on("/api/networks",HTTP_GET,[this](){
-    int count=(WiFi.getStatusBits()&WIFI_SCAN_DONE_BIT)?WiFi.scanComplete():WIFI_SCAN_FAILED;
-    if(scanPending_&&count<0){
-      if(uint32_t(millis()-scanStartedAt_)<20000){reply(202,"{\"state\":\"scanning\"}");return;}
-      esp_wifi_scan_stop();WiFi.scanComplete();WiFi.scanDelete();scanPending_=false;
-      reply(503,"{\"error\":\"Wi-Fi 扫描超时，请重试或手动输入网络名称\"}");return;
-    }
-    if(count<0){
-      WiFi.scanDelete();
-      wifi_scan_config_t config={};config.show_hidden=true;config.scan_type=WIFI_SCAN_TYPE_ACTIVE;
-      config.scan_time.active.min=50;config.scan_time.active.max=100;config.home_chan_dwell_time=30;
-      scanPending_=esp_wifi_scan_start(&config,false)==ESP_OK;
-      if(!scanPending_){reply(503,"{\"error\":\"Wi-Fi 暂时无法启动扫描，请稍后重试或手动输入网络名称\"}");return;}
-      scanStartedAt_=millis();
-      reply(202,"{\"state\":\"scanning\"}");return;
-    }
-    scanPending_=false;
-    String out="{\"state\":\"ready\",\"networks\":[";
-    for(int i=0;i<count&&i<30;i++){if(i)out+=',';out+="{\"ssid\":"+quote(WiFi.SSID(i))+",\"rssi\":"+String(WiFi.RSSI(i))+",\"open\":"+(WiFi.encryptionType(i)==WIFI_AUTH_OPEN?"true":"false")+"}";}
-    reply(200,out+"]}");WiFi.scanDelete();
-  });
+  web_.on("/api/networks",HTTP_GET,[this](){int code;String result=networksJson(code);reply(code,result);});
   web_.on("/api/wifi",HTTP_POST,[this](){
     String error;if(!connectWifi(web_.arg("ssid"),web_.arg("password"),error)){reply(400,"{\"error\":"+quote(error)+"}");return;}
     reply(202,"{\"message\":\"正在连接，成功后保存；失败保留原配置\"}");
@@ -298,7 +292,7 @@ void DeviceService::begin(int count,const char* titlesJson){
   });
   web_.begin();
   Serial.printf("Provision AP: %s  Password: %s\n",apName_.c_str(),apPassword_.c_str());
-  Serial.println("CWJSON:{\"ok\":true,\"version\":\"1.1.2\",\"message\":\"串口设置已就绪，发送 {\\\"cmd\\\":\\\"help\\\"} 查看命令\"}");
+  Serial.println("CWJSON:{\"ok\":true,\"version\":\"1.2.0\",\"message\":\"串口设置已就绪，发送 {\\\"cmd\\\":\\\"help\\\"} 查看命令\"}");
 }
 void DeviceService::uploadScript(){
   auto& u=web_.upload();
@@ -559,13 +553,13 @@ String DeviceService::statusJson(){
   const char* source=windowTheme_>=0?"window":schedule_.mode==1?"interval":!timeValid&&(schedule_.windowCount||schedule_.mode==2)?"waiting-time":schedule_.mode==2?"daily":"fixed";
   if(windowTheme_<0&&schedule_.mode==1){const uint32_t period=uint32_t(schedule_.interval)*60000,elapsed=uint32_t(millis()-rotateAt_);snprintf(remaining,sizeof(remaining),"%u",unsigned(elapsed>=period?0:(period-elapsed+999)/1000));}
   String ip=(WiFi.status()==WL_CONNECTED?WiFi.localIP():WiFi.softAPIP()).toString();
-  const int length=snprintf(body,sizeof(body),"{\"version\":\"1.1.2\",\"chip\":%s,\"width\":64,\"height\":64,\"ip\":%s,\"stationIP\":%s,\"apIP\":%s,\"configUrl\":%s,\"ssid\":%s,\"connected\":%s,\"networkState\":%s,\"rssi\":%d,\"uptime\":%u,\"heap\":%u,\"largestBlock\":%u,\"theme\":%d,\"generation\":%u,\"brightness\":%d,\"rotationMinutes\":%d,\"timezone\":%s,\"otaMaxBytes\":%u,\"storage\":%s,\"hasCustom\":%s,\"appSlots\":64,\"catalogCount\":%d,\"error\":%s,\"performance\":%s,\"limits\":%s,\"baseTheme\":%d,\"timeValid\":%s,\"localTime\":\"%s\",\"clock\":{\"weekday\":%d,\"hour\":%d,\"minute\":%d,\"second\":%d},\"playbackSource\":\"%s\",\"rotationRemainingSeconds\":%s}",
+  const int length=snprintf(body,sizeof(body),"{\"version\":\"1.2.0\",\"chip\":%s,\"width\":64,\"height\":64,\"ip\":%s,\"stationIP\":%s,\"apIP\":%s,\"configUrl\":%s,\"ssid\":%s,\"connected\":%s,\"networkState\":%s,\"rssi\":%d,\"uptime\":%u,\"heap\":%u,\"largestBlock\":%u,\"theme\":%d,\"generation\":%u,\"brightness\":%d,\"rotationMinutes\":%d,\"timezone\":%s,\"otaMaxBytes\":%u,\"storage\":%s,\"hasCustom\":%s,\"appSlots\":64,\"catalogCount\":%d,\"error\":%s,\"performance\":%s,\"limits\":%s,\"baseTheme\":%d,\"timeValid\":%s,\"localTime\":\"%s\",\"clock\":{\"weekday\":%d,\"hour\":%d,\"minute\":%d,\"second\":%d},\"playbackSource\":\"%s\",\"rotationRemainingSeconds\":%s}",
     quote(ESP.getChipModel()).c_str(),quote(ip).c_str(),quote(WiFi.localIP().toString()).c_str(),quote(WiFi.softAPIP().toString()).c_str(),quote("http://"+ip+"/").c_str(),quote(WiFi.SSID()).c_str(),WiFi.status()==WL_CONNECTED?"true":"false",quote(networkState).c_str(),WiFi.RSSI(),millis()/1000,
     heap_caps_get_free_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT),heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT),theme,generation,brightness,rotationMinutes,
     quote(prefs_.getString("tz","CST-8")).c_str(),unsigned(next?next->size:0),fs_?"true":"false",hasCustom?"true":"false",themeCount,quote(lastError).c_str(),metrics,limits_.json().c_str(),
     baseTheme_,timeValid?"true":"false",localTime,local.tm_wday,local.tm_hour,local.tm_min,local.tm_sec,source,remaining);
   if(length<0||length>=int(sizeof(body))-128)return "{\"error\":\"状态信息过长\"}";
-  String result(body);result.remove(result.length()-1);result+=",\"brightnessControl\":"+brightnessJson();result+=",\"flashBytes\":"+String(ESP.getFlashChipSize());result+=",\"sensorCapabilities\":"+sensorCapabilitiesJson()+",\"features\":{\"serialAppInstall\":1,\"discovery\":1,\"orientation\":1,\"panelTrial\":1,\"factoryReset\":1,\"diagnostics\":1},\"orientation\":"+(orientationStatus?orientationStatus():String("{}"));result+=",\"packageVersion\":3,\"runtimeApi\":4,\"internalHeapBytes\":"+String(heap_caps_get_total_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT))+",\"panel\":{\"colorOrder\":"+quote(panelOrder_)+",\"scan\":32,\"clockMHz\":"+String(panelTiming_.clockMHz)+",\"clockPhase\":"+String(panelTiming_.clockPhase)+",\"latchBlanking\":"+String(panelTiming_.latchBlanking)+",\"driver\":"+String(panelTiming_.driver)+",\"refreshHz\":"+String(panelTiming_.refreshHz)+",\"driverName\":"+quote(panelDriverName(panelTiming_.driver))+",\"active\":"+(panelStatus?panelStatus():String("{}"))+",\"testing\":"+(panelTestUntil&&int32_t(panelTestUntil-millis())>0?"true":"false")+"}}";
+  String result(body);result.remove(result.length()-1);result+=",\"brightnessControl\":"+brightnessJson();result+=",\"flashBytes\":"+String(ESP.getFlashChipSize());result+=",\"sensorCapabilities\":"+sensorCapabilitiesJson()+",\"features\":{\"wifiScan\":1,\"serialAppInstall\":1,\"discovery\":1,\"orientation\":1,\"panelTrial\":1,\"factoryReset\":1,\"diagnostics\":1},\"orientation\":"+(orientationStatus?orientationStatus():String("{}"));result+=",\"packageVersion\":3,\"runtimeApi\":4,\"internalHeapBytes\":"+String(heap_caps_get_total_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT))+",\"panel\":{\"colorOrder\":"+quote(panelOrder_)+",\"scan\":32,\"clockMHz\":"+String(panelTiming_.clockMHz)+",\"clockPhase\":"+String(panelTiming_.clockPhase)+",\"latchBlanking\":"+String(panelTiming_.latchBlanking)+",\"driver\":"+String(panelTiming_.driver)+",\"refreshHz\":"+String(panelTiming_.refreshHz)+",\"driverName\":"+quote(panelDriverName(panelTiming_.driver))+",\"active\":"+(panelStatus?panelStatus():String("{}"))+",\"testing\":"+(panelTestUntil&&int32_t(panelTestUntil-millis())>0?"true":"false")+"}}";
   result.remove(result.length()-1);
   result+=",\"panelTrial\":"+trialJson()+",\"setup\":{\"required\":"+(needsSetup()?String("true"):String("false"))+",\"ssid\":"+quote(apName_)+",\"password\":"+(needsSetup()?quote(apPassword_):String("null"))+",\"url\":\"http://192.168.4.1/\"}}";
   return result;
@@ -758,6 +752,7 @@ void DeviceService::serialCommand(const String& line){
   if(integer(line,index)){if(runApp(index,error))answer(true,"已设为默认主题；指定时段仍优先播放");else answer(false,error);return;}
   String cmd;bool found;
   if(!jsonField(line,"cmd",cmd,found)||!found){answer(false,"请发送单行JSON，例如 {\"cmd\":\"help\"}");return;}
+  if(panelTrial.mode==2&&panelTrial.active&&!panelTrial.paused&&cmd!="panel.trial")panelTrial.pause(true);
   if(cmd=="help"){
     Serial.println("CWJSON:{\"ok\":true,\"baud\":115200,\"commands\":[{\"cmd\":\"discover\",\"action\":\"start\"},{\"cmd\":\"orientation\",\"manualRotation\":270,\"autoRotate\":false},{\"cmd\":\"status\"},{\"cmd\":\"wifi\",\"ssid\":\"网络名称\",\"password\":\"网络密码\"},{\"cmd\":\"config\",\"brightness\":80,\"theme\":-1,\"timezone\":\"CST-8\",\"rotationMinutes\":0},{\"cmd\":\"apps\"},{\"cmd\":\"app.run\",\"packageName\":\"org.clockwise.super-mario\"},{\"cmd\":\"app.uninstall\",\"packageName\":\"org.clockwise.super-mario\"},{\"cmd\":\"ap\"},{\"cmd\":\"sensors\"},{\"cmd\":\"panel\",\"colorOrder\":\"RGB\"},{\"cmd\":\"panel.test\",\"action\":\"start\"},{\"cmd\":\"restart\"}],\"note\":\"config字段可单独修改；每条命令以换行结束，密码不回显\"}");return;
   }
@@ -799,6 +794,7 @@ void DeviceService::serialCommand(const String& line){
   if(cmd=="sensors"){Serial.print("CWJSON:");Serial.println(sensorStatus?sensorStatus():"{}");return;}
   if(cmd=="ap"){startAP();Serial.println("CWJSON:{\"ok\":true,\"ssid\":"+quote(apName_)+",\"password\":"+quote(apPassword_)+",\"url\":"+quote("http://"+WiFi.softAPIP().toString()+"/")+"}");return;}
   if(cmd=="restart"){restartAt_=millis()+300;answer(true,"即将重启");return;}
+  if(cmd=="wifi.scan"){int code;Serial.print("CWJSON:");Serial.println(networksJson(code));return;}
   if(cmd=="wifi"){
     String ssid,password;bool hasSsid,hasPassword;
     if(!jsonField(line,"ssid",ssid,hasSsid)||!jsonField(line,"password",password,hasPassword)||!hasSsid){answer(false,"缺少ssid；开放网络可省略password");return;}
@@ -820,4 +816,26 @@ void DeviceService::serialCommand(const String& line){
     bool ok=cmd=="app.run"?runApp(index,error):uninstallApp(index,error);answer(ok,ok?(cmd=="app.run"?"已设为默认主题；指定时段仍优先播放":"应用已卸载，存储空间已释放"):error);return;
   }
   answer(false,"未知命令，发送help查看帮助");
+}
+
+String DeviceService::networksJson(int& code){
+    int count=(WiFi.getStatusBits()&WIFI_SCAN_DONE_BIT)?WiFi.scanComplete():WIFI_SCAN_FAILED;
+    if(scanPending_&&count<0){
+      if(uint32_t(millis()-scanStartedAt_)<20000){code=202;return "{\"state\":\"scanning\"}";}
+      esp_wifi_scan_stop();WiFi.scanComplete();WiFi.scanDelete();scanPending_=false;
+      code=503;return "{\"error\":\"Wi-Fi 扫描超时，请重试或手动输入网络名称\"}";
+    }
+    if(count<0){
+      WiFi.scanDelete();
+      wifi_scan_config_t config={};config.show_hidden=true;config.scan_type=WIFI_SCAN_TYPE_ACTIVE;
+      config.scan_time.active.min=50;config.scan_time.active.max=100;config.home_chan_dwell_time=30;
+      scanPending_=esp_wifi_scan_start(&config,false)==ESP_OK;
+      if(!scanPending_){code=503;return "{\"error\":\"Wi-Fi 暂时无法启动扫描，请稍后重试或手动输入网络名称\"}";}
+      scanStartedAt_=millis();
+      code=202;return "{\"state\":\"scanning\"}";
+    }
+    scanPending_=false;
+    String out="{\"state\":\"ready\",\"networks\":[";
+    for(int i=0;i<count&&i<30;i++){if(i)out+=',';out+="{\"ssid\":"+quote(WiFi.SSID(i))+",\"rssi\":"+String(WiFi.RSSI(i))+",\"open\":"+(WiFi.encryptionType(i)==WIFI_AUTH_OPEN?"true":"false")+"}";}
+    WiFi.scanDelete();code=200;return out+"]}";
 }

@@ -922,4 +922,29 @@ C/C++ 原生主题|Native C/C++ themes
 屏幕先显示驱动与热点信息，再显示 Wi-Fi 二维码。扫码连接设备热点后，自动轮测会暂停；先确认屏幕驱动，再连接家庭 Wi-Fi。|The screen shows driver and hotspot details first, then a Wi-Fi QR code. Scan to join the device hotspot and pause the trial; confirm the display driver, then connect to your home Wi-Fi.
 `;
 export const strings = Object.fromEntries(pairs.trim().split('\n').filter(Boolean).map(line=>{
+
 const at=line.indexOf('|');return [line.slice(0,at),line.slice(at+1)];}));
+
+Object.assign(strings,{
+  "USB 设备":"USB device",
+  "连接 USB 设备":"Connect USB device",
+  "断开串口":"Disconnect serial",
+  "导入 CWP 安装包":"Import CWP package",
+  "Wi-Fi 与屏幕驱动设置":"Wi-Fi and panel driver settings",
+  "连接后可直接安装主题，无需先配置 Wi-Fi。":"Connect to install themes directly, without setting up Wi-Fi first.",
+  "选择应用或制作图片时钟，直接通过 USB 安装，也可下载安装包。":"Choose an app or make an image clock. Install over USB or download its package.",
+  "选择芯片、填写想法，下方实时生成包含项目地址、SDK、构建与安装步骤的完整提示词。":"Choose a chip and describe your idea to generate a complete prompt with project links, SDK, build and installation steps.",
+  "主题 ID":"Theme ID",
+  "目标帧率":"Target frame rate",
+  "主题想法":"Theme idea",
+  "描述画面风格、动画、交互、颜色和需要的素材":"Describe the visual style, animation, interaction, colors and assets.",
+  "重力与陀螺仪":"Gravity and gyroscope",
+  "复制完整提示词":"Copy complete prompt",
+  "GitHub 项目":"GitHub project",
+  "个原生主题":"native themes",
+  "安装到 USB 设备":"Install to USB device",
+  "下载安装包":"Download package",
+  "请先连接 USB 设备":"Connect a USB device first",
+  "串口已断开":"Serial disconnected",
+
+});

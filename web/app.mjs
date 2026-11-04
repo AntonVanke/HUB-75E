@@ -23,6 +23,7 @@ let appInstalling = false;
 let installCancelled = false;
 let installTask = null;
 let discoveryTask = null;
+let scanning=false;
 const serialWaiters = new Set();
 
 function message(text, error = false) {
@@ -50,7 +51,9 @@ function log(text) {
 }
 
 function panelAvailable() {
-  if (!device || !String(device.chip).toUpperCase().includes('S3')) return false;
+  if (!device) return false;
+  if (Number(device.runtimeApi)>=4) return true;
+  if (!String(device.chip).toUpperCase().includes('S3')) return false;
   const version = String(device.version).match(/^(\d+)\.(\d+)\.(\d+)/);
   if (!version) return false;
   return Number(version[1]) * 1000000 + Number(version[2]) * 1000 + Number(version[3]) >= 9007;
@@ -61,8 +64,9 @@ function updateConnection() {
   $('connection-state').textContent = closing ? t('正在断开…') : connecting ? t('正在连接…') : connected ? t('USB 已连接') : t('未连接');
   $('connect').disabled = !supported || connected || connecting || closing;
   $('disconnect').disabled = !connected || sending;
-  document.querySelectorAll('[data-connected]').forEach((button) => { button.disabled = !connected || sending || appInstalling; });
+  document.querySelectorAll('[data-connected]').forEach((button) => { button.disabled = !connected || sending || appInstalling || scanning; });
   $('panel-fields').disabled = !connected || !panelAvailable() || sending || appInstalling;
+  for(const option of $('panel-driver').options)option.disabled=!!device&&!/S3/i.test(device.chip)&&['7','9'].includes(option.value);
   $('orientation-fields').disabled = !connected || !device?.features?.orientation || sending || appInstalling;
   $('auto-rotate').disabled = !device?.orientation?.autoRotateSupported;
   $('cancel-install-config').hidden = !appInstalling || !installTask;
@@ -429,7 +433,7 @@ function requestSerial(command, matches, timeout = 15000) {
       reject: (error) => finish(reject, error),
       receive(data) {
         if (!data || typeof data !== 'object') return;
-        if (data.ok === false) return finish(reject, new Error(translateText(data.error || data.result?.error || t('设备拒绝了操作。'))));
+        if (data.ok === false || data.error) return finish(reject, new Error(translateText(data.error || data.result?.error || t('设备拒绝了操作。'))));
         if (matches(data)) finish(resolve, data);
       },
     };
@@ -579,20 +583,22 @@ async function action(operation) {
   catch (error) { message(error.message, true); log(t('操作失败：{0}', [error.message])); }
 }
 
-$('connect').addEventListener('click', () => action(async () => {
+async function connectSerial(preselected) {
   if (!supported || port || connecting || closing) return;
   connecting = true;
   updateConnection();
   let selected;
   try {
-    selected = await navigator.serial.requestPort();
+    selected = preselected || await navigator.serial.requestPort();
     await selected.open({ baudRate: 115200, dataBits: 8, stopBits: 1, parity: 'none', flowControl: 'none' });
     port = selected;
     device = null;
     installedApps = [];
     readTask = readSerial(selected);
     log(t('串口已连接，115200 baud。'));
-    message(t('USB 串口已连接。点击「读取状态」和「读取应用」获取当前设置。'));
+    await requestSerial({cmd:'status'},d=>Boolean(d.chip&&d.version),15000);
+    await requestSerial({cmd:'apps'},d=>Array.isArray(d.apps));
+    message(t('USB 已连接，可搜索 Wi-Fi 并配置屏幕驱动。'));
     if (!$('panel-config').hidden) updateConnection();
     else await disconnect();
   } catch (error) {
@@ -602,7 +608,9 @@ $('connect').addEventListener('click', () => action(async () => {
     connecting = false;
     updateConnection();
   }
-}));
+}
+$('connect').addEventListener('click',()=>action(()=>connectSerial()));
+window.addEventListener('hub75-configure',e=>action(async()=>{await selectTab('config');await connectSerial(e.detail.port);}));
 $('disconnect').addEventListener('click', () => action(disconnect));
 $('read-status').addEventListener('click', () => action(() => send({ cmd: 'status' })));
 $('read-apps').addEventListener('click', () => action(() => send({ cmd: 'apps' })));
@@ -700,3 +708,17 @@ document.querySelectorAll('form').forEach((form) => { form.noValidate = true; })
 refreshLanguage();
 
 fetch('releases.json',{cache:'no-store'}).then(r=>r.json()).then(data=>{$('app-release').replaceChildren(...data.releases.map(r=>new Option(r.version,r.version)));$('app-release').value=data.latest;$('app-release').onchange=loadThemes;}).catch(()=>{});
+
+$('wifi-networks').onchange=()=>{if($('wifi-networks').value)$('wifi-ssid').value=$('wifi-networks').value;};
+
+$('wifi-scan').onclick=()=>action(async()=>{
+ if(scanning)return;if(!device?.features?.wifiScan)throw Error(t('请更新至 1.2.0 或更新固件以使用 USB Wi-Fi 扫描。'));
+ scanning=true;$('wifi-scan').disabled=true;$('wifi-scan-state').textContent=t('正在搜索…');
+ try{const until=Date.now()+22000;let result;
+  do{result=await requestSerial({cmd:'wifi.scan'},d=>d.state==='scanning'||Array.isArray(d.networks));if(Array.isArray(result.networks))break;await new Promise(r=>setTimeout(r,400));}while(Date.now()<until);
+  if(!Array.isArray(result.networks))throw Error(t('搜索超时，请重试'));
+  const unique=new Map();for(const n of result.networks.sort((a,b)=>b.rssi-a.rssi))if(n.ssid&&!unique.has(n.ssid))unique.set(n.ssid,n);
+  $('wifi-networks').replaceChildren(new Option(t('请选择网络'),''),...Array.from(unique.values(),n=>new Option(n.ssid+' · '+n.rssi+' dBm'+(n.open?'':' 🔒'),n.ssid)));
+  $('wifi-scan-state').textContent=unique.size+' '+t('个网络');
+ }catch(e){$('wifi-scan-state').textContent=t(e.message);throw e;}finally{scanning=false;updateConnection();}
+});
