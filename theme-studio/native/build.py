@@ -108,6 +108,7 @@ def main():
         for i,id in enumerate(order+['image-clock']):binary.append('{"'+id+'",NATIVE_BIN_'+str(i)+',sizeof(NATIVE_BIN_'+str(i)+')},')
         binary.append('};')
         target=ROOT.parent/'embedded/demo/src'
+        target.mkdir(parents=True,exist_ok=True)
         (target/'NativeCatalog.h').write_text('\n'.join(catalog)+'\n',encoding='utf-8')
         (target/'NativeBins.h').write_text('\n'.join(binary)+'\n',encoding='utf-8')
 if __name__=='__main__':main()
