@@ -11,7 +11,7 @@
 <main>
 <div class="connection" id="connection-form"><label>设备地址<input id="address" placeholder="http://设备 IP 或 VPN 地址" autocomplete="url"></label><button id="connect">连接设备</button></div>
 <aside id="toast" hidden><div id="message" role="status" aria-live="polite" aria-atomic="true"></div><button id="dismiss-message" type="button" aria-label="关闭提示">×</button></aside>
-<section id="setup-guide" class="card" hidden><h2>首次设置</h2><p>屏幕先显示驱动与热点信息，再显示 Wi-Fi 二维码。扫码连接设备热点后，自动轮测会暂停；先确认屏幕驱动，再连接家庭 Wi-Fi。</p><p id="setup-access"></p><div class="row"><button type="button" id="setup-display">1. 配置屏幕驱动</button><button type="button" id="setup-wifi" class="secondary">2. 配置 Wi-Fi</button></div></section>
+<section id="setup-guide" class="card" hidden></section>
 <nav class="settings-tabs" role="tablist" aria-label="设备设置分类">
 <button id="tab-overview" data-panel="overview" role="tab" aria-controls="panel-overview" aria-selected="true" tabindex="0">概览</button>
 <button id="tab-display" data-panel="display" role="tab" aria-controls="panel-display" aria-selected="false" tabindex="-1">显示</button>
@@ -48,7 +48,7 @@
 <section class="card narrow"><h2>Wi-Fi 配网</h2><form id="wifi"><fieldset disabled><div class="row"><button id="scan" type="button" class="secondary">扫描 2.4 GHz 网络</button><span id="scan-state"></span></div><label>扫描到的网络<select id="networks" disabled aria-describedby="network-help"><option value="">请先扫描附近网络</option></select></label><label>网络名称（也可手动输入）<input name="ssid" id="ssid" maxlength="32" autocomplete="off" autocapitalize="none" spellcheck="false" required></label><small id="network-help">选择扫描结果会填入网络名称；隐藏网络可手动输入。</small><label>密码<input name="password" id="wifi-password" type="password" maxlength="63" autocomplete="new-password"></label><p>连接成功后保存。失败时保留原网络，仍可通过设备热点重新配网。</p><div class="savebar"><button>连接并保存</button></div></fieldset></form></section>
 </div>
 <div id="panel-maintenance" class="panel" role="tabpanel" aria-labelledby="tab-maintenance" hidden>
-<section id="online-updates" class="card"></section><section id="hardware-tests" class="card"></section><div class="maintenance-grid"><section class="card"><h2>固件更新与重启</h2><fieldset id="ota-controls" disabled><p>选择本设备对应的应用固件 <code>firmware.bin</code>，通过局域网或 VPN 更新，保留已保存的设置。</p><label>应用固件<input id="firmware" type="file" accept=".bin"></label><small id="ota-size"></small><progress id="ota-progress" max="100" value="0"></progress><div class="row"><button id="send-ota">上传并更新</button><button id="restart" class="secondary">重启设备</button></div><small>更新时保留最后一帧并暂停主题；完整校验通过后重启。</small></fieldset></section><section class="card"><h2>应用存储</h2><fieldset id="storage-controls" disabled><p id="storage-state">存储状态未读取。</p><button id="init-storage" class="secondary" type="button">初始化应用存储</button><p><small>设备存储已就绪时无需初始化，应用容量和占用可在“主题应用”查看。</small></p></fieldset></section></div><section id="factory-controls" class="card spaced" hidden><h2>恢复出厂设置</h2><fieldset disabled><p>清除 Wi-Fi、屏幕与重力校正、播放计划及所有已安装主题和素材。保留固件版本，重启后重新进入驱动轮测和配网引导。</p><button type="button" id="factory-reset" class="secondary">恢复出厂设置</button></fieldset></section><section class="card spaced"><h2>串口设置</h2><p>串口选择设备端口和 <code>115200</code> 波特率，每条 JSON 命令以换行结束。输入 <code>{"cmd":"help"}</code> 查看命令；回复以 <code>CWJSON:</code> 开头。</p><details><summary>常用命令示例</summary><pre class="serial-examples">{"cmd":"status"}
+<section class="card"><h2>设置引导</h2><button id="resume-setup" type="button">重新打开设置引导</button></section><section id="online-updates" class="card"></section><section id="hardware-tests" class="card"></section><div class="maintenance-grid"><section class="card"><h2>固件更新与重启</h2><fieldset id="ota-controls" disabled><p>选择本设备对应的应用固件 <code>firmware.bin</code>，通过局域网或 VPN 更新，保留已保存的设置。</p><label>应用固件<input id="firmware" type="file" accept=".bin"></label><small id="ota-size"></small><progress id="ota-progress" max="100" value="0"></progress><div class="row"><button id="send-ota">上传并更新</button><button id="restart" class="secondary">重启设备</button></div><small>更新时保留最后一帧并暂停主题；完整校验通过后重启。</small></fieldset></section><section class="card"><h2>应用存储</h2><fieldset id="storage-controls" disabled><p id="storage-state">存储状态未读取。</p><button id="init-storage" class="secondary" type="button">初始化应用存储</button><p><small>设备存储已就绪时无需初始化，应用容量和占用可在“主题应用”查看。</small></p></fieldset></section></div><section id="factory-controls" class="card spaced" hidden><h2>恢复出厂设置</h2><fieldset disabled><p>清除 Wi-Fi、屏幕与重力校正、播放计划及所有已安装主题和素材。保留固件版本，重启后重新进入驱动轮测和配网引导。</p><button type="button" id="factory-reset" class="secondary">恢复出厂设置</button></fieldset></section><section class="card spaced"><h2>串口设置</h2><p>串口选择设备端口和 <code>115200</code> 波特率，每条 JSON 命令以换行结束。输入 <code>{"cmd":"help"}</code> 查看命令；回复以 <code>CWJSON:</code> 开头。</p><details><summary>常用命令示例</summary><pre class="serial-examples">{"cmd":"status"}
 {"cmd":"ap"}
 {"cmd":"wifi","ssid":"你的WiFi名称","password":"你的WiFi密码"}
 {"cmd":"config","brightness":80,"timezone":"CST-8"}
@@ -66,6 +66,7 @@
 </main>
 <script type="module">
 import {creditsHTML} from "./credits.mjs";
+import {setupWizard} from "./setup-wizard.mjs";
 import {releaseControls} from "./releases.mjs";
 import {diagnosticControls} from "./diagnostics.mjs";
 import {autoBrightnessControls} from "./auto-brightness.mjs";
@@ -106,15 +107,15 @@ async function request(path,options={}){
 }
 imageClockControls($('image-clock-maker'),{device:()=>latestStatus||{},base:()=>base,upload,changed:async()=>{const list=await request('themes');themeOptions(list);status(await request('status'));await loadSchedule(list);await appManager.refresh();},message});
 $('credits').innerHTML=creditsHTML;
-releaseControls($('online-updates'),{device:()=>latestStatus||{},request,upload,sha256,message,changed:async()=>{await appManager.refresh();status(await request('status'));}});
+const releasesUI=releaseControls($('online-updates'),{device:()=>latestStatus||{},request,upload,sha256,message,changed:async()=>{await appManager.refresh();status(await request('status'));}});
 diagnosticControls($('hardware-tests'),{request,message,device:()=>latestStatus});
 const autoLight=autoBrightnessControls($('auto-brightness'),{request,message,refresh:async()=>status(await request('status'))});
+const wizard=setupWizard($("setup-guide"),{request,message,showPanel,refresh:async()=>status(await request("status"))});
 function status(data,initial=false){
- autoLight.update(data.brightnessControl);
+ autoLight.update(data.brightnessControl);releasesUI.update(data);
  latestStatus=data;
  const trial=data.panelTrial,setup=data.setup;
- $('setup-guide').hidden=!setup?.required;
- if(setup?.required){$('setup-access').textContent=translate('热点：')+setup.ssid+' · '+translate('密码：')+setup.password+' · '+setup.url;if(initial)showPanel('display');}
+ wizard.update(data);
  $('factory-controls').hidden=data.features?.factoryReset!==1;
  $('panel-trial-controls').hidden=data.features?.panelTrial!==1;
  if(trial){
@@ -212,8 +213,6 @@ $('panel-config').onsubmit=async e=>{
  try{const data=await request('panel',{method:'POST',body:new URLSearchParams(new FormData(e.target))});panelDirty=false;message(data.message);$('panel-dirty').textContent='已保存，正在重启设备…';clearTimeout(timer);timer=setTimeout(poll,7000);}
  catch(e){message(e.message,true);}finally{button.disabled=false;}
 };
-$('setup-display').onclick=()=>showPanel('display');
-$('setup-wifi').onclick=()=>showPanel('network');
 for(const action of ['start','pause','next','keep','stop'])$('panel-trial-'+action).onclick=async()=>{
  const button=$('panel-trial-'+action);button.disabled=true;
  const operation=action==='pause'&&latestStatus?.panelTrial?.paused?'resume':action;
@@ -224,6 +223,7 @@ for(const action of ['start','pause','next','keep','stop'])$('panel-trial-'+acti
   clearTimeout(timer);timer=setTimeout(poll,['pause','resume'].includes(operation)?500:4000);
  }catch(e){message(e.message,true);}finally{button.disabled=false;}
 };
+$('resume-setup').onclick=async()=>{try{await request('setup',{method:'POST',body:new URLSearchParams({action:'resume'})});status(await request('status'));}catch(e){message(e.message,true);}};
 $('factory-reset').onclick=async()=>{
  if(!confirm(translate('确定恢复出厂设置？将删除所有已安装主题、Wi-Fi、显示设置和校正数据；此操作无法撤销。')))return;
  const button=$('factory-reset');button.disabled=true;

@@ -13,6 +13,7 @@
 #include "PanelSettings.h"
 #include "PanelTrial.h"
 #include "AutoBrightness.h"
+#include "FirmwareUpdate.h"
 class DeviceService {
   class UploadServer final:public WebServer {
   public:
@@ -26,7 +27,8 @@ public:
   bool hasCustom=false;
   PanelTrial panelTrial;
   AutoBrightnessController ambient;
-  bool needsSetup()const{return ssid_.isEmpty();}
+  FirmwareUpdate updater;
+  bool needsSetup()const{return setupRequired_;}
   const String& setupName()const{return apName_;}
   const String& setupPassword()const{return apPassword_;}
   uint32_t generation=0,buttonAUntil=0,buttonBUntil=0,panelTestUntil=0;
@@ -131,7 +133,11 @@ private:
   bool trialAction(const String& action,String& error);
   String trialJson()const;
   bool factoryReset(const String& confirmation,String& error);
-  bool factoryResetting_=false;
+  bool factoryResetting_=false,setupRequired_=false;
+  bool bootRaw_=true,bootStable_=true,bootArmed_=false;
+  uint32_t bootChanged_=0,bootClicked_=0;
+  void pollSetupButton();
+  bool setupAction(const String& action,String& error);
   String panelOrder_="RGB";
   PanelTiming panelTiming_;
   String statusJson();

@@ -948,3 +948,29 @@ Object.assign(strings,{
   "串口已断开":"Serial disconnected",
 
 });
+
+Object.assign(strings,{
+  "首次设置": "First-time setup",
+  "设置引导": "Setup wizard",
+  "重新打开设置引导": "Open setup wizard again",
+  "首次设置步骤": "Setup steps",
+  "1 / 3 · 连接 Wi-Fi": "1 / 3 · Connect Wi-Fi",
+  "2 / 3 · 确认屏幕驱动": "2 / 3 · Confirm display driver",
+  "3 / 3 · 其它设置": "3 / 3 · Other settings",
+  "连接设备热点后扫描并选择家庭 Wi-Fi。连接成功后再进入下一步。": "Connect to the device hotspot, scan and select your Wi-Fi. Continue after it connects.",
+  "观察屏幕确认图形和 R/G/B 色彩。保存驱动会重启，页面重连后继续引导。": "Check shapes and R/G/B colors on the panel. Saving the driver restarts the device; setup continues after reconnecting.",
+  "保存亮度、时区并准备应用存储；方向、自动亮度和其它功能可随后在设置页调整。": "Save brightness and time zone and prepare app storage. Adjust orientation, automatic brightness and other options later in settings.",
+  "完成后自动初始化空白应用存储；保留已经安装的应用。": "Finishing initializes empty app storage and preserves installed apps.",
+  "完成设置并初始化存储": "Finish setup and initialize storage",
+  "跳过引导，手动配置": "Skip wizard and configure manually",
+  "上一步": "Back",
+  "下一步": "Next",
+  "首次设置完成，应用存储已就绪。": "Setup complete. Application storage is ready.",
+  "已跳过引导，可在设置页手动配置。": "Wizard skipped. Configure manually in settings.",
+  "自动更新固件": "Automatic firmware updates",
+  "开启后设备每 6 小时检查稳定版本，无需保持网页打开；验证芯片、容量、TLS 和 SHA-256 后安装并重启，保留设置和应用。更新期间暂停主题。": "When enabled, the device checks stable releases every 6 hours without a browser. It validates the chip, capacity, TLS and SHA-256 before installing and restarting, preserving settings and apps. Themes pause during updates.",
+  "设备更新状态：": "Device update status:",
+  "自动更新设置已保存": "Automatic update settings saved"
+});
+
+Object.assign(strings,{"手动更新由浏览器下载并校验；自动更新由设备直接从 GitHub Pages 下载，保留设置和应用。":"Manual updates download through the browser. Automatic updates download directly from GitHub Pages on the device, preserving settings and apps.","等待检查":"Waiting to check","正在检查":"Checking","正在下载":"Downloading","准备重启":"Preparing to restart","已是最新版本":"Up to date"});

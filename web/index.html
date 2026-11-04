@@ -34,15 +34,15 @@
           <fieldset class="board-picker"><legend class="sr-only">硬件型号</legend>
             <label class="board-option"><input type="radio" name="board" value="esp32" checked><span><strong>ESP32</strong><small>4 MB Flash · 无 PSRAM</small></span></label>
             <label class="board-option"><input type="radio" name="board" value="esp32s3"><span><strong>ESP32-S3</strong><small>至少 8 MB Flash · 8 MB OPI PSRAM</small></span></label>
-          </fieldset><label>发布版本<select id="release-version"><option>1.2.0</option></select></label><label>烧录方式<select id="flash-mode"><option value="update">更新固件，保留设置和应用</option><option value="install">全新安装，重置设置</option></select></label>
+          </fieldset><label>发布版本<select id="release-version"><option>1.3.0</option></select></label><label>烧录方式<select id="flash-mode"><option value="update">更新固件，保留设置和应用</option><option value="install">全新安装，重置设置</option></select></label>
           <p id="board-note" class="note">适用于本项目经典 ESP32 接线与 4 MB Flash 分区。</p>
           <div class="install-row">
-            <esp-web-install-button id="installer" manifest="firmware/esp32-v1.2.0/update-manifest.json">
+            <esp-web-install-button id="installer" manifest="firmware/esp32-v1.3.0/update-manifest.json">
               <button id="install-button" class="primary" slot="activate" type="button">连接并烧录 ESP32</button>
               <span slot="unsupported" class="note">此浏览器不支持在线烧录，请下载离线包。</span>
               <span slot="not-allowed" class="note">请通过 HTTPS 或 localhost 打开此页。</span>
             </esp-web-install-button>
-            <a id="release-link" class="button secondary" href="https://github.com/AntonVanke/HUB-75E/releases/tag/v1.2.0" target="_blank" rel="noopener noreferrer">下载离线包 ↗</a>
+            <a id="release-link" class="button secondary" href="https://github.com/AntonVanke/HUB-75E/releases/tag/v1.3.0" target="_blank" rel="noopener noreferrer">下载离线包 ↗</a>
           </div>
           <p id="flash-support" class="small" role="status"></p>
         </article>
@@ -61,6 +61,7 @@
     </section>
 
     <section id="panel-config" role="tabpanel" aria-labelledby="tab-config" hidden>
+      <div id="serial-setup" class="card" hidden><h3>完成首次设置</h3><p>先连接 Wi-Fi，再保存屏幕驱动，最后完成设置以自动初始化空白应用存储；也可打开设备后台使用分步引导。</p><div class="row"><button id="finish-setup" class="button" type="button">完成设置并初始化存储</button><button id="skip-setup" class="button secondary" type="button">跳过引导，手动配置</button></div></div>
       <div class="section-heading"><div><p class="eyebrow">DEVICE SETTINGS</p><h2>把时钟设为你喜欢的样子</h2><p>USB 串口直连设备，115200 波特率。只有你点击操作后才会连接或写入。</p></div><span id="connection-state" class="tag">未连接</span></div>
       <div class="card connection-card"><div class="connection-actions"><button id="connect" class="primary" type="button">连接 USB 串口</button><button id="disconnect" class="secondary" type="button" disabled>断开</button><button id="read-status" class="secondary" type="button" data-connected disabled>读取状态</button><button id="read-apps" class="secondary" type="button" data-connected disabled>读取应用</button><a id="device-link" class="button secondary" target="_blank" rel="noopener noreferrer" hidden>打开设备后台 ↗</a></div><p id="serial-support" class="small"></p><p id="config-message" class="notice" role="status">烧录完成后在此设置 Wi-Fi 和屏幕驱动；配置不会自动写入。</p><dl class="device-stats"><div><dt>芯片</dt><dd id="status-chip">—</dd></div><div><dt>固件</dt><dd id="status-version">—</dd></div><div><dt>IP</dt><dd id="status-ip">—</dd></div><div><dt>亮度</dt><dd id="status-brightness">—</dd></div><div><dt>默认主题</dt><dd id="status-theme">—</dd></div><div><dt>时区</dt><dd id="status-timezone">—</dd></div></dl></div>
       <div class="config-grid">

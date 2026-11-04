@@ -28,8 +28,8 @@
       "file": "ferrofluid-clock-esp32.cwp",
       "bytes": 13731,
       "sha256": "af8d746682e81581f1f152db3ad997773bc3d17a9decc2bf9fee79a3b6c23838",
-      "path": "applications/1.2.0/ferrofluid-clock-esp32.cwp",
-      "firmwareVersion": "1.2.0"
+      "path": "applications/1.3.0/ferrofluid-clock-esp32.cwp",
+      "firmwareVersion": "1.3.0"
     },
     {
       "packageName": "org.clockwise.ferrofluid-clock",
@@ -58,8 +58,8 @@
       "file": "ferrofluid-clock-esp32s3.cwp",
       "bytes": 13734,
       "sha256": "8815c113393d3735b8af8fb5cb128f37f1cc16a1757837f49d8fc7bc11b3eec6",
-      "path": "applications/1.2.0/ferrofluid-clock-esp32s3.cwp",
-      "firmwareVersion": "1.2.0"
+      "path": "applications/1.3.0/ferrofluid-clock-esp32s3.cwp",
+      "firmwareVersion": "1.3.0"
     },
     {
       "packageName": "org.clockwise.gravity-liquid",
@@ -88,8 +88,8 @@
       "file": "gravity-liquid-esp32.cwp",
       "bytes": 1172,
       "sha256": "d4ccb54605513fdcb340684c35e351ab520b8cae9a5383ab8c80d4fcd72f4eac",
-      "path": "applications/1.2.0/gravity-liquid-esp32.cwp",
-      "firmwareVersion": "1.2.0"
+      "path": "applications/1.3.0/gravity-liquid-esp32.cwp",
+      "firmwareVersion": "1.3.0"
     },
     {
       "packageName": "org.clockwise.gravity-liquid",
@@ -118,8 +118,8 @@
       "file": "gravity-liquid-esp32s3.cwp",
       "bytes": 1175,
       "sha256": "cb3e8af695ddf03c06257fb5ce511bf5a89e725c230df15fc30ff861f22680ef",
-      "path": "applications/1.2.0/gravity-liquid-esp32s3.cwp",
-      "firmwareVersion": "1.2.0"
+      "path": "applications/1.3.0/gravity-liquid-esp32s3.cwp",
+      "firmwareVersion": "1.3.0"
     },
     {
       "packageName": "org.clockwise.gravity-maze",
@@ -148,8 +148,8 @@
       "file": "gravity-maze-esp32.cwp",
       "bytes": 5030,
       "sha256": "1982ebbbdab1ff0251dd6b557630b2caefc733a7740b4b4a167af7b8ead3d430",
-      "path": "applications/1.2.0/gravity-maze-esp32.cwp",
-      "firmwareVersion": "1.2.0"
+      "path": "applications/1.3.0/gravity-maze-esp32.cwp",
+      "firmwareVersion": "1.3.0"
     },
     {
       "packageName": "org.clockwise.gravity-maze",
@@ -178,8 +178,8 @@
       "file": "gravity-maze-esp32s3.cwp",
       "bytes": 5033,
       "sha256": "6d39d7304b7008f1f7d305560bdac7ffd9a73d37992e721ca0d68d1b3e464944",
-      "path": "applications/1.2.0/gravity-maze-esp32s3.cwp",
-      "firmwareVersion": "1.2.0"
+      "path": "applications/1.3.0/gravity-maze-esp32s3.cwp",
+      "firmwareVersion": "1.3.0"
     },
     {
       "packageName": "org.clockwise.mario-1-1",
@@ -205,8 +205,8 @@
       "file": "mario-1-1-esp32.cwp",
       "bytes": 40246,
       "sha256": "fa432fd21aa51439eae641c7f41bb61cdcb2d51f711e45b9fc1be08b81ac10fb",
-      "path": "applications/1.2.0/mario-1-1-esp32.cwp",
-      "firmwareVersion": "1.2.0"
+      "path": "applications/1.3.0/mario-1-1-esp32.cwp",
+      "firmwareVersion": "1.3.0"
     },
     {
       "packageName": "org.clockwise.mario-1-1",
@@ -232,8 +232,8 @@
       "file": "mario-1-1-esp32s3.cwp",
       "bytes": 40248,
       "sha256": "373339f0d3157e4f6ecf8c0500046696ed56182f196c3362c9fe385ce1245c3f",
-      "path": "applications/1.2.0/mario-1-1-esp32s3.cwp",
-      "firmwareVersion": "1.2.0"
+      "path": "applications/1.3.0/mario-1-1-esp32s3.cwp",
+      "firmwareVersion": "1.3.0"
     },
     {
       "packageName": "org.clockwise.pacman",
@@ -259,8 +259,8 @@
       "file": "pacman-esp32.cwp",
       "bytes": 10134,
       "sha256": "40d9c7b54d790fef6503234578ad80e985985aa927949f85d86fa6e9820d43d8",
-      "path": "applications/1.2.0/pacman-esp32.cwp",
-      "firmwareVersion": "1.2.0"
+      "path": "applications/1.3.0/pacman-esp32.cwp",
+      "firmwareVersion": "1.3.0"
     },
     {
       "packageName": "org.clockwise.pacman",
@@ -286,8 +286,8 @@
       "file": "pacman-esp32s3.cwp",
       "bytes": 10136,
       "sha256": "1af6466c507349962a0599e6e21a25239f28941437fb554e92552fea8b0f06ed",
-      "path": "applications/1.2.0/pacman-esp32s3.cwp",
-      "firmwareVersion": "1.2.0"
+      "path": "applications/1.3.0/pacman-esp32s3.cwp",
+      "firmwareVersion": "1.3.0"
     }
   ]
 }

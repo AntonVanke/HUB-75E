@@ -1,3 +1,4 @@
+import {groupThemes,selectVariant} from './theme-groups.mjs';
 import { language, setLanguage, t, metadata, translatePage, translateText, translations } from './i18n.mjs';
 const $ = (id) => document.getElementById(id);
 const supported = 'serial' in navigator && window.isSecureContext;
@@ -147,10 +148,10 @@ if (['flash', 'themes', 'config'].includes(location.hash.slice(1))) selectTab(lo
 function updateInstaller(){
  const key=document.querySelector('input[name="board"]:checked').value,board=boards[key],release=releases?.releases.find(r=>r.version===$('release-version').value),target=release?.targets[key];
  if(!target)return;
- const preserve=$('flash-mode').value==='update';$('installer').setAttribute('manifest',preserve?target.updateManifest:target.manifest);
+ const preserve=$('flash-mode').value==='update';$('installer').overrides={preserveData:preserve};$('installer').setAttribute('manifest',preserve?target.updateManifest:target.manifest);
  $('install-button').textContent=(preserve?'连接并更新 ':'连接并烧录 ')+board.label+' '+release.version;
  $('release-link').href='https://github.com/AntonVanke/HUB-75E/releases/tag/v'+release.version;
- $('board-note').textContent=board.note+'。'+(preserve?'更新保留 Wi-Fi、设置和应用；要求原设备使用本项目兼容分区，请不要勾选整片擦除。':'全新安装会重置 Wi-Fi 和设置。');
+ $('board-note').textContent=board.note+'。'+(preserve?'更新保留 Wi-Fi、设置和应用；要求原设备使用本项目兼容分区，不会执行整片擦除。':'全新安装会重置 Wi-Fi 和设置。');
 }
 for(const radio of document.querySelectorAll('input[name="board"]'))radio.onchange=updateInstaller;
 $('release-version').onchange=$('flash-mode').onchange=updateInstaller;
@@ -209,15 +210,16 @@ function renderThemes() {
   const query = $('theme-search').value.trim().toLocaleLowerCase();
   const chip = $('theme-chip').value;
   const memory = $('theme-memory').value;
-  const matches = themes.filter((app) => {
+  const matches = groupThemes(themes.filter((app) => {
     const requirements = app.requirements || {};
     const text = [app.title, app.id, app.description, app.category, metadata(app, 'title'), metadata(app, 'description'), metadata(app, 'category')].join(' ').toLocaleLowerCase();
     return (!query || text.includes(query))
       && (chip === 'all' || requirements.chips?.includes(chip))
       && (memory === 'all' || (memory === 'none' ? !requirements.psramBytes : Number(requirements.psramBytes) > 0));
-  });
+  }));
   const fragment = document.createDocumentFragment();
-  for (const app of matches) {
+  for (const variants of matches) {
+    const app=selectVariant(variants,device?(/S3/i.test(device.chip)?'esp32s3':'esp32'):chip);
     const requirements = app.requirements || {};
     const id = /^[a-zA-Z0-9_-]+$/.test(app.id) ? app.id : '';
     const card = element('article', 'card theme-card');
@@ -225,7 +227,7 @@ function renderThemes() {
     heading.append(element('h3', '', metadata(app, 'title')), element('span', 'version', `v${app.appVersion || '—'}`));
     card.append(heading, element('p', 'theme-description', metadata(app, 'description') || t('暂无描述')));
     const meta = element('div', 'theme-meta');
-    meta.append(element('span', '', (requirements.chips || []).map((value) => value === 'esp32s3' ? 'ESP32-S3' : value.toUpperCase()).join(' / ') || t('芯片未声明')));
+    meta.append(element('span', '', [...new Set(variants.flatMap(v=>v.requirements?.chips||[]))].map((value) => value === 'esp32s3' ? 'ESP32-S3' : value.toUpperCase()).join(' / ') || t('芯片未声明')));
     meta.append(element('span', '', !requirements.psramBytes ? t('无需 PSRAM') : `PSRAM ${bytes(requirements.psramBytes)}`));
     if (app.category) meta.append(element('span', '', metadata(app, 'category')));
     card.append(meta);
@@ -237,7 +239,7 @@ function renderThemes() {
       const source = element('a', 'button secondary', t('↓ 源码 ZIP'));
       source.href = relativeAsset(app.archivePath, `themes/apps/${id}.zip`);
       source.download = `${id}.zip`;
-      downloads.append(cwp);if(app.archivePath)downloads.append(source);
+      for(const variant of variants){const link=element('a','button secondary',`↓ ${variant.requirements?.chips?.includes('esp32s3')?'ESP32-S3':'ESP32'} · CWP`);link.href=relativeAsset(variant.path||variant.file,`themes/apps/${variant.id}.cwp`);link.download=`${variant.id}.cwp`;downloads.append(link);}if(app.archivePath)downloads.append(source);
       const installed = installedApps.find((item) => item.packageName === app.packageName);
       const action = element('button', 'button secondary', t(installed ? '卸载' : '安装到 USB 设备'));
       action.type = 'button';
@@ -266,7 +268,7 @@ function renderThemes() {
     fragment.append(card);
   }
   $('theme-list').replaceChildren(fragment);
-  $('theme-result').textContent = matches.length ? t('显示 {0} / {1} 款主题', [matches.length, themes.length]) : t('没有匹配的主题，请调整搜索或筛选条件。');
+  $('theme-result').textContent = matches.length ? t('显示 {0} / {1} 款主题', [matches.length, groupThemes(themes).length]) : t('没有匹配的主题，请调整搜索或筛选条件。');
 }
 
 async function loadThemes() {
@@ -276,8 +278,8 @@ async function loadThemes() {
     const data = await response.json();
     themes = Array.isArray(data) ? data : data.apps;
     if (!Array.isArray(themes)) throw new Error(t('目录格式无效'));
-    $('theme-count').textContent = t('{0} 款', [themes.length]);
-    $('theme-tab-count').textContent = themes.length;
+    $('theme-count').textContent = t('{0} 款', [groupThemes(themes).length]);
+    $('theme-tab-count').textContent = groupThemes(themes).length;
     renderThemes();
   } catch (error) {
     $('theme-result').textContent = t('主题目录暂时无法读取：{0}。可前往 GitHub 查看应用文件。', [error.message]);
@@ -317,6 +319,8 @@ function themeLabel(index) {
 
 function updateStatus(data) {
   device = data;
+  $('serial-setup').hidden=!data.setup?.required||!data.setup?.wizard;
+  $('finish-setup').disabled=!data.connected||!data.setup?.panelChosen;
   for (const key of ['chip', 'version', 'ip', 'brightness', 'timezone']) $('status-' + key).textContent = String(data[key] ?? '—');
   const theme = data.baseTheme ?? data.theme;
   $('status-theme').textContent = themeLabel(theme);
@@ -696,7 +700,7 @@ function refreshLanguage() {
   $('install-button').textContent = t('连接并烧录 {0}', [board.label]);
   $('board-note').textContent = translateText(board.note);
   if (themes.length) {
-    $('theme-count').textContent = t('{0} 款', [themes.length]);
+    $('theme-count').textContent = t('{0} 款', [groupThemes(themes).length]);
     renderThemes();
   }
   updateApps(installedApps, true);
@@ -722,3 +726,5 @@ $('wifi-scan').onclick=()=>action(async()=>{
   $('wifi-scan-state').textContent=unique.size+' '+t('个网络');
  }catch(e){$('wifi-scan-state').textContent=t(e.message);throw e;}finally{scanning=false;updateConnection();}
 });
+
+for(const operation of ['finish','skip'])$(operation+'-setup').onclick=()=>action(async()=>{await requestSerial({cmd:'setup',action:operation},data=>typeof data.ok==='boolean',30000);await requestSerial({cmd:'status'},data=>Boolean(data.chip&&data.version));});

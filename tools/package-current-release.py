@@ -53,7 +53,7 @@ def main():
         helpers.write(out / "manifest.json", json.dumps({"name": "HUB-75E " + family,
             "version": args.version, "new_install_improv_wait_time": 0, "hub75_config": True, "builds": [{"chipFamily": family,
             "parts": [{"path": "merged.bin", "offset": 0}]}]}, indent=2) + "\n")
-        helpers.write(out / "update-manifest.json", json.dumps({"name": "HUB-75E " + family + " update", "version": args.version, "new_install_improv_wait_time": 0, "hub75_config": True, "hub75_preserve": True, "builds": [{"chipFamily": family, "parts": [{"path":"app.bin","offset":65536},{"path":"boot_app0.bin","offset":57344}]}]}, indent=2)+"\n")
+        helpers.write(out / "update-manifest.json", json.dumps({"name": "HUB-75E " + family + " update", "version": args.version, "new_install_improv_wait_time": 0, "hub75_config": True, "hub75_preserve": True, "builds": [{"chipFamily": family, "parts": [{"path":"bootloader.bin","offset":boot_offset},{"path":"partitions.bin","offset":32768},{"path":"boot_app0.bin","offset":57344},{"path":"app.bin","offset":65536}]}]}, indent=2)+"\n")
         helpers.flash_scripts(out, {"chip": chip, "size": size})
         helpers.write(out / "README.md", f"""# HUB-75E {family} v{args.version}
 

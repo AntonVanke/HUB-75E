@@ -6,7 +6,7 @@
 class PanelTrial {
 public:
   static constexpr uint32_t durationMs=20000;
-  bool active=false,paused=false,onboarding=false;
+  bool active=false,paused=false,onboarding=false,qrManual=false,showQr=false;
   int mode=0,position=0,driver=0;
   uint32_t startedAt=0;
   PanelTiming timing;
@@ -19,7 +19,7 @@ public:
   }
   static int driverAt(int index){
 #ifdef HUB75_S3_BOARD
-    static constexpr int order[]={0,8,9,4,3,2,1,5,6,7};
+    static constexpr int order[]={9,7,0,8,4,3,2,1,5,6};
 #else
     static constexpr int order[]={0,8,4,3,2,1,5,6};
 #endif

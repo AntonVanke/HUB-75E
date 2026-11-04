@@ -1,0 +1,2 @@
+export function groupThemes(apps){const groups=new Map();for(const app of apps){const key=app.packageName||app.id;const group=groups.get(key)||[];group.push(app);groups.set(key,group);}return [...groups.values()];}
+export function selectVariant(variants,chip){return variants.find(app=>app.requirements?.chips?.includes(chip))||variants.find(app=>app.requirements?.chips?.includes('esp32s3'))||variants[0];}

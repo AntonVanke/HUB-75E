@@ -22,14 +22,15 @@ public:
   }
   bool active(uint32_t now)const{return supported&&present&&settings.enabled&&uint32_t(now-sampled_)<700;}
   int tick(int manual,uint32_t now){
-    if(!active(now)){actual=manual;level_=manual;adjusted_=now;return actual;}
-    if(uint32_t(now-adjusted_)<200)return actual;
-    float dt=float(uint32_t(now-adjusted_))*.001f;if(dt>.4f)dt=.4f;adjusted_=now;
+    if(!settings.enabled){actual=manual;level_=manual;adjusted_=now;return actual;}
+    if(uint32_t(now-adjusted_)<16)return actual;
+    float dt=float(uint32_t(now-adjusted_))*.001f;if(dt>.1f)dt=.1f;adjusted_=now;
     float u=(filtered_-settings.dark)/(settings.bright-settings.dark);if(u<0)u=0;if(u>1)u=1;
-    float target=settings.minimum+(settings.maximum-settings.minimum)*u*(2-u),delta=target-level_;
-    const float rate=(delta>0?65.f:25.f)*dt;
+    const float target=active(now)?settings.minimum+(settings.maximum-settings.minimum)*u*(2-u):manual;
+    const float difference=target-level_,tau=difference>0?1.2f:2.4f;
+    float delta=difference*dt/(tau+dt),rate=(difference>0?35.f:18.f)*dt;
     if(delta>rate)delta=rate;if(delta<-rate)delta=-rate;
-    if(delta>1||delta<-1)level_+=delta;
+    level_+=delta;
     actual=int(level_+.5f);if(actual<1)actual=1;if(actual>255)actual=255;return actual;
   }
   int filtered()const{return int(filtered_+.5f);}

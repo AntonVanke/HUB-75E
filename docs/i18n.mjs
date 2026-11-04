@@ -6,6 +6,11 @@ try { current = localStorage.getItem(languageKey) || (navigator.language?.starts
 if (!['zh-CN', 'en'].includes(current)) current = 'zh-CN';
 
 export const translations = {
+  "完成首次设置":"Finish first-time setup",
+  "先连接 Wi-Fi，再保存屏幕驱动，最后完成设置以自动初始化空白应用存储；也可打开设备后台使用分步引导。":"Connect Wi-Fi, save the display driver, then finish setup to initialize empty application storage. You can also use the step-by-step wizard on the device.",
+  "完成设置并初始化存储":"Finish setup and initialize storage",
+  "跳过引导，手动配置":"Skip wizard and configure manually",
+
   "搜索附近 Wi-Fi":"Scan nearby Wi-Fi",
   "搜索结果":"Scan results",
   "先搜索，再选择网络":"Scan first, then select a network",

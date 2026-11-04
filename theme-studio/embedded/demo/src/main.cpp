@@ -271,7 +271,7 @@ static void drawDriverGuide(){
     drawPanelTest();
     return;
   }
-  if(setupQr.size()&&(millis()-service.panelTrial.startedAt)%PanelTrial::durationMs>=8000){
+  if(setupQr.size()&&(service.panelTrial.qrManual?service.panelTrial.showQr:(millis()-service.panelTrial.startedAt)%PanelTrial::durationMs>=8000)){
     g->fillScreen(panelColor(0xffff));g->setTextSize(1);g->setTextWrap(false);g->setTextColor(0);
     char label[12];snprintf(label,sizeof(label),"D%d WIFI",selectedPanelDriver);g->setCursor(11,2);g->print(label);
     const int size=setupQr.size(),offset=(64-size)/2;

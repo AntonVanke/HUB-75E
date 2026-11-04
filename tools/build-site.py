@@ -72,7 +72,7 @@ def main():
     (appdir / "catalog.json").write_text(encoded, encoding="utf-8")
     indexPath=output / "releases.json"
     index=json.loads(indexPath.read_text(encoding="utf-8")) if indexPath.exists() else {"schema":1,"releases":[]}
-    release={"version":version,"runtimeApi":4,"nativeAbi":1,"notes":"烧录完成直达 USB 配网与驱动设置、串口 Wi-Fi 扫描、工坊串口安装、交互式 Codex 提示词、实拍磁流体重制与首次启动修复。", "catalog":"applications/"+version+"/catalog.json","targets":{}}
+    release={"version":version,"runtimeApi":4,"nativeAbi":1,"notes":"修复保留数据更新、空白存储断言重启；三步首次引导、BOOT 操作、驱动 9/7 优先、自动亮度平滑、主题合并和设备端自动更新。", "catalog":"applications/"+version+"/catalog.json","targets":{}}
     for chip in ("esp32", "esp32s3"):
         name=chip+"-v"+version
         source=ROOT / "releases" / name
@@ -81,6 +81,11 @@ def main():
         shutil.copyfile(ROOT / "releases" / (name+".zip"), output / "firmware" / (name+".zip"))
         app=source / "app.bin"
         release["targets"][chip]={"chip":chip,"flashBytes":8388608 if chip=="esp32s3" else 4194304,"psramBytes":8388608 if chip=="esp32s3" else 0,"manifest":"firmware/"+name+"/manifest.json","updateManifest":"firmware/"+name+"/update-manifest.json","app":{"path":"firmware/"+name+"/app.bin","bytes":app.stat().st_size,"sha256":hashlib.sha256(app.read_bytes()).hexdigest()}}
+    updates=output / "updates"
+    updates.mkdir(exist_ok=True)
+    for chip,target in release["targets"].items():
+        descriptor={"version":version,"chip":chip,"flashBytes":target["flashBytes"],"psramBytes":target["psramBytes"],**target["app"]}
+        (updates / (chip+".json")).write_text(json.dumps(descriptor,indent=2)+"\n",encoding="utf-8")
     index["releases"]=[release]+[r for r in index["releases"] if r["version"]!=version]
     index["latest"]=version
     indexPath.write_text(json.dumps(index,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")

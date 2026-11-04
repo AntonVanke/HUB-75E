@@ -57,8 +57,8 @@ int main(){
   for(int i=0;i<25;i++)light.sample(0,0,i*100);assert(!light.present&&light.tick(80,2400)==80);
   for(int i=25;i<45;i++)light.sample(1500,1200,i*100);assert(light.present&&light.active(4400));
   int before=light.tick(80,4400),after=light.tick(80,4600);assert(abs(after-before)<=13&&after>=1);
-  for(int i=46;i<49;i++)light.sample(0,0,i*100);assert(!light.present&&light.tick(80,4800)==80);
-  for(int i=49;i<70;i++)light.sample(2000,1600,i*100);assert(light.present);assert(light.tick(80,7800)==80);
+  for(int i=46;i<49;i++)light.sample(0,0,i*100);assert(!light.present&&abs(light.tick(80,4800)-after)<=4);
+  for(int i=49;i<70;i++)light.sample(2000,1600,i*100);assert(light.present);assert(abs(light.tick(80,7800)-after)<=8);
   AutoBrightnessController missing;missing.settings.enabled=true;for(int i=0;i<20;i++)missing.sample(1500,1200,i*100);assert(!missing.present&&missing.tick(80,2000)==80);
   std::filesystem::create_directories("theme-studio/native/build/ferrofluid");assert(start(&s,&a));
   double maxDistance=0,restDistance=0,recoveryDistance=0,us=0,restEnergy=0,recoveredEnergy=0;int captured=0,recoveryFrame=-1;
