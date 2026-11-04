@@ -10,6 +10,7 @@
 #include "ThemeSchedule.h"
 #include "DeviceLimits.h"
 #include "AppManifest.h"
+#include "AppParameters.h"
 #include "PanelSettings.h"
 #include "PanelTrial.h"
 #include "AutoBrightness.h"
@@ -25,6 +26,8 @@ public:
   String lastError,networkState="idle";
   char metrics[512]="{}";
   bool hasCustom=false;
+  AppParameters activeParameters;
+  bool loadParameters(const char* path,String& error);
   PanelTrial panelTrial;
   AutoBrightnessController ambient;
   FirmwareUpdate updater;
@@ -123,6 +126,7 @@ private:
   int catalogIndexByName(const String& name,const String& id)const;
   void refreshApps();
   void sendApps(bool serial=false);
+  String appConfig(int index,const String* values,int& code);
   void exportApp(int index,bool archive=false,bool source=false);
   void finishInstall();
   bool uninstallApp(int index,String& error);

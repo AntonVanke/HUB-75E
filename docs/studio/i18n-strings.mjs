@@ -1,4 +1,37 @@
 const pairs = `
+参数设置|Theme parameters
+主题参数声明无效|Invalid theme parameter schema
+背景与幻灯片|Background and slideshow
+图层与字体|Layers and fonts
+背景颜色|Background color
+渐变颜色|Gradient color
+渐变底色（可不导入图片）|Gradient background (images optional)
+动态日期与秒进度|Live date and second progress
+显示月-日|Show month-day
+日期 X|Date X
+日期 Y|Date Y
+底部秒进度条|Second progress bar
+编辑工程与目标设备|Project and target device
+预览方式|Preview mode
+LED 点阵|LED matrix
+真实像素|Actual pixels
+删除图层|Delete layer
+增加元素|Add element
+亚像素覆盖抗锯齿（灰度）|Subpixel coverage antialiasing (grayscale)
+圆形|Circle
+矩形|Rectangle
+边框|Frame
+分隔线|Divider
+爱心|Heart
+星星|Star
+太阳|Sun
+月亮|Moon
+夜航|Nightfall
+暖光|Warm glow
+薄荷|Mint
+拖动图层，方向键微调 1 像素。预览与安装包共用字形与 RGB565 混色；虚线不导出。|Drag layers or nudge with arrow keys. Preview and package share glyphs and RGB565 blending; guides are not exported.
+连接后自动匹配芯片。素材与字形打包，设备离线播放；Unifont 首次使用需要下载字体。|Connected chip is detected automatically. Assets and glyphs are packaged for offline playback; Unifont requires an initial font download.
+
 添加图片（最多 32 张）|Add images (up to 32)
 每张停留（秒）|Seconds per slide
 幻灯片图片|Slideshow images

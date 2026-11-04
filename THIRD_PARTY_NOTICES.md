@@ -24,3 +24,7 @@ Design references include [ClockWise Plus](https://topyuan.top/clock/) and its a
 主题参考还包含公开像素表盘及游戏/影视题材；项目 JSON、脚本和已有资源说明中的作者、来源字段应继续保留。素材并无统一的开放许可，游戏名称、角色、商标及原始图像的权利归相应权利人。本文件不将这些素材重新许可为 MIT。
 
 固件与开发工具链还使用 Espressif Arduino-ESP32 / ESP-IDF、esptool / esptool-js、PlatformIO、FreeRTOS、LittleFS、mbedTLS、lwIP 及 Xtensa GCC 工具链。马里奥关卡资源参考 FullScreenMario，原始素材与主题保留已有来源声明。以上依赖的许可见原项目及分发目录，不因本项目 MIT 许可改变。
+
+## GNU Unifont 18.0.01
+
+The image clock editor uses unmodified Unifont and Unifont Upper OpenType fonts from https://www.unifoundry.com/unifont/index.html. Copyright belongs to the Unifont contributors; notices are retained in the font metadata and studio/fonts/LICENSE.txt. Distributed under SIL OFL 1.1 (studio/fonts/OFL-1.1.txt); alternatively GPL 2+ with the GNU Font Embedding Exception. Fonts load in the editor only; exported clocks embed rendered pixels and the used digit masks, not the complete font.

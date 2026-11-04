@@ -31,7 +31,7 @@ static ProtomatterPanelProbe protomatterProbe;
 #define PANEL_ROTATION 3
 #endif
 constexpr int FRAME_US=16667;
-constexpr int THEME_COUNT=5;
+constexpr int THEME_COUNT=6;
 struct Snapshot {
   ThemeClock clock;int theme=0,brightness=80,rotation=PANEL_ROTATION;uint32_t generation=0;
   float temperature=NAN,humidity=NAN,accel[3]={},gyro[3]={},gravity[3]={};
@@ -141,6 +141,7 @@ public:
   }
   bool pressed(const char* key)override{return !strcmp(key,"A")?snapshot.a:!strcmp(key,"B")?snapshot.b:false;}
   bool data(const char* key,ThemeValue& value)override{
+    if(!strncmp(key,"setting.",8)){float n;if(!service.activeParameters.get(key+8,n))return false;value.type=ThemeValue::Number;value.number=n;return true;}
     bool boolean=false,isBoolean=true;
     if(!strcmp(key,"imu_supported"))boolean=snapshot.imuSupported;
     else if(!strcmp(key,"imu_valid"))boolean=snapshot.imuValid;
@@ -207,7 +208,7 @@ static String packageError;
 static bool loadScript(const char* path){
   runtime.stop();host.releasePackage();
   packageError="";targetFps=60;framePeriodUs=FRAME_US;
-  if(!service.checkPackage(path,packageError,&targetFps))return false;
+  if(!service.checkPackage(path,packageError,&targetFps)||!service.loadParameters(path,packageError))return false;
   framePeriodUs=(1000000+targetFps-1)/targetFps;
   host.packageFile=LittleFS.open(path,"r");
   if(!host.package.read(host.packageFile,limits)||host.package.version!=3){packageError="需要 C/C++ 二进制主题包 CWP3";return false;}

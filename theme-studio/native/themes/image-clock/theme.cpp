@@ -7,7 +7,7 @@ static uint16_t mix(uint16_t a,uint16_t b,int t){return ((((a>>11)*(255-t)+(b>>1
 static bool start(void* p,const CwApi* a){
   auto& s=*(State*)p;auto* c=s.config;if(a->read(a->context,"clock",0,c,8)!=8)return false;s.legacy=c[0]==1;
   if(s.legacy){if(c[1]+17*c[3]>64||c[2]+5*c[3]>64||!c[3]||c[3]>3)return false;s.color=c[6]|uint16_t(c[7])<<8;return a->read(a->context,"background",0,s.bg,8192)==8192;}
-  if(a->read(a->context,"clock",0,c,64)!=64||c[0]!=2||!c[1]||c[1]>32||!(c[2]|c[3])||!c[10]||c[10]>16||!c[11]||c[11]>24||c[8]>63||c[9]>63)return false;
+  if(a->read(a->context,"clock",0,c,64)!=64||(c[0]!=2&&c[0]!=3)||!c[1]||c[1]>32||!(c[2]|c[3])||!c[10]||c[10]>16||!c[11]||c[11]>24||c[8]>63||c[9]>63)return false;
   s.count=c[1];s.w=c[10];s.h=c[11];s.color=c[12]|uint16_t(c[13])<<8;
   for(int i=0;i<11;i++)if(!c[32+i]||c[32+i]>s.w)return false;
   return a->read(a->context,"slides",0,s.bg,8192)==8192&&a->read(a->context,"glyphs",0,s.glyph,11*s.w*s.h)==size_t(11*s.w*s.h);
@@ -25,9 +25,10 @@ static bool draw(void* p,const CwApi* a){
   uint32_t duration=(c[2]|uint16_t(c[3])<<8)*1000u;if(!s.legacy&&s.count>1&&c[15]&&s.elapsed>=duration-500)fade=(s.elapsed-(duration-500))*255/500;
   for(int i=0;i<4096;i++)a->pixels[i]=fade?mix(s.bg[i],s.next[i],fade):s.bg[i];
   if(s.legacy){char t[6];cw::time(a,t);if(c[4])a->text(a->context,c[1]+1,c[2]+1,t,0,c[3]);a->text(a->context,c[1],c[2],t,s.color,c[3]);return true;}
-  if(!c[4])return true;auto t=a->clock(a->context);int hour=c[5]?(t.hour%12?t.hour%12:12):t.hour;
+  auto t=a->clock(a->context);if(c[0]>=3){if(c[16]){char date[6];date[0]='0'+t.month/10;date[1]='0'+t.month%10;date[2]='-';date[3]='0'+t.day/10;date[4]='0'+t.day%10;date[5]=0;a->text(a->context,c[17],c[18],date,s.color,1);}if(c[19])a->rect(a->context,0,63,t.second*64/60,1,s.color);}
+  if(!c[4])return true;int hour=c[5]?(t.hour%12?t.hour%12:12):t.hour;
   int digits[8]={hour/10,hour%10,10,t.minute/10,t.minute%10,10,t.second/10,t.second%10};int x=c[8];
   for(int i=0;i<(c[6]?8:5);i++){int k=digits[i];if(!(k==10&&c[7]&&(t.second&1))){if(c[14])clockGlyph(s,a,x+1,c[9]+1,k,0);clockGlyph(s,a,x,c[9],k,s.color);}x+=c[32+k]+1;}return true;
 }
 static void button(void* p,const CwApi* a,uint32_t b){auto& s=*(State*)p;if(s.legacy)return;if(!b)s.config[4]=!s.config[4];else if(s.count>1){s.frame=(s.frame+1)%s.count;s.elapsed=0;a->read(a->context,"slides",s.frame*8192,s.bg,8192);}}
-CW_EXPORT const CwTheme* cw_theme(){static const CwTheme t={1,sizeof(CwTheme),sizeof(State),10,start,update,draw,button,nullptr};return &t;}
+CW_EXPORT const CwTheme* cw_theme(){static const CwTheme t={1,sizeof(CwTheme),sizeof(State),30,start,update,draw,button,nullptr};return &t;}

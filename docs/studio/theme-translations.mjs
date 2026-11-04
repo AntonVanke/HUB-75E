@@ -1,5 +1,7 @@
 // English metadata for the public catalog. Keys match the stable app IDs.
 export const themeTranslations = {
+  'ambient-clock': {title:'Ambient Color Clock',description:'Continuously flowing color wheel, soft gradients and a foreground clock. Adjustable speed, saturation and light.'},
+  'ferrofluid-clock': {title:'Ferrofluid Clock · S3',description:'S3-only magnetic black liquid, oil drag, shake dispersal and reassembly. Six adjustable physical parameters.'},
   'particle-time': { title: 'Particle Time', description: 'Flowing stardust and a large digital clock', category: 'Particles' },
   'zelda-sunrise': { title: 'Zelda · Sunrise', description: 'Original landscape with slow layered clouds, independent gliding, and wing animation', category: 'Landscapes' },
   'gta-vi': { title: 'GTA · Vice City Coast', description: 'Vice City coast with local water ripples, scene animation, and randomized phases', category: 'Game landscapes' },

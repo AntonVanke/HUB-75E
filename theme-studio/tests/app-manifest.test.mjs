@@ -40,7 +40,7 @@ test('legacy manifests remain importable with unknown requirements while new met
   assert.throws(()=>normalizeAppManifest({...project,packageName:'No Namespace'}),/包名/);
   assert.throws(()=>normalizeAppManifest({...project,title:'中'.repeat(33)}),/96 UTF-8/);
   assert.throws(()=>normalizeAppManifest({...project,appVersion:'latest'}),/语义版本/);
-  assert.throws(()=>normalizeAppManifest({...project,requirements:{...requirements,targetFps:61}}),/帧率/);
+  assert.throws(()=>normalizeAppManifest({...project,requirements:{...requirements,targetFps:241}}),/帧率/);
   assert.throws(()=>normalizeAppManifest({...project,requirements:{...requirements,luaHeapBytes:10,luaWorkingBytes:11}}),/运行内存/);
 });
 

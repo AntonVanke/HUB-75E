@@ -60,7 +60,7 @@ def main():
 新功能构建 / Feature build — 已通过编译与电脑模拟测试，本次未烧录或完成实屏验证。
 Compiled and simulator-tested; not flashed or physically validated in this update.
 
-Runtime API 4 / native ABI 1: C/C++ binary applications, slideshow image clocks, hardware diagnostics and versioned updates.
+Runtime API 5 / native ABI 1: C/C++ binary applications, slideshow image clocks, hardware diagnostics and versioned updates.
 经典 ESP32 支持手动方向、应用管理与发现，没有本项目 S3 板的传感器。
 ESP32 uses 4 MB Flash. The ESP32-S3 package requires 8 MB Flash and OPI PSRAM; S3 N4 is not supported.
 

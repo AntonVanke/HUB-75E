@@ -52,6 +52,10 @@ int main(){
   assert(start(&s,&a));for(int i=0;i<20000;i++){assert(update(&s,&a,16));assert(map[s.player.pos]!='#'&&s.remaining>=0);for(auto g:s.ghosts)assert(g.pos>=0&&g.pos<144&&map[g.pos]!='#');if(i%30==0)assert(draw(&s,&a));}assert(s.score>0);printf("Pac-Man: 320 seconds simulated, score=%d, level=%d, state=%zu\n",s.score,s.level,sizeof(s));
 #elif defined(TEST_WATER)
   assert(start(&s,&a));for(int i=0;i<2400;i++){h.gx=std::sin(i*.02f);h.gy=std::cos(i*.03f);assert(update(&s,&a,i%3?8:9));assert(draw(&s,&a));}button(&s,&a,0);assert(!s.showTime);button(&s,&a,1);printf("Water: 2400 native simulation/render frames, clock toggle/reset passed\n");
+#elif defined(TEST_AMBIENT)
+  assert(start(&s,&a));assert(sizeof(s)<=2048);uint16_t previous[4096];int biggest=0;
+  for(int frame=0;frame<16000;frame++){assert(update(&s,&a,8));assert(draw(&s,&a));if(frame){for(int i=0;i<4096;i++){int delta=abs(int(a.pixels[i]>>11)-int(previous[i]>>11))+abs(int((a.pixels[i]>>5)&63)-int((previous[i]>>5)&63))+abs(int(a.pixels[i]&31)-int(previous[i]&31));biggest=std::max(biggest,delta);}}memcpy(previous,a.pixels,8192);}
+  assert(biggest<=8);puts("Ambient: full 128 second loop, bounded color changes and 2048 byte state PASS");
 #elif defined(TEST_FERRO)
   AutoBrightnessController light;light.supported=true;light.settings.enabled=true;
   for(int i=0;i<25;i++)light.sample(0,0,i*100);assert(!light.present&&light.tick(80,2400)==80);

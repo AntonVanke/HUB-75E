@@ -35,6 +35,13 @@ export function normalizeAppManifest(project={}){
   const result={packageName,id,title:text(project.title,'应用名称',96,id),appVersion,description:text(project.description,'应用描述',384),author:text(project.author,'作者',64,'未署名'),runtimeApi,requirements,requirementsDeclared:!!(project.requirements&&requirements.luaHeapBytes&&requirements.luaWorkingBytes&&requirements.graphicsBytes),verification:{status:'unverified'}};
   if(native){if(project.nativeAbi!==1)throw new Error('需要原生主题 ABI 1');result.runtime='native';result.nativeAbi=1;result.requirementsDeclared=!!(requirements.codeBytes&&requirements.stateBytes&&requirements.graphicsBytes);delete requirements.luaHeapBytes;delete requirements.luaWorkingBytes;}
   if(encoder.encode(JSON.stringify(result)).length>2048)throw new Error('应用元数据上限 2048 字节');
+  if(project.parameters){
+    if(typeof project.parameters!=='object'||Array.isArray(project.parameters)||Object.keys(project.parameters).length>12)throw Error('Invalid parameters');
+    result.parameters={};for(const [key,v] of Object.entries(project.parameters)){
+      if(!/^[a-zA-Z0-9_]{1,23}$/.test(key)||!v||!['min','max','step','default'].every(k=>Number.isFinite(v[k]))||v.min>v.max||v.step<=0||v.default<v.min||v.default>v.max)throw Error('Invalid parameter '+key);
+      result.parameters[key]={label:text(v.label,'parameter label',64,key),min:v.min,max:v.max,step:v.step,default:v.default};
+    }
+  }
   return result;
 }
 export function checkAppCompatibility(manifest,device={}){

@@ -2,7 +2,7 @@
   "packageName": "org.clockwise.gravity-liquid",
   "id": "gravity-liquid",
   "title": "全屏重力水",
-  "appVersion": "1.0.1",
+  "appVersion": "1.1.0",
   "description": "原生 C++ 水模拟，前景时钟，120 FPS 目标。",
   "author": "HUB-75E",
   "requirements": {
@@ -12,5 +12,49 @@
     "targetFps": 120,
     "stateBytes": 16,
     "graphicsBytes": 32768
+  },
+  "parameters": {
+    "fill": {
+      "label": "水量 / Fill",
+      "min": 10,
+      "max": 56,
+      "step": 1,
+      "default": 46
+    },
+    "gravity": {
+      "label": "重力 / Gravity",
+      "min": 1,
+      "max": 15,
+      "step": 0.1,
+      "default": 9.8
+    },
+    "drops": {
+      "label": "水滴上限 / Droplets",
+      "min": 0,
+      "max": 128,
+      "step": 1,
+      "default": 96
+    },
+    "viscosity": {
+      "label": "粘度 / Viscosity",
+      "min": 0.1,
+      "max": 3,
+      "step": 0.1,
+      "default": 1
+    },
+    "speed": {
+      "label": "速度 / Speed",
+      "min": 0.3,
+      "max": 1,
+      "step": 0.05,
+      "default": 0.88
+    },
+    "clock": {
+      "label": "时钟 / Clock",
+      "min": 0,
+      "max": 1,
+      "step": 1,
+      "default": 1
+    }
   }
 }

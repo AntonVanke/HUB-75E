@@ -62,7 +62,7 @@ inline bool natural(const String& value,uint32_t& number){
 }
 
 struct AppManifest {
-  String runtime="lua";
+  String runtime="lua",parameters="{}";
   uint32_t nativeAbi=0,codeBytes=0,dataBytes=0,stateBytes=0;
   String packageName,id,title,appVersion,description,author,requirements="{}",verification="{\"status\":\"unverified\"}";
   uint32_t runtimeApi=1,psramBytes=0,luaHeapBytes=0,luaWorkingBytes=0,graphicsBytes=0,targetFps=60;
@@ -100,6 +100,7 @@ struct AppManifest {
       while(*p&&*p!=']'){String sensor;if(!CwJson::string(p,sensor)){error="应用传感器声明无效";return false;}const uint8_t bit=sensor=="temperature"?1:sensor=="humidity"?2:sensor=="imu"?4:0;if(!bit||(sensors&bit)){error="传感器须为 temperature、humidity 或 imu，且不能重复";return false;}sensors|=bit;CwJson::space(p);if(*p==']')break;if(*p++!=','){error="应用传感器声明无效";return false;}CwJson::space(p);}
       if(*p++!=']'){error="应用传感器声明无效";return false;}CwJson::space(p);if(*p){error="应用传感器声明无效";return false;}
     }
+    if(!CwJson::field(input,"parameters",value,found,&kind)||(found&&kind!='{')){error="Invalid parameters";return false;}if(found)parameters=value;
     declared=runtime=="native"?codeBytes>0&&stateBytes>0&&graphicsBytes>0:luaHeapBytes>0&&luaWorkingBytes>0&&graphicsBytes>0;
     if(!CwJson::field(input,"verification",value,found,&kind)){error="应用验证声明无效";return false;}if(found){if(kind!='{'){error="应用验证声明必须是对象";return false;}verification=value;}
     return true;

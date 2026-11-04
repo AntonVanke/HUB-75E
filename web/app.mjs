@@ -211,6 +211,7 @@ function renderThemes() {
   const chip = $('theme-chip').value;
   const memory = $('theme-memory').value;
   const matches = groupThemes(themes.filter((app) => {
+    if(!app)continue;
     const requirements = app.requirements || {};
     const text = [app.title, app.id, app.description, app.category, metadata(app, 'title'), metadata(app, 'description'), metadata(app, 'category')].join(' ').toLocaleLowerCase();
     return (!query || text.includes(query))
@@ -220,6 +221,7 @@ function renderThemes() {
   const fragment = document.createDocumentFragment();
   for (const variants of matches) {
     const app=selectVariant(variants,device?(/S3/i.test(device.chip)?'esp32s3':'esp32'):chip);
+    if(!app)continue;
     const requirements = app.requirements || {};
     const id = /^[a-zA-Z0-9_-]+$/.test(app.id) ? app.id : '';
     const card = element('article', 'card theme-card');
@@ -267,8 +269,9 @@ function renderThemes() {
     card.append(downloads, details);
     fragment.append(card);
   }
+  const visibleCount=fragment.childElementCount;
   $('theme-list').replaceChildren(fragment);
-  $('theme-result').textContent = matches.length ? t('显示 {0} / {1} 款主题', [matches.length, groupThemes(themes).length]) : t('没有匹配的主题，请调整搜索或筛选条件。');
+  $('theme-result').textContent = visibleCount ? t('显示 {0} / {1} 款主题', [visibleCount, groupThemes(themes).length]) : t('没有匹配的主题，请调整搜索或筛选条件。');
 }
 
 async function loadThemes() {

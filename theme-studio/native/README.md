@@ -95,3 +95,15 @@ CWN1 从 ELF32 共享对象提取代码、数据、BSS 和重定位，删除调�
 ## 发布版本
 
 从 1.0.1 开始：小修改增加 PATCH（1.0.1 → 1.0.2），大功能修改增加 MINOR 并清零 PATCH（1.0.x → 1.1.0）。根目录 VERSION 为发布版本；两个芯片使用相同版本号，分别编译。GitHub Pages 的 releases.json 指向对应版本的固件、SHA-256 和应用目录。更新方式分为保留设置更新与全新安装，前者要求本项目兼容的分区。原生应用仍按芯片、ABI、内存和传感器要求验证。
+
+## 应用参数（固件 1.4.0 / Runtime API 5）
+
+`theme.json` 的 `parameters` 对象最多 12 项；键为 1–23 个 ASCII 字母、数字、下划线。每项声明 `label`、有限数值 `min/max/step/default`，开关使用 0/1。示例：
+
+```json
+"parameters": {"magnet":{"label":"磁力 / Magnet","min":0.3,"max":3,"step":0.1,"default":1.6}}
+```
+
+原生主题在 `start()` 中读取 `api->data(api->context, "setting.magnet", 1.6f)`；后台应用的“参数设置”或主题工坊的 USB 参数按钮可保存。HTTP `GET /api/apps/config?packageName=...` 读取结构和当前值；POST 同一路径，表单 `values={"magnet":1.8}` 保存（未提供的项恢复默认）。串口 `{"cmd":"app.config","packageName":"org.clockwise.ferrofluid-clock","values":{"magnet":1.8}}` 同理，省略 values 为查询。值校验范围并按步进取整；保存后重新加载当前应用。数据按应用槽持久化、同包名升级保留、卸载删除；帧循环只读固定容量数值表，无 NVS 或 JSON 开销。
+
+磁流体新版本仅为 ESP32-S3 构建。`requirements.chips` 可限定构建目标；错误芯片会在编译与安装时拒绝。炫彩氛围时钟、重力水和图片时钟仍提供两种芯片包。图片时钟 1.1.0 的 v3 配置增加动态日期和秒进度，兼容已有 v1/v2 图片时钟包；19 款字体与静态元素在电脑端栅格化，Unifont 完整字体不写入设备。LED 预览仅模拟像素间隙，实际亮度、色温和光学效果取决于屏幕。

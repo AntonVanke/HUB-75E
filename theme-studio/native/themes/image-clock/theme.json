@@ -2,11 +2,11 @@
   "packageName": "org.clockwise.image-clock",
   "id": "image-clock",
   "title": "图片时钟",
-  "appVersion": "1.0.1",
+  "appVersion": "1.1.0",
   "description": "可拖动时间、多字体、自定义文字和图片幻灯片。",
   "author": "HUB-75E",
   "requirements": {
-    "targetFps": 10,
+    "targetFps": 30,
     "stateBytes": 21000,
     "graphicsBytes": 8192
   },

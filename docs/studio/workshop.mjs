@@ -1,3 +1,4 @@
+import {themeSettings} from './theme-settings.mjs';
 import {creditsHTML} from './credits.mjs';
 import {imageClockControls} from './image-clock.mjs';
 import {language,t,refreshLanguage,onLanguageChange,localizeTheme} from './i18n.mjs';
@@ -19,7 +20,7 @@ function render(){
   const item=localizeTheme(app),card=document.createElement('article'),title=document.createElement('h3'),text=document.createElement('p'),info=document.createElement('p'),link=document.createElement('a'),add=document.createElement('button'),row=document.createElement('div');
   title.textContent=item.title;text.textContent=item.description;info.textContent='C++ · '+(app.bytes/1024).toFixed(1)+' KiB · '+app.requirements.targetFps+' FPS';row.className='row';link.textContent=t('下载安装包');link.className='button';link.href='../native/dist/'+app.file;link.download=app.file;add.textContent=t('安装到 USB 设备');add.dataset.app=app.packageName;
   add.onclick=()=>operation(async()=>{const r=await fetch(link.href);if(!r.ok)throw Error('主题下载失败');const blob=await r.blob();if(blob.size>Number(serial.device.limits?.appBytes||1048576))throw Error('应用超出设备容量');await install(new Uint8Array(await blob.arrayBuffer()),app.sha256);});row.append(link,add);
-  if(installed.some(a=>a.packageName===app.packageName)){for(const [cmd,label]of [['app.run','运行'],['app.uninstall','卸载']]){const b=document.createElement('button');b.textContent=t(label);b.dataset.app=app.packageName;b.onclick=()=>operation(async()=>{await serial.request({cmd,packageName:app.packageName});await refreshApps();message(label+'：'+item.title);});row.append(b);}}
+  if(installed.some(a=>a.packageName===app.packageName)){const settings=document.createElement('button');settings.textContent=language()==='en'?'Parameters':'参数设置';settings.dataset.app=app.packageName;settings.onclick=()=>operation(()=>themeSettings(item,values=>serial.request({cmd:'app.config',packageName:app.packageName,...(values===undefined?{}:{values})},d=>!!d.parameters)));row.append(settings);for(const [cmd,label]of [['app.run','运行'],['app.uninstall','卸载']]){const b=document.createElement('button');b.textContent=t(label);b.dataset.app=app.packageName;b.onclick=()=>operation(async()=>{await serial.request({cmd,packageName:app.packageName});await refreshApps();message(label+'：'+item.title);});row.append(b);}}
   card.append(title,text,info,row);return card;
  }));controls();refreshLanguage();
 }

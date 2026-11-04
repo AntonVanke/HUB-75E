@@ -23,6 +23,6 @@ test('flash reset ends with BOOT released and reset deasserted',async()=>{
 });
 test('chip builds share one theme card, installation chooses exact chip',async()=>{
  const {apps}=JSON.parse(await readFile(new URL('../native/dist/catalog.json',import.meta.url),'utf8'));
- const groups=groupThemes(apps);assert.equal(groups.length,5);assert.equal(apps.length,10);
- for(const group of groups)for(const chip of ['esp32','esp32s3'])assert.ok(selectVariant(group,chip).requirements.chips.includes(chip));
+ const groups=groupThemes(apps);assert.equal(groups.length,6);assert.equal(apps.length,11);
+ for(const group of groups)for(const chip of ['esp32','esp32s3']){const supported=group.some(a=>a.requirements.chips.includes(chip));assert.equal(!!selectVariant(group,chip),supported);if(supported)assert.ok(selectVariant(group,chip).requirements.chips.includes(chip));}
 });

@@ -6,7 +6,7 @@ struct DeviceLimits {
   size_t appBytes=1024*1024,sourceBytes=64*1024,archiveBytes=512*1024,archiveExpandedBytes=2*1024*1024;
   size_t luaHeapBytes=128*1024,luaWorkingBytes=64*1024,packageCacheBytes=0,psramBytes=0;
   int instructions=800000;
-  static constexpr uint32_t graphicsBytes=64*1024,runtimeApi=4;
+  static constexpr uint32_t graphicsBytes=64*1024,runtimeApi=5;
 #ifdef HUB75_S3_BOARD
   static constexpr uint32_t targetFpsMax=240;
 #else

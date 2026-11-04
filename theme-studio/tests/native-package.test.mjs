@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {nativeInfo,nativePackage,checkAppCompatibility} from '../studio/native-package.mjs';
 const read=id=>new Uint8Array(readFileSync(new URL('../native/dist/'+id+'.cwp',import.meta.url)));
 test('native packages contain chip-specific machine code and bounded relocations',()=>{
-  for(const id of ['mario-1-1','pacman','gravity-liquid','gravity-maze','image-clock','ferrofluid-clock'])for(const chip of ['esp32','esp32s3']){
+  for(const id of ['mario-1-1','pacman','gravity-liquid','gravity-maze','image-clock','ferrofluid-clock','ambient-clock'])for(const chip of id==='ferrofluid-clock'?['esp32s3']:['esp32','esp32s3']){
     const p=nativeInfo(read(id+'-'+chip));assert.equal(p.runtime,'native');assert.equal(p.nativeAbi,1);assert.deepEqual(p.requirements.chips,[chip]);
     const v=new DataView(p.code.buffer,p.code.byteOffset,p.code.byteLength),sizes=[v.getUint32(12,true),v.getUint32(16,true)],count=v.getUint32(24,true);
     for(let i=0;i<count;i++){const at=40+sizes[0]+sizes[1]+i*8,patch=v.getUint32(at,true),target=v.getUint32(at+4,true);assert.ok((patch>>>30)<2);assert.equal((patch&0x3fffffff)%4,0);assert.ok((patch&0x3fffffff)+4<=sizes[patch>>>30]);assert.ok((target>>>30)<3);assert.ok((target&0x3fffffff)<((target>>>30)===2?12:sizes[target>>>30]));}
@@ -18,4 +18,13 @@ test('reject corrupt executable, directory, truncated data and wrong chip',()=>{
   const original=read('pacman-esp32s3');let b=original.slice();b[b.length-20]^=1;assert.throws(()=>nativeInfo(b));assert.throws(()=>nativeInfo(original.subarray(0,original.length-1)));
   const p=nativeInfo(original);assert.equal(checkAppCompatibility(p,{chip:'ESP32',runtimeApi:4,limits:{runtimeApi:4,targetFpsMax:60}}).compatible,false);
   const mario=read('mario-1-1-esp32s3');new DataView(mario.buffer).setUint32(56,0,true);assert.throws(()=>nativeInfo(mario));
+});
+
+test('theme settings survive package round trips and reject malformed ranges',()=>{
+ for(const id of ['gravity-liquid','ferrofluid-clock','ambient-clock']){
+  const app=nativeInfo(read(id+'-esp32s3'));assert.equal(app.runtimeApi,5);assert.ok(Object.keys(app.parameters).length>=4);
+  const copy=nativeInfo(nativePackage(app,app.code,app.resources));assert.deepEqual(copy.parameters,app.parameters);
+  const key=Object.keys(app.parameters)[0],bad={...app,parameters:{[key]:{...app.parameters[key],default:Infinity}}};assert.throws(()=>nativePackage(bad,app.code,app.resources),/parameter/);
+ }
+ const ferro=nativeInfo(read('ferrofluid-clock-esp32s3'));assert.equal(checkAppCompatibility(ferro,{chip:'ESP32',runtimeApi:5,limits:{runtimeApi:5,targetFpsMax:120}}).compatible,false);
 });

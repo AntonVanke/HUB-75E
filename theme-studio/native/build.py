@@ -64,6 +64,7 @@ def pack(manifest, code, resources, archive=b''):
 
 def build(folder, chip, output):
     m=json.loads((folder/'theme.json').read_text(encoding='utf-8'))
+    if chip not in m.get('requirements',{}).get('chips',['esp32','esp32s3']):raise ValueError('Theme does not support '+chip)
     compiler=Path(os.environ.get('PLATFORMIO_CORE_DIR',str(Path.home()/'.platformio')))/'packages'/f'toolchain-xtensa-{chip}'/'bin'/f'xtensa-{chip}-elf-g++.exe'
     if not compiler.exists():compiler=compiler.with_suffix('')
     dest=ROOT/'build'/chip/folder.name;dest.mkdir(parents=True,exist_ok=True)
@@ -74,7 +75,7 @@ def build(folder, chip, output):
     subprocess.run([str(compiler),*flags,*map(str,sources),'-lgcc','-o',str(elf)],check=True)
     code,exec_size,data_size=convert_elf(elf.read_bytes(),chip)
     (dest/'theme.cwn').write_bytes(code)
-    m.update(runtime='native',nativeAbi=1,runtimeApi=4)
+    m.update(runtime='native',nativeAbi=1,runtimeApi=5 if m.get('parameters') else 4)
     r=m.setdefault('requirements',{});r['chips']=[chip];r['codeBytes']=exec_size;r['dataBytes']=data_size
     r['targetFps']=min(r.get('targetFps',60),60 if chip=='esp32' else 240)
     resources={k:(folder/v).read_bytes() for k,v in m.pop('resources',{}).items()}
@@ -89,23 +90,30 @@ def main():
     folders=sorted((ROOT/'themes').glob('*/theme.json')) if a.theme=='all' else [Path(a.theme)/'theme.json' if Path(a.theme).is_dir() else ROOT/'themes'/a.theme/'theme.json']
     entries=[]
     for f in folders:
-        for chip in ['esp32','esp32s3'] if a.chip=='all' else [a.chip]:entries.append(build(f.parent,chip,a.output))
+        for chip in ['esp32','esp32s3'] if a.chip=='all' else [a.chip]:
+            if chip in json.loads(f.read_text(encoding='utf-8')).get('requirements',{}).get('chips',['esp32','esp32s3']):entries.append(build(f.parent,chip,a.output))
+            elif a.chip!='all':raise ValueError('Theme does not support '+chip)
     (a.output/'catalog.json').write_text(json.dumps({'format':3,'apps':[x for x in entries if x['id']!='image-clock']},ensure_ascii=False,indent=2),encoding='utf-8')
     if a.theme=='all' and a.chip=='all':
-        order=['mario-1-1','pacman','gravity-liquid','gravity-maze','ferrofluid-clock']
+        order=['mario-1-1','pacman','gravity-liquid','gravity-maze','ferrofluid-clock','ambient-clock']
         catalog=['#pragma once','#ifdef HUB75_S3_BOARD']
         binary=['#pragma once','struct NativeBin {const char* id;const unsigned char* bytes;unsigned size;};','#ifdef HUB75_S3_BOARD']
         for chip in ['esp32s3','esp32']:
             if chip=='esp32':catalog.append('#else');binary.append('#else')
             rows=[]
             for i,id in enumerate(order+['image-clock']):
-                row=next(x.copy() for x in entries if x['id']==id and x['requirements']['chips']==[chip]);row['index']=i;row['path']='/api/apps/builtin?id='+id
+                row=next((x.copy() for x in entries if x['id']==id and x['requirements']['chips']==[chip]),None)
+                if row is None:continue
+                row['index']=i;row['path']='/api/apps/builtin?id='+id
                 if id!='image-clock':rows.append(row)
                 blob=(a.output/row['file']).read_bytes()
                 binary.append('static const unsigned char NATIVE_BIN_'+str(i)+'[]={'+','.join(map(str,blob))+'};')
             catalog.append('static const char THEME_TITLES[] = R"CWNATIVE('+json.dumps(rows,ensure_ascii=False,separators=(',',':'))+')CWNATIVE";')
         catalog.append('#endif');binary.extend(['#endif','static const NativeBin NATIVE_BINS[]={'])
-        for i,id in enumerate(order+['image-clock']):binary.append('{"'+id+'",NATIVE_BIN_'+str(i)+',sizeof(NATIVE_BIN_'+str(i)+')},')
+        for i,id in enumerate(order+['image-clock']):
+            if id=='ferrofluid-clock':binary.append('#ifdef HUB75_S3_BOARD')
+            binary.append('{"'+id+'",NATIVE_BIN_'+str(i)+',sizeof(NATIVE_BIN_'+str(i)+')},')
+            if id=='ferrofluid-clock':binary.append('#endif')
         binary.append('};')
         target=ROOT.parent/'embedded/demo/src'
         target.mkdir(parents=True,exist_ok=True)

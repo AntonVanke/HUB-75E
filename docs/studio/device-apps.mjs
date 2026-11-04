@@ -1,3 +1,4 @@
+import {themeSettings} from './theme-settings.mjs';
 import {localizeTheme,registerThemes,onLanguageChange} from './i18n.mjs';
 import {nativeInfo,checkAppCompatibility} from './native-package.mjs';
 
@@ -77,7 +78,7 @@ export function applicationControls($,getBase,request,upload,message,{local=fals
       requirements.textContent=(app.author?'作者：'+app.author+'。':'')+(r?.chips?'设备：'+r.chips.join(' / ')+'；PSRAM '+capacity(r.psramBytes||0)+'；代码 '+capacity(r.codeBytes||0)+'；数据 / 状态 '+capacity(r.dataBytes||0)+' / '+capacity(r.stateBytes||0)+'；图形配额 '+capacity(r.graphicsBytes)+'；目标 '+r.targetFps+' FPS。'+(r.sensors?.length?' 需要传感器：'+r.sensors.join(' / ')+'。':''):'未声明内存与设备要求。')+' 尚未在本机进行完整性能认证。';const measured=document.createElement('p');measured.dataset.appMetrics=app.installed?String(app.index):'uninstalled';measured.hidden=true;metadata.append(summary,description,requirements,measured);name.append(metadata);
       running.dataset.appState=app.index;running.textContent=app.installed?(Number(app.index)===Number(active)?'运行中':'已安装'):'未安装';badge.textContent=check.status==='incompatible'?'不适用':check.status==='compatible'?'需求匹配':'兼容性未知';badge.title=check.reason||'';badge.className='app-compat '+check.status;state.append(running,badge);if(check.status==='incompatible'){const reason=document.createElement('small');reason.textContent=check.reason;state.append(reason);}
       size.textContent=app.installed?(app.bytes/1024).toFixed(1)+' KiB':'—';actions.className='app-actions';
-      if(app.installed){const runButton=button('运行',()=>run(app));runButton.disabled=check.status==='incompatible';actions.append(runButton,button('导出应用',()=>exportApp(app,false),false),button('卸载',async()=>{const result=await uninstall(app);message(result.message||'应用已卸载，所占空间已释放。');}));}
+      if(app.installed){const runButton=button('运行',()=>run(app));runButton.disabled=check.status==='incompatible';actions.append(button('参数设置',()=>themeSettings(app,values=>request('apps/config?'+new URLSearchParams(identity(app)),values===undefined?{}:{method:'POST',body:new URLSearchParams({values:JSON.stringify(values)})})),false),runButton,button('导出应用',()=>exportApp(app,false),false),button('卸载',async()=>{const result=await uninstall(app);message(result.message||'应用已卸载，所占空间已释放。');}));}
       else{
         const item=catalog.find(item=>item.id===app.id);
         if(item){const installButton=button('安装',async()=>{

@@ -2,15 +2,62 @@
   "packageName": "org.clockwise.ferrofluid-clock",
   "id": "ferrofluid-clock",
   "title": "磁流体时钟",
-  "appVersion": "1.2.0",
-  "description": "参照实拍：暖金底板、黑色大液滴缓慢拉伸成字，侧光与投影；重力摇散后磁性回吸。",
+  "appVersion": "1.3.0",
+  "description": "S3 专用：黑色油性液滴聚合成字，磁场约束、惯性摇散、重力回落与光泽液面；参数可调。",
   "author": "HUB-75E",
   "requirements": {
     "sensors": [
       "imu"
     ],
     "targetFps": 120,
-    "stateBytes": 32768,
-    "graphicsBytes": 8192
+    "stateBytes": 49152,
+    "graphicsBytes": 8192,
+    "chips": [
+      "esp32s3"
+    ]
+  },
+  "parameters": {
+    "magnet": {
+      "label": "磁力 / Magnet",
+      "min": 0.3,
+      "max": 3,
+      "step": 0.1,
+      "default": 1.6
+    },
+    "gravity": {
+      "label": "重力 / Gravity",
+      "min": 0,
+      "max": 2,
+      "step": 0.1,
+      "default": 0.6
+    },
+    "viscosity": {
+      "label": "油阻尼 / Oil drag",
+      "min": 0.3,
+      "max": 2,
+      "step": 0.1,
+      "default": 1
+    },
+    "shake": {
+      "label": "摇散力度 / Shake",
+      "min": 0.3,
+      "max": 2,
+      "step": 0.1,
+      "default": 1
+    },
+    "cohesion": {
+      "label": "凝聚 / Cohesion",
+      "min": 0.5,
+      "max": 2,
+      "step": 0.1,
+      "default": 1.2
+    },
+    "morph": {
+      "label": "成字时间 / Morph (s)",
+      "min": 0.5,
+      "max": 6,
+      "step": 0.1,
+      "default": 2.4
+    }
   }
 }

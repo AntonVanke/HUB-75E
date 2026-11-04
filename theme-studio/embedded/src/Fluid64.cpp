@@ -6,7 +6,7 @@
 static float bound(float v,float lo,float hi){return std::max(lo,std::min(hi,v));}
 void Fluid64::reset(float fill,int rotation){
   for(int i=0;i<256;i++){const float d=std::sqrt((i+0.5f)/4.0f);weight_[i]=1-d/8.0f;inverse_[i]=1/d;const float q=1-i/256.0f;splat_[i]=int(q*q*256);}
-  count_=int(bound(fill,0.1f,0.46f)*256);rotation_=rotation;accumulator_=0;
+  count_=std::min(Capacity,int(bound(fill,0.1f,0.5625f)*256));rotation_=rotation;accumulator_=0;
   std::memset(drops_,0,sizeof(drops_));dropCursor_=sprayDelay_=0;seed_=0x75e1234;
   activity_=0;gx_=0;gy_=1;
   for(int i=0;i<count_;i++){
@@ -25,13 +25,13 @@ void Fluid64::step(float milliseconds,float gx,float gy,int rotation){
   for(auto& p:drops_)if(p.life>0)for(int j=0;j<turns;j++){
     float t=p.x;p.x=p.y;p.y=63-t;t=p.vx;p.vx=p.vy;p.vy=-t;
   }
-  accumulator_+=bound(milliseconds,0.0f,50.0f)*0.88f;
+  accumulator_+=bound(milliseconds,0.0f,50.0f)*speed_;
   for(int i=0;i<10&&accumulator_>=5.0f;i++){tick(gx_,gy_);accumulator_-=5.0f;}
 }
 void Fluid64::tick(float gx,float gy){
-  constexpr float dt=1.0f/200.0f,h=8.0f,gravity=9.80665f*64.0f/0.15f;
+  constexpr float dt=1.0f/200.0f,h=8.0f;const float gravity=gravity_*64.0f/0.15f;
   activity_*=0.996f;
-  const float viscosity=(0.075f-activity_*0.04f)*dt,spraySpeed=activity_>0.25f?14400.0f:25600.0f;
+  const float viscosity=(0.075f-activity_*0.04f)*dt*viscosity_,spraySpeed=activity_>0.25f?14400.0f:25600.0f;
   if(sprayDelay_)sprayDelay_--;
   for(auto& p:drops_)if(p.life>0){
     p.life-=dt;p.vx+=gx*gravity*dt;p.vy+=gy*gravity*dt;
@@ -91,13 +91,14 @@ void Fluid64::tick(float gx,float gy){
   }
 }
 void Fluid64::spray(float x,float y,float vx,float vy,float nx,float ny){
+  if(!dropLimit_)return;
   sprayDelay_=activity_>0.25f?2:4;
   const float speed=std::min(440.0f,std::abs(vx)+std::abs(vy));
   const int count=4+int(speed/70);
   for(int n=0;n<count;n++){
     seed_=seed_*1664525U+1013904223U;
     const float random=float(seed_>>16)/65535.0f,spread=(random-0.5f)*speed*1.1f;
-    const int i=dropCursor_++&(DropCapacity-1);
+    const int i=(dropCursor_++)%dropLimit_;
     const float size=(i&3)==0?0.58f:0.8f+random*0.25f;
     auto& p=drops_[i];p={bound(x-ny*(n-(count-1)/2.0f)*0.55f,0.5f,62.5f),bound(y+nx*(n-(count-1)/2.0f)*0.55f,0.5f,62.5f),vx*0.65f+nx*speed*size-ny*spread,vy*0.65f+ny*speed*size+nx*spread,0.75f};
   }
