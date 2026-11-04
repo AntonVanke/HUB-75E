@@ -11,7 +11,7 @@
 <main>
 <div class="connection" id="connection-form"><label>设备地址<input id="address" placeholder="http://设备 IP 或 VPN 地址" autocomplete="url"></label><button id="connect">连接设备</button></div>
 <aside id="toast" hidden><div id="message" role="status" aria-live="polite" aria-atomic="true"></div><button id="dismiss-message" type="button" aria-label="关闭提示">×</button></aside>
-<section id="setup-guide" class="card" hidden><h2>首次设置</h2><p>先确认屏幕驱动，再连接家庭 Wi-Fi。手机连接热点后，自动轮测会暂停。</p><p id="setup-access"></p><div class="row"><button type="button" id="setup-display">1. 配置屏幕驱动</button><button type="button" id="setup-wifi" class="secondary">2. 配置 Wi-Fi</button></div></section>
+<section id="setup-guide" class="card" hidden><h2>首次设置</h2><p>屏幕先显示驱动与热点信息，再显示 Wi-Fi 二维码。扫码连接设备热点后，自动轮测会暂停；先确认屏幕驱动，再连接家庭 Wi-Fi。</p><p id="setup-access"></p><div class="row"><button type="button" id="setup-display">1. 配置屏幕驱动</button><button type="button" id="setup-wifi" class="secondary">2. 配置 Wi-Fi</button></div></section>
 <nav class="settings-tabs" role="tablist" aria-label="设备设置分类">
 <button id="tab-overview" data-panel="overview" role="tab" aria-controls="panel-overview" aria-selected="true" tabindex="0">概览</button>
 <button id="tab-display" data-panel="display" role="tab" aria-controls="panel-display" aria-selected="false" tabindex="-1">显示</button>
@@ -25,6 +25,7 @@
 <section class="card"><h2>设备状态</h2><dl class="metrics"><div><dt>固件 / 屏幕</dt><dd id="version">—</dd></div><div><dt>Wi-Fi / 信号</dt><dd id="wifi-status">—</dd></div><div><dt>运行时间</dt><dd id="uptime">—</dd></div><div><dt>可用内部内存</dt><dd id="heap">—</dd></div></dl><details class="detail-metrics"><summary>性能详情</summary><dl class="metrics performance-value"><div><dt>最近帧计算</dt><dd id="compute">—</dd></div><div><dt>最高帧总耗时</dt><dd id="maximum">—</dd></div><div><dt>累计超时帧</dt><dd id="late">—</dd></div><div><dt>累计调度遗漏</dt><dd id="missed">—</dd></div></dl></details></section>
 </div>
 <div id="panel-display" class="panel" role="tabpanel" aria-labelledby="tab-display" hidden>
+<section id="auto-brightness" class="card narrow"></section>
 <section class="card narrow"><h2>显示设置</h2><form id="config"><fieldset disabled><label>默认主题（无指定时段时）<select id="theme" name="theme"></select></label><small>固定播放时使用此主题；轮换或指定时段可能显示其他主题，实际画面请查看“概览”。</small><div class="field-row"><label>固定亮度（1–255）<input id="brightness" name="brightness" type="number" min="1" max="255" value="80" required></label><label>时区（POSIX）<input id="timezone" name="timezone" value="CST-8" maxlength="63" required></label></div><input id="rotation" name="rotationMinutes" type="hidden" value="0"><p>中国标准时间为 <code>CST-8</code>，设备通过网络自动校时。</p><div class="savebar"><small id="config-dirty">显示设置已同步</small><button>保存显示设置</button></div></fieldset></form></section>
 <section class="card narrow"><h2>屏幕方向</h2><form id="orientation-config"><fieldset disabled><label>手动方向 / 自动旋转回退<select id="manual-rotation"><option value="0">0°</option><option value="90">90°</option><option value="180">180°</option><option value="270" selected>270°</option></select></label><label class="orientation-check"><input id="auto-rotate" type="checkbox">根据重力自动旋转</label><p id="orientation-state">连接设备后读取屏幕方向。</p><small>自动模式使用低通滤波、方向滞回和稳定等待；平放时保持方向，传感器离线时回退手动方向。保存后立即生效，不需要重启。</small><details id="gravity-calibration"><summary>重力方向校正</summary><label>传感器安装方向<select id="gravity-rotation"><option value="0">0°</option><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option></select></label><p>朝向校正：先关闭自动旋转，选择让文字正立的手动方向并保存，再将屏幕竖直放正、静止 1 秒，点击“校正朝向”。完成后可重新开启自动旋转。</p><div class="row"><button type="button" data-calibration="upright">校正朝向</button><button type="button" data-calibration="flat">平放归零</button><button type="button" class="secondary" data-calibration="reset">重置校正</button></div><small>平放归零：将屏幕放在水平桌面、静止 1 秒后点击；仅修正 X/Y 零点。校正保存在设备中，重启后仍然生效。</small><p id="gravity-calibration-state"></p></details><div class="savebar"><small id="orientation-dirty">方向设置未同步</small><button>保存方向设置</button></div></fieldset></form></section>
 <section class="card narrow"><h2>屏幕接口与颜色</h2><form id="panel-config"><fieldset disabled><p>64 × 64 · 1/32 扫描（HUB75E）</p><label>面板 RGB 颜色顺序<select id="color-order" name="colorOrder"><option>RGB</option><option>RBG</option><option>GRB</option><option>GBR</option><option>BRG</option><option>BGR</option></select></label><small>选择与面板实际接线对应的顺序；颜色配置在重启后生效，不增加逐像素转换开销。</small><fieldset id="scan-timing" disabled hidden><label>扫描刷新率上限（Hz）<input id="panel-refresh" name="refreshHz" type="number" min="0" max="500" step="1" value="0"></label><small>0 = 自动最高；手动可设 120–500 Hz。实际扫描速度受硬件和负载限制，以实测值为准；重力水需实际扫描不低于 120 Hz。双缓冲始终开启，保存后重启生效。</small><p id="panel-refresh-live">实测扫描：—</p></fieldset><details><summary>高级：屏幕时序兼容性</summary><fieldset id="panel-timing" disabled><label>屏幕驱动方式<select id="panel-driver" name="driver"><option value="0">0 · SHIFTREG（标准二进制行选）</option><option value="1">1 · FM6124</option><option value="2">2 · FM6126A</option><option value="3">3 · ICN2038S</option><option value="4">4 · MBI5124（强制正相位）</option><option value="5">5 · SM5266P（串行行选）</option><option value="6">6 · DP3246 + SM5368（串行行选）</option><option value="7">7 · GPIO 慢速扫描（S3，仅自检）</option><option value="8">8 · Clockwise 原版显示参数</option><option value="9">9 · Protomatter 独立驱动（S3）</option></select></label><small>GPIO 仅用于固定图形自检；Protomatter 支持正常主题播放。下方时序参数只作用于 DMA 驱动。Clockwise 基准使用 8 MHz、反相位、8 bit、单缓冲、最低刷新率 60 Hz。FM6124、FM6126A、ICN2038S 共用初始化程序。</small><fieldset id="dma-timing"><div class="field-row"><label>像素时钟<select id="panel-clock" name="clockMHz"><option value="4">4 MHz · 低速兼容（S3）</option><option value="8" selected>8 MHz · 标准</option><option value="16">16 MHz · 高速</option></select></label><label>采样相位<select id="panel-phase" name="clockPhase"><option value="1" selected>正相位（默认 / MBI5124）</option><option value="0">反相位</option></select></label></div><label>换行消隐<select id="panel-blank" name="latchBlanking"><option value="1">1 个时钟</option><option value="2" selected>2 个时钟（默认）</option><option value="3">3 个时钟</option><option value="4">4 个时钟</option></select></label></fieldset><small>出现乱码时可先尝试 4 MHz；拖影可增加消隐。低速时钟可能减少色阶，主题设定的帧率不变。保存后重启生效。</small></fieldset></details><p>自检时应看到完整白色边框和圆形，底部从左到右依次为 <span style="color:#c32626">红 R</span>、<span style="color:#087f35">绿 G</span>、<span style="color:#174ecc">蓝 B</span>。若边框断裂、图形拉长或分段错位，需要检查行选与排线，RGB 切换只修正颜色。</p><fieldset id="panel-trial-controls" hidden><h3>屏幕驱动轮测</h3><p>依次测试本机支持的全部驱动，每种显示 20 秒；观察序号、边框、圆形和 R/G/B 色块。切换驱动时短暂重启，完成后恢复原配置。</p><p id="panel-trial-state"></p><div class="row"><button type="button" id="panel-trial-start">测试所有屏幕驱动</button><button type="button" id="panel-trial-pause" class="secondary" hidden>暂停轮测</button><button type="button" id="panel-trial-next" class="secondary" hidden>下一个驱动</button></div><div class="row"><button type="button" id="panel-trial-keep" hidden>画面正常，使用此驱动</button><button type="button" id="panel-trial-stop" class="secondary" hidden>退出轮测，恢复原驱动</button></div><small>7 号仅用于慢速诊断，不能作为日常主题驱动。轮测只比较驱动，不会自动判断画面是否正常。</small></fieldset><div class="row"><button id="panel-test" type="button" class="secondary">屏幕自检（30 秒）</button><small id="panel-state">连接支持屏幕设置的设备后可用</small></div><div class="savebar"><small id="panel-dirty">颜色设置未同步</small><button>保存屏幕设置并重启</button></div></fieldset></form></section>
@@ -67,6 +68,7 @@
 import {creditsHTML} from "./credits.mjs";
 import {releaseControls} from "./releases.mjs";
 import {diagnosticControls} from "./diagnostics.mjs";
+import {autoBrightnessControls} from "./auto-brightness.mjs";
 import {imageClockControls} from "./image-clock.mjs";
 import {applicationControls} from "./device-apps.mjs";
 import {scheduleControls} from "./device-schedule.mjs";
@@ -87,7 +89,7 @@ showPanel(location.hash.slice(1));window.addEventListener('hashchange',()=>showP
 function configDraft(dirty){configDirty=dirty;$('config-dirty').textContent=dirty?'有未保存的修改':'显示设置已与设备同步';}
 function themeOptions(list){deviceThemes=list;registerThemes(list);const selected=$('theme').value;$('theme').replaceChildren(...list.map(x=>new Option(localizeTheme(x).title,x.index)));if(configDirty&&list.some(x=>String(x.index)===selected))$('theme').value=selected;else if(configDirty)configDraft(false);}
 $('config').addEventListener('input',()=>configDraft(true));$('config').addEventListener('change',()=>configDraft(true));
-const onDevice=!['localhost','127.0.0.1','[::1]'].includes(location.hostname);
+const onDevice=document.querySelector('meta[name="clockwise-device"]')?.content==='1';
 if(onDevice){$('theme-guide').href='/guide';$('address').value=location.origin;$('connection-form').hidden=true;$('studio-link').hidden=true;}
 else{try{$('address').value=localStorage.getItem('clockwise-device-address')||'';}catch{}}
 let toastTimer,toastGeneration=0,lastThemeError='';
@@ -106,7 +108,9 @@ imageClockControls($('image-clock-maker'),{device:()=>latestStatus||{},base:()=>
 $('credits').innerHTML=creditsHTML;
 releaseControls($('online-updates'),{device:()=>latestStatus||{},request,upload,sha256,message,changed:async()=>{await appManager.refresh();status(await request('status'));}});
 diagnosticControls($('hardware-tests'),{request,message,device:()=>latestStatus});
+const autoLight=autoBrightnessControls($('auto-brightness'),{request,message,refresh:async()=>status(await request('status'))});
 function status(data,initial=false){
+ autoLight.update(data.brightnessControl);
  latestStatus=data;
  const trial=data.panelTrial,setup=data.setup;
  $('setup-guide').hidden=!setup?.required;
@@ -159,7 +163,7 @@ $('connect').onclick=async()=>{
   const url=new URL(onDevice?location.origin:$('address').value);if(!['http:','https:'].includes(url.protocol)||url.username||url.password||url.search||url.hash)throw new Error('请输入 HTTP / HTTPS 设备地址');
   base=url.origin;
   const list=await request('themes');themeOptions(list);
-  const data=await request('status');status(data,true);connected=true;enable(true);if(/^0\.9\./.test(data.version))await appManager.refresh();else $('app-controls').disabled=true;if(/^0\.[7-9]\./.test(data.version))await loadSchedule(list);else $('schedule-form').querySelector('fieldset').disabled=true;$('init-storage').disabled=data.storage;$('connection-state').textContent='已连接';if(!data.error)message('已连接 '+base+'，设备状态已更新。');
+  const data=await request('status');status(data,true);connected=true;enable(true);if(data.runtimeApi>=4||/^0\.9\./.test(data.version))await appManager.refresh();else $('app-controls').disabled=true;if(data.runtimeApi>=4||/^0\.[7-9]\./.test(data.version))await loadSchedule(list);else $('schedule-form').querySelector('fieldset').disabled=true;$('init-storage').disabled=data.storage;$('connection-state').textContent='已连接';if(!data.error)message('已连接 '+base+'，设备状态已更新。');
   if(!onDevice){try{localStorage.setItem('clockwise-device-address',base);}catch{}}timer=setTimeout(poll,5000);
  }catch(e){message(e.message,true);$('connection-state').textContent='连接失败';}
 };
@@ -237,7 +241,7 @@ $('panel-test').onclick=async()=>{
 };
 for(const name of ['config','wifi'])$(name).onsubmit=async e=>{
  e.preventDefault();const button=e.target.querySelector('button[type=submit],button:not([type])');button.disabled=true;
- try{const data=await request(name,{method:'POST',body:new URLSearchParams(new FormData(e.target))});message(name==='config'?'默认主题和显示设置已保存；指定时段仍优先播放。':data.message);if(name==='config'){configDraft(false);if(/^0\.9\./.test($('version').textContent))await appManager.refresh();clearTimeout(timer);timer=setTimeout(poll,1200);}if(name==='wifi')$('wifi-password').value='';}
+ try{const data=await request(name,{method:'POST',body:new URLSearchParams(new FormData(e.target))});message(name==='config'?'默认主题和显示设置已保存；指定时段仍优先播放。':data.message);if(name==='config'){configDraft(false);if(latestStatus?.runtimeApi>=4||/^0\.9\./.test($('version').textContent))await appManager.refresh();clearTimeout(timer);timer=setTimeout(poll,1200);}if(name==='wifi')$('wifi-password').value='';}
  catch(e){message(e.message,true);}finally{button.disabled=false;}
 };
 $('networks').onchange=()=>{if($('networks').value)$('ssid').value=$('networks').value;};

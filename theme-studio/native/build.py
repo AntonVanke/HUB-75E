@@ -92,7 +92,7 @@ def main():
         for chip in ['esp32','esp32s3'] if a.chip=='all' else [a.chip]:entries.append(build(f.parent,chip,a.output))
     (a.output/'catalog.json').write_text(json.dumps({'format':3,'apps':[x for x in entries if x['id']!='image-clock']},ensure_ascii=False,indent=2),encoding='utf-8')
     if a.theme=='all' and a.chip=='all':
-        order=['mario-1-1','pacman','gravity-liquid','gravity-maze']
+        order=['mario-1-1','pacman','gravity-liquid','gravity-maze','ferrofluid-clock']
         catalog=['#pragma once','#ifdef HUB75_S3_BOARD']
         binary=['#pragma once','struct NativeBin {const char* id;const unsigned char* bytes;unsigned size;};','#ifdef HUB75_S3_BOARD']
         for chip in ['esp32s3','esp32']:

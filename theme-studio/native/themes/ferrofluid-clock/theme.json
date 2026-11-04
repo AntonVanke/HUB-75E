@@ -1,0 +1,16 @@
+{
+  "packageName": "org.clockwise.ferrofluid-clock",
+  "id": "ferrofluid-clock",
+  "title": "磁流体时钟",
+  "appVersion": "1.1.0",
+  "description": "圆弧液体数字组成 HH:MM；摇晃分裂、磁性回吸、连续换字，176 粒子、无逐帧分配。A 切换磁场，B 重置。",
+  "author": "HUB-75E",
+  "requirements": {
+    "sensors": [
+      "imu"
+    ],
+    "targetFps": 120,
+    "stateBytes": 32768,
+    "graphicsBytes": 8192
+  }
+}

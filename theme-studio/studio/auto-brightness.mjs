@@ -1,0 +1,11 @@
+export function autoBrightnessControls(container,{request,message,refresh}){
+ container.innerHTML='<h2>自动亮度</h2><p data-state>正在检测光敏电阻…</p><form data-form hidden><fieldset data-fields disabled><label><input data-enabled type="checkbox" style="display:inline;width:auto"> 根据环境光自动调节</label><div class="field-row"><label>最低亮度<input data-minimum type="number" min="1" max="255" required></label><label>最高亮度<input data-maximum type="number" min="1" max="255" required></label></div><details><summary>亮暗校准</summary><p>分别遮挡和照亮传感器，记录对应读数。亮处 ADC 应高于暗处至少 128。</p><div class="field-row"><label>暗处 ADC<input data-dark type="number" min="0" max="3967" required><button data-dark-set type="button" class="secondary">记录当前暗处</button></label><label>亮处 ADC<input data-bright type="number" min="128" max="4095" required><button data-bright-set type="button" class="secondary">记录当前亮处</button></label></div></details><p>亮度平滑变化；传感器断开或读数异常时使用固定亮度设置，不会自动关屏。</p><button type="submit">保存自动亮度</button></fieldset></form>';
+ const $=key=>container.querySelector('[data-'+key+']');let latest,dirty=false;
+ $('form').oninput=()=>dirty=true;
+ for(const key of ['dark','bright'])$(key+'-set').onclick=()=>{if(latest?.present){$(key).value=latest.raw;dirty=true;}};
+ $('form').onsubmit=async e=>{e.preventDefault();try{const values=Object.fromEntries(['minimum','maximum','dark','bright'].map(k=>[k,Number($(k).value)]));if(!Object.values(values).every(Number.isInteger)||values.minimum>values.maximum||values.bright-values.dark<128)throw Error('校准范围无效');values.enabled=$('enabled').checked;const r=await request('brightness',{method:'POST',body:new URLSearchParams(values)});dirty=false;message(r.message);await refresh();}catch(err){message(err.message,true);}};
+ return {update(s){latest=s;const available=!!s?.supported&&!!s.present;$('form').hidden=!available;$('fields').disabled=!available;
+   $('state').textContent=!s?'此功能需要 1.1.0 或更新固件':!s.supported?'当前板型未配置可检测的光敏电阻':!s.present?'未检测到有效光敏电阻，保持固定亮度':'已检测到光敏电阻 · ADC '+s.raw+' · '+s.millivolts+' mV · 当前亮度 '+s.actual+' / 255 · '+(s.active?'自动调节':'固定亮度');
+   if(s&&!dirty){$('enabled').checked=s.enabled;for(const k of ['minimum','maximum','dark','bright'])$(k).value=s[k];}
+ }};
+}

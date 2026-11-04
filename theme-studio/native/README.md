@@ -4,9 +4,9 @@
 
 ## 普通用户
 
-进入设备后台的“应用”，直接安装、卸载四个内置应用：超级马里奥全 32 关、Pac-Man、全屏重力水、滚珠迷宫。包由固件提供，无需互联网。
+进入设备后台的“应用”，直接安装、卸载五个内置应用：超级马里奥全 32 关、Pac-Man、全屏重力水、滚珠迷宫、磁流体时钟。包由固件提供，无需互联网。
 
-“图片时钟制作”支持最多 32 张 PNG、JPEG、WebP 幻灯片（1–3600 秒，可淡入淡出），裁剪填满、完整显示或拉伸到 64×64；支持鼠标/触摸拖动、方向键微调、五种时钟字体、12/24 小时、秒显示、冒号闪烁和最多八层中文文字。保存 .project.json 后可重新打开继续编辑。图片在电脑/手机转换为 RGB565，随二进制时钟包一起导入，无需编译器。该模板不占四个内置主题名额。
+“图片时钟制作”支持最多 32 张 PNG、JPEG、WebP 幻灯片（1–3600 秒，可淡入淡出），裁剪填满、完整显示或拉伸到 64×64；支持鼠标/触摸拖动、方向键微调、五种时钟字体、12/24 小时、秒显示、冒号闪烁和最多八层中文文字。保存 .project.json 后可重新打开继续编辑。图片在电脑/手机转换为 RGB565，随二进制时钟包一起导入，无需编译器。该模板不占五个内置主题名额。
 
 后台导出的是完整 CWP3 应用。资源和元数据均保存在包内。C/C++ 源码保存在开发工程中；机器码包不等于源码。
 
@@ -20,7 +20,7 @@ python theme-studio/native/build.py gravity-maze --chip esp32s3
 python theme-studio/native/build.py C:/my-theme --chip all
 ```
 
-输出位于 `theme-studio/native/dist/`。全部构建会同步固件的四个内置二进制包及图片时钟模板。单主题构建不会更新固件内置目录。
+输出位于 `theme-studio/native/dist/`。全部构建会同步固件的五个内置二进制包及图片时钟模板。单主题构建不会更新固件内置目录。
 
 每个主题目录包含 `theme.cpp`、`theme.json` 和可选素材；`.cpp`/`.c` 文件参与编译，`resources` 指定的文件打包进应用。编译参数为 `-O2 -fPIC -mlongcalls -mtext-section-literals`，关闭异常、RTTI、线程安全静态初始化，不链接 Arduino/标准 C++ 容器库。
 
@@ -46,7 +46,7 @@ python theme-studio/native/build.py C:/my-theme --chip all
 
 ## 生命周期与接口
 
-唯一入口为 `extern "C" const CwTheme* cw_theme()`，返回常量描述符。参考 `include/cw_theme.h` 和四个主题的 `theme.cpp`。
+唯一入口为 `extern "C" const CwTheme* cw_theme()`，返回常量描述符。参考 `include/cw_theme.h` 和主题的 `theme.cpp`。
 
 | 回调 | 用途 |
 |---|---|

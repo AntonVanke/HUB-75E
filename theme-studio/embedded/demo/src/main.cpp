@@ -8,6 +8,7 @@
 #include <NativeRuntime.h>
 #include "NativeCatalog.h"
 #include "DeviceService.h"
+#include "SetupQr.h"
 #include <WiFi.h>
 #include <esp_system.h>
 #include <LittleFS.h>
@@ -30,7 +31,7 @@ static ProtomatterPanelProbe protomatterProbe;
 #define PANEL_ROTATION 3
 #endif
 constexpr int FRAME_US=16667;
-constexpr int THEME_COUNT=4;
+constexpr int THEME_COUNT=5;
 struct Snapshot {
   ThemeClock clock;int theme=0,brightness=80,rotation=PANEL_ROTATION;uint32_t generation=0;
   float temperature=NAN,humidity=NAN,accel[3]={},gyro[3]={},gravity[3]={};
@@ -47,6 +48,7 @@ static GFXcanvas16* diagnosticCanvas=nullptr;
 static int selectedPanelDriver=0;
 static bool panelInitialized=false;
 static String panelInitError;
+static SetupQr setupQr;
 static bool diagnosticPanel(){return selectedPanelDriver==7;}
 static Adafruit_GFX* panelGraphics(){
 #ifdef HUB75_S3_BOARD
@@ -269,6 +271,14 @@ static void drawDriverGuide(){
     drawPanelTest();
     return;
   }
+  if(setupQr.size()&&(millis()-service.panelTrial.startedAt)%PanelTrial::durationMs>=8000){
+    g->fillScreen(panelColor(0xffff));g->setTextSize(1);g->setTextWrap(false);g->setTextColor(0);
+    char label[12];snprintf(label,sizeof(label),"D%d WIFI",selectedPanelDriver);g->setCursor(11,2);g->print(label);
+    const int size=setupQr.size(),offset=(64-size)/2;
+    // One LED per module, with at least four untouched white modules on each side.
+    for(int y=0;y<size;y++)for(int x=0;x<size;x++)if(setupQr.dark(x,y))g->drawPixel(offset+x,offset+y,0);
+    g->setCursor(5,55);g->print("JOIN WIFI");showPanel();return;
+  }
   g->fillScreen(0);g->drawRect(0,0,64,64,panelColor(0xffff));
   g->setTextSize(1);g->setTextWrap(false);
   auto text=[g](int x,int y,const char* value,uint16_t color){g->setTextColor(panelColor(color));g->setCursor(x,y);g->print(value);};
@@ -368,6 +378,7 @@ void setup(){
   Serial.printf("[BOARD] HUB75-S3 20261101-1 chip=%s flash=%u psram=%u\n",ESP.getChipModel(),ESP.getFlashChipSize(),ESP.getPsramSize());
   sensors.begin();
   diagnostics.begin();
+  service.ambient.supported=true;
   service.hardwareStatus=[](){return diagnostics.json();};
   service.hardwareTest=[](const String& test,String& error){if(test=="buzzer"){diagnostics.beep();return true;}if(test=="imu"){if(sensors.testImu())return true;error="IMU 自检失败或未检测到";return false;}error="未知测试项目";return false;};
   service.sensorStatus=[](){return sensors.json();};
@@ -447,12 +458,13 @@ void setup(){
     runtime.stop();return false;
   };
   service.begin(THEME_COUNT,THEME_TITLES);
+  if(service.needsSetup())setupQr.begin(service.setupName().c_str(),service.setupPassword().c_str());
   service.lastError=panelInitError;
   Serial.printf("64x64, 240 MHz, render core 1, service core 0; %d catalog apps. Serial: {\"cmd\":\"help\"}\n",THEME_COUNT);
 }
 void loop(){
 #ifdef HUB75_S3_BOARD
-  sensors.poll();diagnostics.poll();
+  sensors.poll();if(diagnostics.poll())service.ambient.sample(diagnostics.lightRaw(),diagnostics.lightMillivolts(),millis());
 #endif
   if(!snapshotQueue||!metricsQueue){delay(100);return;}
   service.poll();
@@ -466,7 +478,7 @@ void loop(){
     }
     delay(2);return;
   }
-  static Snapshot next;next.a=service.buttonAUntil&&int32_t(service.buttonAUntil-millis())>0;next.b=service.buttonBUntil&&int32_t(service.buttonBUntil-millis())>0;next.theme=service.theme;next.generation=service.generation;next.brightness=service.brightness;
+  static Snapshot next;next.a=service.buttonAUntil&&int32_t(service.buttonAUntil-millis())>0;next.b=service.buttonBUntil&&int32_t(service.buttonBUntil-millis())>0;next.theme=service.theme;next.generation=service.generation;next.brightness=service.ambient.tick(service.brightness,millis());
   next.panelTest=service.panelTestUntil&&int32_t(service.panelTestUntil-millis())>0;
 #ifdef HUB75_S3_BOARD
   next.temperatureValid=sensors.temperatureValid();next.humidityValid=sensors.humidityValid();

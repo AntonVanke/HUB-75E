@@ -25,7 +25,8 @@ const apps=await buildThemeApps();
 await buildThemeGuide();
 try{
  let page=await read('studio/device.html');const script=page.match(/<script type="module">([\s\S]*?)<\/script>/);
- if(script){const output=await build({stdin:{contents:script[1],resolveDir:fileURLToPath(new URL('../studio/',import.meta.url)),sourcefile:'device.mjs'},bundle:true,platform:'browser',format:'iife',write:false,minify:true});page=page.replace(script[0],'<script>'+output.outputFiles[0].text+'</script>');}
+ page=page.replace('<meta charset="utf-8">','<meta charset="utf-8"><meta name="clockwise-device" content="1">').replace('id="connection-form"','id="connection-form" hidden');
+ if(script){const output=await build({stdin:{contents:script[1],resolveDir:fileURLToPath(new URL('../studio/',import.meta.url)),sourcefile:'device.mjs'},bundle:true,platform:'browser',format:'iife',write:false,minify:true});page=page.replace(script[0],()=>'<script>'+output.outputFiles[0].text+'</script>');}
  const zip=gzipSync(Buffer.from(page));
  await write('embedded/demo/src/DevicePage.h','#pragma once\nstatic const unsigned char DEVICE_PAGE[] = {'+Array.from(zip).join(',')+'};\n');
 }catch(e){if(e.code!=='ENOENT')throw e;}

@@ -4,10 +4,16 @@
 
 A 64 × 64 native theme clock for ESP32 / ESP32-S3 and HUB75 panels. C/C++ themes compile to chip-specific Xtensa machine code in CWP3 packages. Current firmware does not run Lua.
 
-## Current release: 1.0.1
+Ferrofluid CPU preview: rest, shake, magnetic reassembly and changing digits, rendered by the same C++ code.
 
-- [Release downloads](https://github.com/AntonVanke/HUB-75E/releases/tag/v1.0.1): ESP32 4 MB and ESP32-S3 8 MB Flash + 8 MB OPI PSRAM.
-- Four native applications: Super Mario (32 levels), Pac-Man, Gravity Water and Ball Maze. Gravity applications require a detected IMU.
+![Ferrofluid Clock](web/previews/ferrofluid-clock.gif)
+
+## Current release: 1.1.2
+
+- [Release downloads](https://github.com/AntonVanke/HUB-75E/releases/tag/v1.1.2): ESP32 4 MB and ESP32-S3 8 MB Flash + 8 MB OPI PSRAM.
+- Five native applications: Super Mario (32 levels), Pac-Man, Gravity Water, Ball Maze and Ferrofluid Clock. Gravity applications require a detected IMU.
+- Ferrofluid Clock: curved liquid numerals, shake dispersal, magnetic reassembly and flowing digit changes; sensor-gated automatic brightness.
+- First setup: common drivers first, then a Wi-Fi QR code; fixes embedded-page corruption and redundant address entry.
 - Image editor: up to 32 slides, mouse/touch positioning, text layers, five clock fonts, seconds, 12/24-hour time, shadows, crossfades and editable project export/import.
 - Version selection, USB installation/update and matching applications on Pages. Device maintenance downloads and verifies firmware through the browser before OTA.
 - Hardware tests for IMU, buzzer, temperature/humidity, display, light ADC and buttons. Unsupported hardware is reported explicitly.
@@ -15,7 +21,7 @@ A 64 × 64 native theme clock for ESP32 / ESP32-S3 and HUB75 panels. C/C++ theme
 
 [Native SDK and Codex prompt](theme-studio/native/README.md) · [Image clock studio](https://antonvanke.github.io/HUB-75E/studio/index.html)
 
-The 0.9.x information below is retained as historical documentation. Legacy Lua/CWP2 applications do not run on the 1.0.1 native runtime.
+The 0.9.x information below is retained as historical documentation. Legacy Lua/CWP2 applications do not run on the 1.1.2 native runtime.
 
 **[Web installer, theme downloads and USB configuration](https://antonvanke.github.io/HUB-75E/)** · **[Firmware releases](https://github.com/AntonVanke/HUB-75E/releases)** · **[Flashing guide](FLASHING.en.md)**
 

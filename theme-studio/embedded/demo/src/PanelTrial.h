@@ -19,10 +19,11 @@ public:
   }
   static int driverAt(int index){
 #ifdef HUB75_S3_BOARD
-    return index;
+    static constexpr int order[]={0,8,9,4,3,2,1,5,6,7};
 #else
-    return index==7?8:index;
+    static constexpr int order[]={0,8,4,3,2,1,5,6};
 #endif
+    return index>=0&&index<count()?order[index]:0;
   }
   void begin(){
     Preferences settings;String ssid;bool chosen=false,hasKey=false;

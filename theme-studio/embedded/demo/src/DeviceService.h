@@ -12,6 +12,7 @@
 #include "AppManifest.h"
 #include "PanelSettings.h"
 #include "PanelTrial.h"
+#include "AutoBrightness.h"
 class DeviceService {
   class UploadServer final:public WebServer {
   public:
@@ -24,6 +25,7 @@ public:
   char metrics[512]="{}";
   bool hasCustom=false;
   PanelTrial panelTrial;
+  AutoBrightnessController ambient;
   bool needsSetup()const{return ssid_.isEmpty();}
   const String& setupName()const{return apName_;}
   const String& setupPassword()const{return apPassword_;}
@@ -132,6 +134,7 @@ private:
   String panelOrder_="RGB";
   PanelTiming panelTiming_;
   String statusJson();
+  String brightnessJson()const;
   void serialCommand(const String& line);
   void pruneSchedule();
   ThemeSchedule schedule_;

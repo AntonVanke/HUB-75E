@@ -2,6 +2,39 @@
   "schema": 1,
   "releases": [
     {
+      "version": "1.1.2",
+      "runtimeApi": 4,
+      "nativeAbi": 1,
+      "notes": "磁流体时钟重制、传感器自动亮度、扫码配网与驱动轮测，修复后台乱码和地址输入。",
+      "catalog": "applications/1.1.2/catalog.json",
+      "targets": {
+        "esp32": {
+          "chip": "esp32",
+          "flashBytes": 4194304,
+          "psramBytes": 0,
+          "manifest": "firmware/esp32-v1.1.2/manifest.json",
+          "updateManifest": "firmware/esp32-v1.1.2/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32-v1.1.2/app.bin",
+            "bytes": 1257104,
+            "sha256": "149140472a6724cdaba8d17ca12c9fd2acec5fd7508ae4e99a169c2a129b2341"
+          }
+        },
+        "esp32s3": {
+          "chip": "esp32s3",
+          "flashBytes": 8388608,
+          "psramBytes": 8388608,
+          "manifest": "firmware/esp32s3-v1.1.2/manifest.json",
+          "updateManifest": "firmware/esp32s3-v1.1.2/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32s3-v1.1.2/app.bin",
+            "bytes": 1250736,
+            "sha256": "b90a86251a7ca666a7e044ecd082d2061e3a08ccc105773532614b8c147399e5"
+          }
+        }
+      }
+    },
+    {
       "version": "1.0.1",
       "runtimeApi": 4,
       "nativeAbi": 1,
@@ -35,5 +68,5 @@
       }
     }
   ],
-  "latest": "1.0.1"
+  "latest": "1.1.2"
 }

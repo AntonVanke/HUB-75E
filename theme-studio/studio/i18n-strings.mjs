@@ -897,6 +897,29 @@ C/C++ 原生主题|Native C/C++ themes
 请先导入图片|Import an image first.
 图片时钟已安装。|Image clock installed.
 二进制时钟包已下载，图片已包含在包内。|Binary clock downloaded with its image included.
+自动亮度|Automatic brightness
+正在检测光敏电阻…|Detecting the light sensor…
+根据环境光自动调节|Adjust brightness to ambient light
+最低亮度|Minimum brightness
+最高亮度|Maximum brightness
+亮暗校准|Dark / bright calibration
+暗处 ADC|Dark ADC
+亮处 ADC|Bright ADC
+记录当前暗处|Record current dark level
+记录当前亮处|Record current bright level
+保存自动亮度|Save automatic brightness
+亮度设置已保存|Brightness settings saved
+当前板型未配置可检测的光敏电阻|No detectable light sensor is configured for this board
+未检测到有效光敏电阻，保持固定亮度|No valid light sensor detected; using fixed brightness
+已检测到光敏电阻|Light sensor detected
+自动调节|Automatic adjustment
+固定亮度|Fixed brightness
+当前亮度|Current brightness
+此功能需要 1.1.0 或更新固件|This feature requires firmware 1.1.0 or newer
+校准范围无效|Invalid calibration range
+分别遮挡和照亮传感器，记录对应读数。亮处 ADC 应高于暗处至少 128。|Cover and illuminate the sensor to record each reading. Bright ADC must exceed dark ADC by at least 128.
+亮度平滑变化；传感器断开或读数异常时使用固定亮度设置，不会自动关屏。|Brightness changes smoothly. Sensor loss or invalid readings restore fixed brightness without turning the panel off.
+屏幕先显示驱动与热点信息，再显示 Wi-Fi 二维码。扫码连接设备热点后，自动轮测会暂停；先确认屏幕驱动，再连接家庭 Wi-Fi。|The screen shows driver and hotspot details first, then a Wi-Fi QR code. Scan to join the device hotspot and pause the trial; confirm the display driver, then connect to your home Wi-Fi.
 `;
 export const strings = Object.fromEntries(pairs.trim().split('\n').filter(Boolean).map(line=>{
 const at=line.indexOf('|');return [line.slice(0,at),line.slice(at+1)];}));

@@ -2,6 +2,60 @@
   "format": 3,
   "apps": [
     {
+      "packageName": "org.clockwise.ferrofluid-clock",
+      "id": "ferrofluid-clock",
+      "title": "磁流体时钟",
+      "appVersion": "1.1.0",
+      "description": "圆弧液体数字组成 HH:MM；摇晃分裂、磁性回吸、连续换字，176 粒子、无逐帧分配。A 切换磁场，B 重置。",
+      "author": "HUB-75E",
+      "requirements": {
+        "sensors": [
+          "imu"
+        ],
+        "targetFps": 60,
+        "stateBytes": 32768,
+        "graphicsBytes": 8192,
+        "chips": [
+          "esp32"
+        ],
+        "codeBytes": 10680,
+        "dataBytes": 380
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "ferrofluid-clock-esp32.cwp",
+      "bytes": 11734,
+      "sha256": "4a9c4ccce4dbbce43da6776a6c702cac5e1af7be39a10e7ca8e36aa078b02240"
+    },
+    {
+      "packageName": "org.clockwise.ferrofluid-clock",
+      "id": "ferrofluid-clock",
+      "title": "磁流体时钟",
+      "appVersion": "1.1.0",
+      "description": "圆弧液体数字组成 HH:MM；摇晃分裂、磁性回吸、连续换字，176 粒子、无逐帧分配。A 切换磁场，B 重置。",
+      "author": "HUB-75E",
+      "requirements": {
+        "sensors": [
+          "imu"
+        ],
+        "targetFps": 120,
+        "stateBytes": 32768,
+        "graphicsBytes": 8192,
+        "chips": [
+          "esp32s3"
+        ],
+        "codeBytes": 10680,
+        "dataBytes": 380
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "ferrofluid-clock-esp32s3.cwp",
+      "bytes": 11737,
+      "sha256": "5267bc0770bfbf3615b27dbb191506af18a4070f540eaac20c3abd3b106ffed3"
+    },
+    {
       "packageName": "org.clockwise.gravity-liquid",
       "id": "gravity-liquid",
       "title": "全屏重力水",
