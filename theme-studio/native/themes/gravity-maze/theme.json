@@ -1,0 +1,16 @@
+{
+  "packageName": "org.clockwise.gravity-maze",
+  "id": "gravity-maze",
+  "title": "滚珠迷宫",
+  "appVersion": "1.0.1",
+  "description": "C++ 随机唯一通路迷宫，240 Hz 碰撞与亚像素滚动。",
+  "author": "HUB-75E",
+  "requirements": {
+    "sensors": [
+      "imu"
+    ],
+    "targetFps": 120,
+    "stateBytes": 12288,
+    "graphicsBytes": 8192
+  }
+}

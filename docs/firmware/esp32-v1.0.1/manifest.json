@@ -1,0 +1,15 @@
+{
+  "name": "HUB-75E ESP32",
+  "version": "1.0.1",
+  "builds": [
+    {
+      "chipFamily": "ESP32",
+      "parts": [
+        {
+          "path": "merged.bin",
+          "offset": 0
+        }
+      ]
+    }
+  ]
+}

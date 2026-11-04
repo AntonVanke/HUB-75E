@@ -1,10 +1,14 @@
 {
-  "name": "ClockwiseThemeRuntime",
-  "version": "0.4.0",
-  "description": "Lua 5.3 theme execution and graphics host for a 64x64 matrix",
+  "name": "ClockwiseNativeThemeRuntime",
+  "version": "1.0.0",
+  "description": "Native C/C++ binary theme runtime for 64x64 HUB75",
   "build": {
     "srcDir": "src",
-    "flags": "-DLUA_INT_TYPE=LUA_INT_INT"
+    "srcFilter": [
+      "+<*>",
+      "-<lua/>",
+      "-<ThemeRuntime.cpp>"
+    ]
   },
   "frameworks": "*",
   "platforms": "*"

@@ -6,6 +6,16 @@ try { current = localStorage.getItem(languageKey) || (navigator.language?.starts
 if (!['zh-CN', 'en'].includes(current)) current = 'zh-CN';
 
 export const translations = {
+  '64 × 64 · C/C++ 原生主题 · 开源固件': '64 × 64 · NATIVE C/C++ THEMES · OPEN-SOURCE FIRMWARE',
+  '发布版本': 'Release version', '对应固件版本': 'Matching firmware version', '烧录方式': 'Installation mode',
+  '更新固件，保留设置和应用': 'Update firmware, keep settings and apps', '全新安装，重置设置': 'Fresh install, reset settings',
+  'ESP32-S3 至少 8 MB Flash · 8 MB OPI PSRAM': 'ESP32-S3: at least 8 MB Flash · 8 MB OPI PSRAM',
+  '下载 CWP 应用包，在设备自己的网页后台安装；C/C++ 源码和 Codex 提示词在主题工坊提供。': 'Download CWP apps and install them in the device interface. C/C++ sources and a Codex prompt are available in the studio.',
+  '综合致谢 · 开源项目与参考来源': 'Acknowledgements · Open-source projects and references',
+  '感谢以下项目的开发者与贡献者：': 'Thanks to the developers and contributors of these projects:',
+  '完整来源与第三方许可说明': 'Full attribution and third-party license notices',
+  '。各项目及素材保留原作者权利和许可。': '. Each project and asset retains its original rights and license.',
+  '代码 / 数据': 'Code / Data', '状态内存': 'State memory',
   'Clockwise HUB75 像素时钟：ESP32 / ESP32-S3 在线烧录、主题应用下载与 USB 串口配置。': 'Clockwise HUB75 pixel clock: install ESP32 / ESP32-S3 firmware, download theme apps, and configure your device over USB serial.',
   'Clockwise · HUB75 像素时钟': 'Clockwise · HUB75 Pixel Clock',
   'Clockwise 首页': 'Clockwise home', 'HUB75 像素时钟': 'HUB75 Pixel Clock',

@@ -1,0 +1,16 @@
+{
+  "packageName": "org.clockwise.mario-1-1",
+  "id": "mario-1-1",
+  "title": "超级马里奥 · 全 32 关",
+  "appVersion": "1.0.1",
+  "description": "C++ 64 Hz 自动通关物理，32 关 44 区域按区加载，完整视野。",
+  "author": "HUB-75E",
+  "requirements": {
+    "targetFps": 60,
+    "stateBytes": 8192,
+    "graphicsBytes": 12288
+  },
+  "resources": {
+    "mario-worlds": "mario-worlds.cwr"
+  }
+}

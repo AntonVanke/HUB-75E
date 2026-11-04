@@ -16,7 +16,7 @@
       <a class="brand" href="./" aria-label="Clockwise 首页"><span class="brand-icon">◷</span><span>Clockwise <small>HUB75 像素时钟</small></span></a>
       <div class="header-actions"><label class="language-picker"><span class="sr-only">语言</span><select id="language-select" aria-label="语言"><option value="zh-CN">简体中文</option><option value="en">English</option></select></label><a class="github-link" href="https://oshwhub.com/team_rzwlbjjl/project_tfevmhyp" target="_blank" rel="noopener noreferrer">OSHWHUB ↗</a><a class="github-link" href="https://github.com/AntonVanke/HUB-75E" target="_blank" rel="noopener noreferrer">GitHub ↗</a></div>
     </div>
-    <div class="hero-copy"><p class="eyebrow">64 × 64 · LUA 主题 · 开源固件</p><h1>给时钟换一种表情</h1><p>连接你的像素时钟，安装固件、挑选主题，再把一切设为你喜欢的样子。</p></div>
+    <div class="hero-copy"><p class="eyebrow">64 × 64 · C/C++ 原生主题 · 开源固件</p><h1>给时钟换一种表情</h1><p>连接你的像素时钟，安装固件、挑选主题，再把一切设为你喜欢的样子。</p></div>
   </header>
 
   <main class="shell">
@@ -31,32 +31,30 @@
       <div class="flash-grid">
         <article class="card flash-card">
           <h3>选择你的开发板</h3>
-          <fieldset class="board-picker"><legend class="sr-only">固件版本</legend>
-            <label class="board-option"><input type="radio" name="board" value="esp32" checked><span><strong>ESP32 <b>v0.9.3</b></strong><small>经典 ESP32 · 4 MB Flash · 无 PSRAM</small></span></label>
-            <label class="board-option"><input type="radio" name="board" value="esp32s3"><span><strong>ESP32-S3 <b>v0.9.7</b></strong><small>本项目 S3 板 · 8 MB Flash · OPI PSRAM</small></span></label>
-            <label class="board-option"><input type="radio" name="board" value="esp32-v098"><span><strong>ESP32 <b>v0.9.8</b></strong><small>新功能版 · 4 MB · 无 PSRAM · 待实屏验证</small></span></label>
-            <label class="board-option"><input type="radio" name="board" value="esp32s3-v098"><span><strong>ESP32-S3 <b>v0.9.8</b></strong><small>新功能版 · 8 MB + OPI PSRAM · 待实屏验证</small></span></label>
-          </fieldset>
+          <fieldset class="board-picker"><legend class="sr-only">硬件型号</legend>
+            <label class="board-option"><input type="radio" name="board" value="esp32" checked><span><strong>ESP32</strong><small>4 MB Flash · 无 PSRAM</small></span></label>
+            <label class="board-option"><input type="radio" name="board" value="esp32s3"><span><strong>ESP32-S3</strong><small>至少 8 MB Flash · 8 MB OPI PSRAM</small></span></label>
+          </fieldset><label>发布版本<select id="release-version"><option>1.0.1</option></select></label><label>烧录方式<select id="flash-mode"><option value="update">更新固件，保留设置和应用</option><option value="install">全新安装，重置设置</option></select></label>
           <p id="board-note" class="note">适用于本项目经典 ESP32 接线与 4 MB Flash 分区。</p>
           <div class="install-row">
-            <esp-web-install-button id="installer" manifest="firmware/esp32-v0.9.3/manifest.json">
+            <esp-web-install-button id="installer" manifest="firmware/esp32-v1.0.1/update-manifest.json">
               <button id="install-button" class="primary" slot="activate" type="button">连接并烧录 ESP32</button>
               <span slot="unsupported" class="note">此浏览器不支持在线烧录，请下载离线包。</span>
               <span slot="not-allowed" class="note">请通过 HTTPS 或 localhost 打开此页。</span>
             </esp-web-install-button>
-            <a id="release-link" class="button secondary" href="https://github.com/AntonVanke/HUB-75E/releases/tag/esp32-v0.9.3" target="_blank" rel="noopener noreferrer">下载离线包 ↗</a>
+            <a id="release-link" class="button secondary" href="https://github.com/AntonVanke/HUB-75E/releases/tag/v1.0.1" target="_blank" rel="noopener noreferrer">下载离线包 ↗</a>
           </div>
           <p id="flash-support" class="small" role="status"></p>
         </article>
-        <aside class="card steps-card"><h3>烧录前看这里</h3><ol class="steps"><li><span>1</span><div><strong>核对 Flash 与 PSRAM</strong><p>S3 固件面向 8 MB Flash + OPI PSRAM 本板；S3 N4（4 MB）不能刷此包。</p></div></li><li><span>2</span><div><strong>选择开发板的 USB 串口</strong><p>使用支持 Web Serial 的桌面 Chrome / Edge。若串口被占用，请关闭串口监视器。</p></div></li><li><span>3</span><div><strong>安装后配置 Wi-Fi</strong><p>进入「设备配置」手动连接串口，或打开设备自己的网页后台。</p></div></li></ol><p class="note">USB 合并固件写入 0x0，会覆盖 NVS / OTA 元数据；即使不勾选整片擦除，也会重置 Wi-Fi 与设置。已有设备如需保留配置，请在设备网页后台使用 app.bin 进行 OTA。整片擦除还会清空已安装应用。</p></aside>
+        <aside class="card steps-card"><h3>烧录前看这里</h3><ol class="steps"><li><span>1</span><div><strong>核对 Flash 与 PSRAM</strong><p>S3 固件面向 8 MB Flash + OPI PSRAM 本板；S3 N4（4 MB）不能刷此包。</p></div></li><li><span>2</span><div><strong>选择开发板的 USB 串口</strong><p>使用支持 Web Serial 的桌面 Chrome / Edge。若串口被占用，请关闭串口监视器。</p></div></li><li><span>3</span><div><strong>安装后配置 Wi-Fi</strong><p>进入「设备配置」手动连接串口，或打开设备自己的网页后台。</p></div></li></ol><p class="note">保留设置更新仅写入应用和 OTA 启动选择，适用于本项目兼容分区。全新安装使用合并固件，会重置 Wi-Fi 与设置。整片擦除会清空已安装应用。</p></aside>
       </div>
       <div class="quick-links"><a href="studio/theme-guide.html">阅读使用手册 <span>↗</span></a><a href="studio/index.html">打开主题工坊 <span>↗</span></a><a href="studio/device.html">打开设备管理 <span>↗</span></a></div>
     </section>
 
     <section id="panel-themes" role="tabpanel" aria-labelledby="tab-themes" hidden>
-      <div class="section-heading"><div><p class="eyebrow">THEME LIBRARY</p><h2>小屏幕，大世界 <span id="theme-count" class="count">—</span></h2><p>下载 CWP 应用包，在设备自己的网页后台安装；源码 ZIP 可在主题工坊继续编辑。</p></div><a class="button secondary" href="studio/index.html">进入主题工坊 ↗</a></div>
+      <div class="section-heading"><div><p class="eyebrow">THEME LIBRARY</p><h2>小屏幕，大世界 <span id="theme-count" class="count">—</span></h2><p>下载 CWP 应用包，在设备自己的网页后台安装；C/C++ 源码和 Codex 提示词在主题工坊提供。</p></div><a class="button secondary" href="studio/index.html">进入主题工坊 ↗</a></div>
       <div class="card theme-toolbar"><label class="search"><span class="sr-only">搜索主题</span><input id="theme-search" type="search" placeholder="搜索名称、描述或分类…" autocomplete="off"></label><label>芯片 <select id="theme-chip"><option value="all">全部</option><option value="esp32">ESP32</option><option value="esp32s3">ESP32-S3</option></select></label><label>PSRAM <select id="theme-memory"><option value="all">全部需求</option><option value="none">无需 PSRAM</option><option value="required">需要 PSRAM</option></select></label></div>
-      <p id="theme-result" class="small" role="status">正在读取主题目录…</p>
+      <label>对应固件版本<select id="app-release"><option value="">最新发布</option></select></label><p id="theme-result" class="small" role="status">正在读取主题目录…</p>
       <div id="theme-install-state" class="notice" hidden><p id="theme-install-message" role="status"></p><progress id="theme-install-progress" max="100" value="0"></progress><button id="cancel-install" type="button" class="text-button">取消安装</button></div>
       <div id="theme-list" class="theme-list" aria-live="polite"></div>
       <div class="library-note"><span>◇</span><p>芯片与内存筛选来自应用包的需求声明。实际帧率以设备运行结果为准；应用安装与空间管理请使用设备网页后台。</p><a href="studio/theme-guide.html">主题手册 ↗</a></div>
@@ -75,7 +73,7 @@
         <article class="card log-card"><div class="card-heading"><h3>串口记录</h3><button id="clear-log" class="text-button" type="button">清空</button></div><p class="small">只显示操作与必要的协议响应，省略普通设备日志内容；最多保留 200 条。</p><div id="serial-log" class="serial-log" role="log" aria-label="串口操作记录"></div></article>
       </div>
     </section>
-    <footer class="footer"><span><i></i> Clockwise · 64 × 64 像素时钟</span><div class="credits"><span>致谢</span> <a href="https://topyuan.top/clock/" target="_blank" rel="noopener noreferrer">ClockWise Plus</a> · <span>作者</span> <a href="https://github.com/yuan910715" target="_blank" rel="noopener noreferrer">冯雪原 / MonsterYuan (yuan910715)</a></div><a href="https://github.com/AntonVanke/HUB-75E" target="_blank" rel="noopener noreferrer">开源项目 ↗</a></footer>
+    <footer class="footer"><span><i></i> Clockwise · 64 × 64 像素时钟</span><div id="credits"></div><a href="https://github.com/AntonVanke/HUB-75E" target="_blank" rel="noopener noreferrer">开源项目 ↗</a></footer>
   </main>
 </body>
 </html>

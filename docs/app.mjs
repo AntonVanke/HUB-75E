@@ -1,12 +1,14 @@
 import { language, setLanguage, t, metadata, translatePage, translateText, translations } from './i18n.mjs';
 const $ = (id) => document.getElementById(id);
 const supported = 'serial' in navigator && window.isSecureContext;
+import {creditsHTML} from './studio/credits.mjs';
+import {nativeInfo} from './studio/native-package.mjs';
+let releases=null;
 const boards = {
-  esp32: { label: 'ESP32', version: '0.9.3', manifest: 'firmware/esp32-v0.9.3/manifest.json', tag: 'esp32-v0.9.3', note: t('适用于本项目经典 ESP32 接线与 4 MB Flash 分区。') },
-  esp32s3: { label: 'ESP32-S3', version: '0.9.7', manifest: 'firmware/esp32s3-v0.9.7/manifest.json', tag: 'esp32s3-v0.9.7', note: t('仅适用于本项目 8 MB Flash + OPI PSRAM 的 S3 板；S3 N4（4 MB）不能刷此包。') },
-  'esp32-v098': { label: 'ESP32 v0.9.8', version: '0.9.8', manifest: 'firmware/esp32-v0.9.8/manifest.json', tag: 'v0.9.8', note: t('v0.9.8 新功能版：支持 USB 一键安装、设备发现与方向设置；源码构建版，待实屏验证。经典 ESP32：4 MB Flash、无 PSRAM。') },
-  'esp32s3-v098': { label: 'ESP32-S3 v0.9.8', version: '0.9.8', manifest: 'firmware/esp32s3-v0.9.8/manifest.json', tag: 'v0.9.8', note: t('v0.9.8 新功能版：新增传感器 API；源码构建版，待实屏验证。仅用于 8 MB Flash + OPI PSRAM 本板，S3 N4 不能刷此包。') },
+ esp32:{label:'ESP32',note:'经典 ESP32 · 4 MB Flash · 无 PSRAM'},
+ esp32s3:{label:'ESP32-S3',note:'本项目 S3 板 · 至少 8 MB Flash + 8 MB OPI PSRAM；不支持 N4'}
 };
+
 let port = null;
 let reader = null;
 let readTask = null;
@@ -138,15 +140,18 @@ window.addEventListener('hashchange', () => {
 });
 if (['flash', 'themes', 'config'].includes(location.hash.slice(1))) selectTab(location.hash.slice(1));
 
-document.querySelectorAll('input[name="board"]').forEach((radio) => {
-  radio.addEventListener('change', () => {
-    const board = boards[radio.value];
-    $('installer').setAttribute('manifest', board.manifest);
-    $('install-button').textContent = t('连接并烧录 {0}', [board.label]);
-    $('release-link').href = `https://github.com/AntonVanke/HUB-75E/releases/tag/${board.tag}`;
-    $('board-note').textContent = translateText(board.note);
-  });
-});
+function updateInstaller(){
+ const key=document.querySelector('input[name="board"]:checked').value,board=boards[key],release=releases?.releases.find(r=>r.version===$('release-version').value),target=release?.targets[key];
+ if(!target)return;
+ const preserve=$('flash-mode').value==='update';$('installer').setAttribute('manifest',preserve?target.updateManifest:target.manifest);
+ $('install-button').textContent=(preserve?'连接并更新 ':'连接并烧录 ')+board.label+' '+release.version;
+ $('release-link').href='https://github.com/AntonVanke/HUB-75E/releases/tag/v'+release.version;
+ $('board-note').textContent=board.note+'。'+(preserve?'更新保留 Wi-Fi、设置和应用；要求原设备使用本项目兼容分区，请不要勾选整片擦除。':'全新安装会重置 Wi-Fi 和设置。');
+}
+for(const radio of document.querySelectorAll('input[name="board"]'))radio.onchange=updateInstaller;
+$('release-version').onchange=$('flash-mode').onchange=updateInstaller;
+fetch('releases.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('版本目录读取失败');return r.json();}).then(data=>{releases=data;$('release-version').replaceChildren(...data.releases.map(r=>new Option(r.version,r.version)));$('release-version').value=data.latest;updateInstaller();}).catch(e=>{$('board-note').textContent=e.message;});
+document.getElementById('credits').innerHTML=creditsHTML;
 $('install-button').addEventListener('click', (event) => {
   if (port || reader || closing || connecting) {
     event.preventDefault();
@@ -170,7 +175,7 @@ function bytes(value) {
 
 function relativeAsset(path, fallback) {
   const value = String(path || fallback).replace(/^\/+/, '');
-  return /^themes\/[a-zA-Z0-9_./-]+$/.test(value) && !value.split('/').includes('..') ? value : fallback;
+  return /^(?:themes|applications|native)\/[a-zA-Z0-9_./-]+$/.test(value) && !value.split('/').includes('..') ? value : fallback;
 }
 
 function element(tag, className, text) {
@@ -189,7 +194,7 @@ function themeCompatibility(app) {
   if (Number(app.runtimeApi || 1) > Number(device.runtimeApi || 1)) return t('此应用需要更新的设备运行时。');
   const physicalPsram = Math.ceil(Number(device.limits?.psramBytes || 0) / 1048576) * 1048576;
   if (Number(requirements.psramBytes || 0) > physicalPsram) return t('设备 PSRAM 不满足应用要求。');
-  for (const key of ['luaHeapBytes', 'luaWorkingBytes', 'graphicsBytes']) {
+  for (const key of ['codeBytes', 'dataBytes', 'stateBytes', 'graphicsBytes']) {
     if (Number(requirements[key] || 0) > Number(device.limits?.[key] ?? Infinity)) return t('应用内存需求超出设备配额。');
   }
   if ((requirements.sensors || []).some((sensor) => !device.sensorCapabilities?.includes(sensor))) return t('设备缺少应用要求的真实传感器。');
@@ -205,7 +210,7 @@ function renderThemes() {
     const text = [app.title, app.id, app.description, app.category, metadata(app, 'title'), metadata(app, 'description'), metadata(app, 'category')].join(' ').toLocaleLowerCase();
     return (!query || text.includes(query))
       && (chip === 'all' || requirements.chips?.includes(chip))
-      && (memory === 'all' || (memory === 'none' ? requirements.psramBytes === 0 : Number(requirements.psramBytes) > 0));
+      && (memory === 'all' || (memory === 'none' ? !requirements.psramBytes : Number(requirements.psramBytes) > 0));
   });
   const fragment = document.createDocumentFragment();
   for (const app of matches) {
@@ -217,7 +222,7 @@ function renderThemes() {
     card.append(heading, element('p', 'theme-description', metadata(app, 'description') || t('暂无描述')));
     const meta = element('div', 'theme-meta');
     meta.append(element('span', '', (requirements.chips || []).map((value) => value === 'esp32s3' ? 'ESP32-S3' : value.toUpperCase()).join(' / ') || t('芯片未声明')));
-    meta.append(element('span', '', requirements.psramBytes === 0 ? t('无需 PSRAM') : `PSRAM ${bytes(requirements.psramBytes)}`));
+    meta.append(element('span', '', !requirements.psramBytes ? t('无需 PSRAM') : `PSRAM ${bytes(requirements.psramBytes)}`));
     if (app.category) meta.append(element('span', '', metadata(app, 'category')));
     card.append(meta);
     const downloads = element('div', 'theme-downloads');
@@ -228,7 +233,7 @@ function renderThemes() {
       const source = element('a', 'button secondary', t('↓ 源码 ZIP'));
       source.href = relativeAsset(app.archivePath, `themes/apps/${id}.zip`);
       source.download = `${id}.zip`;
-      downloads.append(cwp, source);
+      downloads.append(cwp);if(app.archivePath)downloads.append(source);
       const installed = installedApps.find((item) => item.packageName === app.packageName);
       const action = element('button', 'button secondary', t(installed ? '卸载' : '安装到 USB 设备'));
       action.type = 'button';
@@ -245,7 +250,7 @@ function renderThemes() {
     const list = element('dl', 'requirements');
     const rows = [
       [t('应用标识'), app.packageName || app.id], [t('作者'), app.author || '—'],
-      [t('Lua 堆上限'), bytes(requirements.luaHeapBytes)], [t('Lua 工作内存'), bytes(requirements.luaWorkingBytes)],
+      ['代码 / 数据', bytes(requirements.codeBytes)+' / '+bytes(requirements.dataBytes)], ['状态内存', bytes(requirements.stateBytes)],
       [t('图形内存'), bytes(requirements.graphicsBytes)], ['PSRAM', bytes(requirements.psramBytes)],
       [t('目标帧率'), requirements.targetFps ? `${requirements.targetFps} FPS` : t('未声明')],
       [t('应用大小'), bytes(app.bytes)], [t('实机验证'), app.verification?.status === 'verified' ? t('已标记验证') : t('尚未验证')],
@@ -262,7 +267,7 @@ function renderThemes() {
 
 async function loadThemes() {
   try {
-    const response = await fetch('theme-catalog.json');
+    const version=$('app-release')?.value;const response = await fetch(version?'applications/'+version+'/catalog.json':'theme-catalog.json');
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
     themes = Array.isArray(data) ? data : data.apps;
@@ -469,12 +474,13 @@ async function installTheme(app) {
   let started = false;
   try {
     const bytes = await fetchBoundedPackage(relativeAsset(app.path || app.file, `themes/apps/${app.id}.cwp`), Number(device.limits?.appBytes || 1048576));
-    if (new TextDecoder().decode(bytes.subarray(0, 4)) !== 'CWP2') throw new Error(t('USB 安装需要带包名的 CWP2 应用。'));
+    const info=nativeInfo(bytes);if(device.packageVersion<3)throw Error('请先更新到原生固件 1.0.1');if(!info.requirements.chips.includes(/S3/i.test(device.chip)?'esp32s3':'esp32'))throw Error('二进制芯片不匹配');
     const header = new DataView(bytes.buffer), metadataOffset = 24 + header.getUint32(12, true) * 40, metadataLength = header.getUint32(16, true);
     if (metadataLength > 2048 || metadataOffset + metadataLength > bytes.length) throw new Error(t('应用包内容不完整'));
     const manifest = JSON.parse(new TextDecoder().decode(bytes.subarray(metadataOffset, metadataOffset + metadataLength)));
     if (manifest.packageName !== app.packageName) throw new Error(t('下载应用包与请求的包名不一致'));
     const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map((value) => value.toString(16).padStart(2, '0')).join('');
+    if(app.sha256&&hash!==app.sha256)throw Error('应用 SHA-256 校验失败');
     if (installCancelled) throw new Error(t('安装已取消，原应用已保留。'));
     await requestSerial({ cmd: 'app.install.begin', packageName: app.packageName, bytes: bytes.length, sha256: hash }, (data) => data.upload && data.phase === 'begin');
     started = true;
@@ -692,3 +698,5 @@ $('language-select').addEventListener('change', (event) => setLanguage(event.tar
 window.addEventListener('clockwise:languagechange', refreshLanguage);
 document.querySelectorAll('form').forEach((form) => { form.noValidate = true; });
 refreshLanguage();
+
+fetch('releases.json',{cache:'no-store'}).then(r=>r.json()).then(data=>{$('app-release').replaceChildren(...data.releases.map(r=>new Option(r.version,r.version)));$('app-release').value=data.latest;$('app-release').onchange=loadThemes;}).catch(()=>{});

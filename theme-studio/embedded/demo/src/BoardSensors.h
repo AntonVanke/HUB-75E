@@ -13,6 +13,7 @@ public:
   bool humidityValid()const{return ahtPresent&&ahtSamples&&uint32_t(millis()-ahtGood_)<10000&&isfinite(humidity);}
   bool imuValid()const{return imuPresent&&imuSamples&&uint32_t(millis()-imuGood_)<500;}
   String json()const;
+  bool testImu();
 private:
   uint32_t ahtAt_=0,ahtReady_=0,imuAt_=0,reportAt_=0,ahtGood_=0,imuGood_=0;
   bool waiting_=false;

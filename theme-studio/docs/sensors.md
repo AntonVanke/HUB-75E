@@ -46,9 +46,9 @@ Let raw acceleration be `a`, and initial gravity be `b=(-a.x,-a.y,-a.z)`. Rotati
 | 180° | `(-b.x, -b.y)` |
 | 270° | `(-b.y, b.x)` |
 
-固件低通时间常数约 250 ms，IMU 样本超过 500 ms 视为无效。自动方向还需稳定姿态与滞回，不是每次过零立即旋转。传感器安装方向与面板零度基准仍需在实际板上确认；主题不应私自再次旋转 `gravity_x/y`。重力可受动态线性运动影响，不是陀螺融合后的绝对姿态。
+方向识别使用 250 ms 慢速滤波，主题重力输入使用 18 ms 快速滤波，IMU 样本超过 500 ms 视为无效。自动方向还需稳定姿态与滞回，不是每次过零立即旋转。传感器安装方向与面板零度基准仍需在实际板上确认；主题不应私自再次旋转 `gravity_x/y`。重力可受动态线性运动影响，不是陀螺融合后的绝对姿态。
 
-Firmware uses a low-pass time constant of approximately 250 ms and treats IMU samples older than 500 ms as invalid. Automatic rotation requires a stable pose and hysteresis; it does not rotate immediately on each sign change. Sensor mounting relative to panel rotation zero still needs confirmation on the physical board. Themes must not rotate `gravity_x/y` a second time. Dynamic linear acceleration can affect the gravity estimate; it is not a gyroscope-fused absolute attitude.
+Orientation detection uses a 250 ms filter; theme gravity input uses an 18 ms filter and treats IMU samples older than 500 ms as invalid. Automatic rotation requires a stable pose and hysteresis; it does not rotate immediately on each sign change. Sensor mounting relative to panel rotation zero still needs confirmation on the physical board. Themes must not rotate `gravity_x/y` a second time. Dynamic linear acceleration can affect the gravity estimate; it is not a gyroscope-fused absolute attitude.
 
 ## 模拟器 / Simulator
 
@@ -67,8 +67,20 @@ The studio's “Simulation data and buttons” panel provides temperature and hu
 | `gravity-level` | 重力气泡与同心刻度 / Gravity bubble and concentric targets | 常数状态 / Constant-size state |
 | `gravity-maze` | 滚珠、障碍与目标，A 键重开 / Marble, obstacles, goal; A restarts | 5 面墙；每步 2 次轴向碰撞检查 / 5 walls; 2 axis collision passes per step |
 | `gravity-stardust` | 重力与 Z 角速度驱动流光 / Trails driven by gravity and Z angular velocity | 32 个预分配粒子 / 32 preallocated particles |
-| `gravity-liquid` | 按重力倾斜的液面与气泡 / Gravity-aligned liquid and bubbles | 16 列水面、6 个气泡 / 16 water columns, 6 bubbles |
+| `gravity-liquid` | 全屏重力水 / Full-screen gravity water | API 3，117 粒子，200 Hz 原生物理 / API 3, 117 particles, native 200 Hz physics |
 
 所有主题避免逐帧创建表、逐帧格式化字符串与全屏 softglow/wave 特效。运动步长上限 50 ms；大延迟不靠无限补步追赶。声明的 48 KiB Lua 加载、32 KiB Lua 工作、8 KiB graphics 是作者预算估算，不能等同于实测峰值。本地 Fengari 执行与指令预算检查不证明 ESP32-S3 实板帧时间。沙漏、水平仪、液体和舒适度为视觉/交互模型，不是校准仪器、医学评价或天气预报。
 
 All themes avoid per-frame table creation, string formatting, and full-screen softglow/wave effects. Motion steps are capped at 50 ms, without unbounded catch-up loops after delays. The declared 48 KiB Lua load, 32 KiB Lua working, and 8 KiB graphics budgets are author estimates, not measured peaks. Local Fengari execution and instruction-budget checks do not establish frame times on physical ESP32-S3 hardware. The hourglass, level, liquid, and comfort indicator are visual/interactive models, not calibrated instruments, medical assessments, or weather forecasts.
+
+## API 3：全屏水体与重力校正 / Water and gravity calibration
+
+`gravity-liquid` 2.0 使用 `runtimeApi:3`、100 FPS（ESP32-S3），40 KiB graphics 预算；其他七套主题仍为 API 2、30 FPS。三项接口为 `fluid.reset(fill, rotationDegrees)`、`fluid.step(dtMs, gravityX, gravityY, rotationDegrees)`、`fluid.draw()`；fill 为 0.1–0.46，旋转为 0/90/180/270。每个主题仅持有一个原生工作区，卸载时释放，无逐帧分配。固定 200 Hz 子步、每帧至多 10 步；固定粒子数、空间网格邻居搜索、双密度松弛、边界碰撞和弱阻尼模拟低黏度流体。旋转时同步变换粒子的位置和速度，不重置水体。该模型为二维近似，不是三维水体或工程精度水动力模型。A 键显示/隐藏时间，B 键重置。
+
+The updated liquid app uses API 3 and targets 100 FPS on ESP32-S3, with a 40 KiB graphics budget. The other seven sensor themes retain API 2 / 30 FPS. `fluid.reset(fill, rotationDegrees)` accepts fill 0.1–0.46; `fluid.step(dtMs, gravityX, gravityY, rotationDegrees)` advances the simulation; `fluid.draw()` renders the entire 64×64 canvas. Rotation is 0/90/180/270. One bounded native workspace is released on unload; no frame allocations. Fixed 200 Hz physics, at most ten substeps, spatial neighbor grids and double-density relaxation approximate low-viscosity 2D water. This is not engineering-grade or 3D water simulation. A toggles time; B resets.
+
+后台“屏幕方向 → 重力方向校正”提供安装角度、竖直朝向校正和平放 XY 归零。先关闭自动方向，用手动角度让文字正立并保存，再把屏幕竖直放正、静止至少 1 秒后“校正朝向”；随后重新开启自动方向。平放归零应在水平桌面进行。运动中、传感器离线或姿态不符时拒绝采样。NVS 保存校正，原始 accel 数据保持不变，校正只作用于 gravity 和自动旋转。HTTP `/api/orientation` 与串口 `orientation` 支持 `gravityRotation` 和 `calibration:"upright"|"flat"|"reset"`。
+
+In Display → Gravity calibration, first disable automatic rotation and save a manual angle that makes text upright. Stand the panel upright and still for at least one second, align, then re-enable auto rotation. Zero X/Y only on a level table. Moving, unavailable or incorrectly positioned sensors are rejected. Calibration persists in NVS; raw accel remains raw. HTTP and serial orientation commands accept `gravityRotation` and `calibration: "upright" | "flat" | "reset"`.
+
+水体使用 15 cm / 64 px 尺度：1 g = 4184.17 px/s²；单色绘制，省略泡沫、高光与深度着色。 / Water uses a 15 cm / 64 px scale: 1 g = 4184.17 px/s², with flat color and no foam, highlights or depth shading.

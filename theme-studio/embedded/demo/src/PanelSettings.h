@@ -5,14 +5,14 @@
 
 inline PanelOrientation panelOrientation(){
   PanelOrientation value;Preferences settings;
-  if(settings.begin("cwstudio",true)){value.rotation=settings.getInt("panelRotation",3);value.autoRotate=settings.getBool("panelAutoRotate",false);settings.end();}
+  if(settings.begin("cwstudio",true)){value.rotation=settings.getInt("panelRotation",3);value.autoRotate=settings.getBool("panelAutoRotate",false);value.gravityRotation=settings.getInt("gravityRotation",0);value.zeroX=settings.getFloat("gravityZeroX",0);value.zeroY=settings.getFloat("gravityZeroY",0);settings.end();}
   return validPanelOrientation(value)?value:PanelOrientation{};
 }
 inline bool savePanelOrientation(Preferences& settings,const PanelOrientation& value){
-  return validPanelOrientation(value)&&settings.putInt("panelRotation",value.rotation)==sizeof(int32_t)&&settings.putBool("panelAutoRotate",value.autoRotate)==sizeof(uint8_t);
+  return validPanelOrientation(value)&&settings.putInt("panelRotation",value.rotation)==sizeof(int32_t)&&settings.putBool("panelAutoRotate",value.autoRotate)==sizeof(uint8_t)&&settings.putInt("gravityRotation",value.gravityRotation)==sizeof(int32_t)&&settings.putFloat("gravityZeroX",value.zeroX)==sizeof(float)&&settings.putFloat("gravityZeroY",value.zeroY)==sizeof(float);
 }
 
-struct PanelTiming { int clockMHz=8,clockPhase=1,latchBlanking=2,driver=0; };
+struct PanelTiming { int clockMHz=8,clockPhase=1,latchBlanking=2,driver=0,refreshHz=0; };
 inline const char* panelDriverName(int driver){
   static const char* names[]={"SHIFTREG","FM6124","FM6126A","ICN2038S","MBI5124","SM5266P","DP3246_SM5368","GPIO_SCAN","CLOCKWISE","PROTOMATTER"};
   return driver>=0&&driver<10?names[driver]:"UNKNOWN";
@@ -27,7 +27,7 @@ inline bool validPanelTiming(const PanelTiming& timing){
 #ifdef HUB75_S3_BOARD
     ||timing.clockMHz==4
 #endif
-  )&&(timing.clockPhase==0||timing.clockPhase==1)&&timing.latchBlanking>=1&&timing.latchBlanking<=4&&timing.driver>=0&&timing.driver<=9
+  )&&(timing.clockPhase==0||timing.clockPhase==1)&&timing.latchBlanking>=1&&timing.latchBlanking<=4&&timing.driver>=0&&timing.driver<=9&&(timing.refreshHz==0||(timing.refreshHz>=120&&timing.refreshHz<=500))
 #ifndef HUB75_S3_BOARD
     &&timing.driver!=7&&timing.driver!=9
 #endif
@@ -36,7 +36,7 @@ inline bool validPanelTiming(const PanelTiming& timing){
 inline PanelTiming panelTiming(){
   PanelTiming timing;Preferences settings;
   if(settings.begin("cwstudio",true)){
-    timing.clockMHz=settings.getInt("panelMHz",8);timing.clockPhase=settings.getInt("panelPhase",1);timing.latchBlanking=settings.getInt("panelBlank",2);timing.driver=settings.getInt("panelDriver",0);settings.end();
+    timing.clockMHz=settings.getInt("panelMHz",8);timing.clockPhase=settings.getInt("panelPhase",1);timing.latchBlanking=settings.getInt("panelBlank",2);timing.driver=settings.getInt("panelDriver",0);timing.refreshHz=settings.getInt("panelRefresh",0);settings.end();
   }
   return validPanelTiming(timing)?normalizePanelTiming(timing):PanelTiming{};
 }

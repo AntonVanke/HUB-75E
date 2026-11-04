@@ -23,6 +23,7 @@ public:
     if(!pixels_)pixels_=static_cast<uint32_t*>(heap_caps_malloc(32*64*sizeof(uint32_t),MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT));
     if(!pixels_)return false;
     const int upper[]={pins.r1,pins.g1,pins.b1},lower[]={pins.r2,pins.g2,pins.b2};
+    for(int i=0;i<3;i++){upper_[i]=1UL<<upper[i];lower_[i]=1UL<<lower[i];}
     const int address[]={pins.a,pins.b,pins.c,pins.d,pins.e};
     colors_=0;address_=0;
     for(int i=0;i<3;i++)colors_|=(1UL<<upper[i])|(1UL<<lower[i]);
@@ -73,6 +74,16 @@ public:
     }
   }
 
+  void present(const uint16_t* pixels){
+    if(!ready()||!pixels)return;
+    const uint16_t mask[]={0xf800,0x07e0,0x001f};
+    for(int row=0;row<32;row++)for(int x=0;x<64;x++){
+      const uint16_t top=pixels[row*64+x],bottom=pixels[(row+32)*64+x];uint32_t value=0;
+      for(int bit=0;bit<3;bit++){if(top&mask[bit])value|=upper_[bit];if(bottom&mask[bit])value|=lower_[bit];}
+      pixels_[row*64+x]=value;
+    }
+  }
+
 private:
   static uint8_t colorAt(int x,int y){
     const int dx=2*x-63,dy=2*y-63,distance=dx*dx+dy*dy;
@@ -86,6 +97,7 @@ private:
   }
   uint32_t* pixels_=nullptr;
   uint32_t rows_[32]={};
+  uint32_t upper_[3]={},lower_[3]={};
   uint32_t colors_=0,address_=0,clock_=0,latch_=0,blank_=0;
 };
 #endif

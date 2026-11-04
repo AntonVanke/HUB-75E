@@ -4,46 +4,55 @@
 #include <Arduino.h>
 #include <ESP32-HUB75-MatrixPanel-I2S-DMA.h>
 #include <Adafruit_Protomatter.h>
+#include <esp_heap_caps.h>
 #include <cstring>
 #include <new>
 
 class ProtomatterPanelProbe {
+  class InternalCanvasPanel final:public Adafruit_Protomatter {
+   public:
+    using Adafruit_Protomatter::Adafruit_Protomatter;
+    bool useInternalCanvas() {
+      auto* canvas=static_cast<uint16_t*>(heap_caps_calloc(64*64,sizeof(uint16_t),MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT));
+      if(!canvas)return false;
+      if(buffer_owned)free(buffer);
+      buffer=canvas;buffer_owned=true;return true;
+    }
+  };
  public:
-  bool begin(const HUB75_I2S_CFG::i2s_pins& pins) {
+  bool begin(const HUB75_I2S_CFG::i2s_pins& pins, uint16_t refreshHz) {
     if (panel_) return true;
     rgbPins_[0]=pins.r1;rgbPins_[1]=pins.g1;rgbPins_[2]=pins.b1;
     rgbPins_[3]=pins.r2;rgbPins_[4]=pins.g2;rgbPins_[5]=pins.b2;
     addrPins_[0]=pins.a;addrPins_[1]=pins.b;addrPins_[2]=pins.c;
     addrPins_[3]=pins.d;addrPins_[4]=pins.e;
-    panel_=new (std::nothrow) Adafruit_Protomatter(
-      64,4,1,rgbPins_,5,addrPins_,pins.clk,pins.lat,pins.oe,false);
-    if (!panel_ || !panel_->getBuffer()) {
+    panel_=new (std::nothrow) InternalCanvasPanel(
+      64,4,1,rgbPins_,5,addrPins_,pins.clk,pins.lat,pins.oe,true);
+    if (!panel_ || !panel_->useInternalCanvas()) {
       Serial.println("[PANEL] Protomatter allocation failed");
       delete panel_;panel_=nullptr;return false;
     }
+    setBrightness(brightness_);
     const ProtomatterStatus status=panel_->begin();
-    Serial.printf("[PANEL] Protomatter 1.7.0 64x64 1/32 depth=4 single-buffer status=%u\n",unsigned(status));
+    Serial.printf("[PANEL] Protomatter 1.7.0 64x64 1/32 depth=4 double-buffer status=%u\n",unsigned(status));
     if (status!=PROTOMATTER_OK) {
       delete panel_;panel_=nullptr;return false;
     }
+    panel_->setRefreshRate(refreshHz);
     return true;
   }
 
   Adafruit_GFX* graphics() { return panel_; }
 
   uint16_t color(uint16_t pixel) const {
-    const uint32_t level=brightness_;
-    const uint16_t red=(((pixel>>11)&31)*level+127)/255;
-    const uint16_t green=(((pixel>>5)&63)*level+127)/255;
-    const uint16_t blue=((pixel&31)*level+127)/255;
-    return (red<<11)|(green<<5)|blue;
+    return pixel;
   }
 
-  void present(const uint16_t* pixels) {
-    if (!panel_ || !pixels) return;
+  bool present(const uint16_t* pixels) {
+    if (!panel_ || !pixels || !panel_->ready()) return false;
     uint16_t* canvas=panel_->getBuffer();
     const uint8_t rotation=panel_->getRotation();
-    if (rotation==0 && brightness_==255) {
+    if (rotation==0) {
       std::memcpy(canvas,pixels,64*64*sizeof(uint16_t));
     } else {
       for (int y=0;y<64;y++) {
@@ -55,16 +64,25 @@ class ProtomatterPanelProbe {
         }
         for (int x=0;x<64;x++,target+=step) {
           const uint16_t pixel=pixels[y*64+x];
-          canvas[target]=brightness_==255?pixel:color(pixel);
+          canvas[target]=pixel;
         }
       }
     }
-    panel_->show();
+    return panel_->showAsync();
   }
 
   void show() { if (panel_) panel_->show(); }
+  uint32_t takeScanCount() {
+    const uint32_t count=panel_?panel_->getFrameCount():0,now=micros();
+    if(sampleAt_&&now!=sampleAt_)refreshRate_=float(count)*1000000.0f/uint32_t(now-sampleAt_);
+    sampleAt_=now;return count;
+  }
+  float refreshRate() const { return refreshRate_; }
 
-  void setBrightness(uint8_t brightness) { brightness_=brightness; }
+  void setBrightness(uint8_t brightness) {
+    brightness_=brightness;
+    if(panel_)panel_->setBrightness(brightness);
+  }
 
   void draw() {
     if (!panel_) return;
@@ -87,6 +105,8 @@ class ProtomatterPanelProbe {
   uint8_t rgbPins_[6]={};
   uint8_t addrPins_[5]={};
   uint8_t brightness_=255;
-  Adafruit_Protomatter* panel_=nullptr;
+  InternalCanvasPanel* panel_=nullptr;
+  uint32_t sampleAt_=0;
+  volatile float refreshRate_=0;
 };
 #endif

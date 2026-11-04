@@ -50,6 +50,12 @@ void BoardSensors::begin(){
   }
   ahtAt_=millis()-2000;reportAt_=millis();
 }
+bool BoardSensors::testImu(){
+  if(!imuPresent)return false;
+  accelSelfTest=selfTest(false);gyroSelfTest=selfTest(true);
+  imuPresent=writeRegister(0x14,0)&&writeRegister(0x10,0x40)&&writeRegister(0x11,0x40);
+  imuGood_=0;return imuPresent&&accelSelfTest&&gyroSelfTest;
+}
 void BoardSensors::poll(){
   const uint32_t now=millis();
   if(ahtPresent&&!waiting_&&now-ahtAt_>=2000){
@@ -63,7 +69,7 @@ void BoardSensors::poll(){
       if(valid){humidity=((uint32_t(b[1])<<12)|(uint32_t(b[2])<<4)|(b[3]>>4))*(100.0f/1048576.0f);temperature=((uint32_t(b[3]&15)<<16)|(uint32_t(b[4])<<8)|b[5])*(200.0f/1048576.0f)-50;ahtSamples++;ahtGood_=now;}
     }if(!valid)ahtErrors++;waiting_=false;
   }
-  if(imuPresent&&now-imuAt_>=20){
+  if(imuPresent&&now-imuAt_>=5){
     imuAt_=now;uint8_t status=0,b[12];
     if(!readRegisters(0x1e,&status,1))imuErrors++;
     else if((status&3)==3){

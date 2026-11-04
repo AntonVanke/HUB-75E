@@ -8,27 +8,29 @@ namespace CwJson {
 inline void space(const char*& p){while(*p&&isspace((unsigned char)*p))p++;}
 inline int hex(char c){return c>='0'&&c<='9'?c-'0':c>='a'&&c<='f'?c-'a'+10:c>='A'&&c<='F'?c-'A'+10:-1;}
 inline bool word(const char*& p,uint32_t& code){code=0;for(int i=0;i<4;i++){int n=hex(*p);if(n<0)return false;code=(code<<4)|n;p++;}return true;}
-inline bool string(const char*& p,String& out){
-  if(*p++!='"')return false;out="";
+inline bool string(const char*& p,String* out=nullptr){
+  if(*p++!='"')return false;if(out)*out="";
+  auto append=[out](char c){if(out)*out+=c;};
   while(*p&&*p!='"'){
-    unsigned char c=*p++;if(c<32)return false;if(c!='\\'){out+=(char)c;continue;}c=*p++;if(!c)return false;
-    if(c=='"'||c=='\\'||c=='/')out+=(char)c;
-    else if(c=='b')out+='\b';else if(c=='f')out+='\f';else if(c=='n')out+='\n';else if(c=='r')out+='\r';else if(c=='t')out+='\t';
+    unsigned char c=*p++;if(c<32)return false;if(c!='\\'){append((char)c);continue;}c=*p++;if(!c)return false;
+    if(c=='"'||c=='\\'||c=='/')append((char)c);
+    else if(c=='b')append('\b');else if(c=='f')append('\f');else if(c=='n')append('\n');else if(c=='r')append('\r');else if(c=='t')append('\t');
     else if(c=='u'){
       uint32_t u;if(!word(p,u))return false;
       if(u>=0xd800&&u<=0xdbff){if(*p++!='\\'||*p++!='u')return false;uint32_t low;if(!word(p,low)||low<0xdc00||low>0xdfff)return false;u=0x10000+((u-0xd800)<<10)+(low-0xdc00);}
       else if(u>=0xdc00&&u<=0xdfff)return false;if(!u)return false;
-      if(u<0x80)out+=(char)u;else if(u<0x800){out+=(char)(0xc0|(u>>6));out+=(char)(0x80|(u&63));}
-      else if(u<0x10000){out+=(char)(0xe0|(u>>12));out+=(char)(0x80|((u>>6)&63));out+=(char)(0x80|(u&63));}
-      else{out+=(char)(0xf0|(u>>18));out+=(char)(0x80|((u>>12)&63));out+=(char)(0x80|((u>>6)&63));out+=(char)(0x80|(u&63));}
+      if(u<0x80)append((char)u);else if(u<0x800){append((char)(0xc0|(u>>6)));append((char)(0x80|(u&63)));}
+      else if(u<0x10000){append((char)(0xe0|(u>>12)));append((char)(0x80|((u>>6)&63)));append((char)(0x80|(u&63)));}
+      else{append((char)(0xf0|(u>>18)));append((char)(0x80|((u>>12)&63)));append((char)(0x80|((u>>6)&63)));append((char)(0x80|(u&63)));}
     }else return false;
   }if(*p!='"')return false;p++;return true;
 }
+inline bool string(const char*& p,String& out){return string(p,&out);}
 inline bool skip(const char*& p,int depth=0){
   if(depth>8)return false;space(p);
-  if(*p=='"'){String value;return string(p,value);}
+  if(*p=='"')return string(p);
   if(*p=='{'||*p=='['){const char end=*p++=='{'?'}':']';space(p);if(*p==end){p++;return true;}
-    while(*p){if(end=='}'){String key;if(!string(p,key))return false;space(p);if(*p++!=':')return false;}
+    while(*p){if(end=='}'){if(!string(p))return false;space(p);if(*p++!=':')return false;}
       if(!skip(p,depth+1))return false;space(p);if(*p==end){p++;return true;}if(*p++!=',')return false;space(p);
     }return false;
   }
@@ -45,8 +47,11 @@ inline bool skip(const char*& p,int depth=0){
 inline bool field(const String& input,const char* wanted,String& value,bool& found,char* kind=nullptr){
   const char* p=input.c_str();space(p);found=false;if(*p++!='{')return false;space(p);if(*p=='}'){p++;space(p);return !*p;}
   while(*p){String key,next;if(!string(p,key))return false;space(p);if(*p++!=':')return false;space(p);const char token=*p;
-    if(*p=='"'){if(!string(p,next))return false;}else{const char* start=p;if(!skip(p))return false;next.concat(start,p-start);}
-    if(key==wanted){if(found)return false;found=true;value=next;if(kind)*kind=token;}
+    if(key==wanted){
+      if(found)return false;
+      if(*p=='"'){if(!string(p,next))return false;}else{const char* start=p;if(!skip(p))return false;next.concat(start,p-start);}
+      found=true;value=next;if(kind)*kind=token;
+    }else if(!skip(p))return false;
     space(p);if(*p=='}'){p++;space(p);return !*p;}if(*p++!=',')return false;space(p);
   }return false;
 }
@@ -57,6 +62,8 @@ inline bool natural(const String& value,uint32_t& number){
 }
 
 struct AppManifest {
+  String runtime="lua";
+  uint32_t nativeAbi=0,codeBytes=0,dataBytes=0,stateBytes=0;
   String packageName,id,title,appVersion,description,author,requirements="{}",verification="{\"status\":\"unverified\"}";
   uint32_t runtimeApi=1,psramBytes=0,luaHeapBytes=0,luaWorkingBytes=0,graphicsBytes=0,targetFps=60;
   uint8_t chips=3,sensors=0;
@@ -77,10 +84,12 @@ struct AppManifest {
     modern=true;String value;bool found;char kind;
     auto text=[&](const char* key,String& out,size_t max,bool needed=false){if(!CwJson::field(input,key,value,found,&kind)||(!found&&needed)||(found&&kind!='"'))return false;if(found)out=value;return textOK(out,max,needed);};
     if(!text("packageName",packageName,63,true)||!nameOK(packageName)||!text("id",id,32,true)||id.isEmpty()||strspn(id.c_str(),"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_")!=id.length()||!text("title",title,96,true)||!text("appVersion",appVersion,31,true)||!versionOK(appVersion)||!text("description",description,384)||!text("author",author,64)){error="应用清单身份、版本或文本字段无效";return false;}
+    if(!text("runtime",runtime,16)){error="无效的主题运行类型";return false;}
+    if(runtime=="native") { if(!CwJson::field(input,"nativeAbi",value,found,&kind)||!found||kind=='"'||!CwJson::natural(value,nativeAbi)||nativeAbi!=1){error="原生主题 ABI 无效";return false;} }
     if(!CwJson::field(input,"runtimeApi",value,found,&kind)||!found||kind=='"'||!CwJson::natural(value,runtimeApi)||!runtimeApi||runtimeApi>65535){error="应用运行时 API 声明无效";return false;}
     if(!CwJson::field(input,"requirements",requirements,found,&kind)||!found||kind!='{'){error="应用 requirements 必须是对象";return false;}
     auto number=[&](const char* key,uint32_t& out){if(!CwJson::field(requirements,key,value,found,&kind))return false;return !found||(kind!='"'&&CwJson::natural(value,out)&&out<=64*1024*1024);};
-    if(!number("psramBytes",psramBytes)||!number("luaHeapBytes",luaHeapBytes)||!number("luaWorkingBytes",luaWorkingBytes)||!number("graphicsBytes",graphicsBytes)||!number("targetFps",targetFps)||targetFps<1||targetFps>60||(luaHeapBytes&&luaWorkingBytes>luaHeapBytes)){error="应用内存或帧率声明无效";return false;}
+    if(!number("codeBytes",codeBytes)||!number("dataBytes",dataBytes)||!number("stateBytes",stateBytes)||!number("psramBytes",psramBytes)||!number("luaHeapBytes",luaHeapBytes)||!number("luaWorkingBytes",luaWorkingBytes)||!number("graphicsBytes",graphicsBytes)||!number("targetFps",targetFps)||targetFps<1||targetFps>240||(luaHeapBytes&&luaWorkingBytes>luaHeapBytes)){error="应用内存或帧率声明无效";return false;}
     if(!CwJson::field(requirements,"chips",value,found,&kind)){error="应用芯片声明无效";return false;}
     if(found){const char* p=value.c_str();CwJson::space(p);chips=0;if(kind!='['||*p++!='['){error="chips 必须是数组";return false;}CwJson::space(p);
       while(*p&&*p!=']'){String chip;if(!CwJson::string(p,chip)||(chip!="esp32"&&chip!="esp32s3")){error="应用芯片声明无效";return false;}const uint8_t bit=chip=="esp32"?1:2;if(chips&bit){error="应用芯片声明不能重复";return false;}chips|=bit;CwJson::space(p);if(*p==']')break;if(*p++!=','){error="应用芯片声明无效";return false;}CwJson::space(p);}
@@ -91,7 +100,7 @@ struct AppManifest {
       while(*p&&*p!=']'){String sensor;if(!CwJson::string(p,sensor)){error="应用传感器声明无效";return false;}const uint8_t bit=sensor=="temperature"?1:sensor=="humidity"?2:sensor=="imu"?4:0;if(!bit||(sensors&bit)){error="传感器须为 temperature、humidity 或 imu，且不能重复";return false;}sensors|=bit;CwJson::space(p);if(*p==']')break;if(*p++!=','){error="应用传感器声明无效";return false;}CwJson::space(p);}
       if(*p++!=']'){error="应用传感器声明无效";return false;}CwJson::space(p);if(*p){error="应用传感器声明无效";return false;}
     }
-    declared=luaHeapBytes>0&&luaWorkingBytes>0&&graphicsBytes>0;
+    declared=runtime=="native"?codeBytes>0&&stateBytes>0&&graphicsBytes>0:luaHeapBytes>0&&luaWorkingBytes>0&&graphicsBytes>0;
     if(!CwJson::field(input,"verification",value,found,&kind)){error="应用验证声明无效";return false;}if(found){if(kind!='{'){error="应用验证声明必须是对象";return false;}verification=value;}
     return true;
   }

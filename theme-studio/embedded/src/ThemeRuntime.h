@@ -5,6 +5,7 @@
 #include "MediaClip.h"
 struct lua_State;
 struct lua_Debug;
+class Fluid64;
 struct ThemeClock { int hour=0,minute=0,second=0,day=1,month=1,year=2026,weekday=0,millisecond=0; int64_t epoch=0; };
 struct ThemeValue {
   enum Type { Number, String, Boolean } type=Number;
@@ -44,12 +45,13 @@ public:
   const char* error() const { return error_; }
   size_t memoryUsed() const { return used_; }
   size_t peakMemoryUsed() const { return peak_; }
-  size_t graphicsMemoryUsed() const { return raster_.memoryUsed()+sizeof(clips_)+clips_[0].memoryUsed()+clips_[1].memoryUsed(); }
+  size_t graphicsMemoryUsed() const;
   const uint16_t* pixels() const { return raster_.pixels; }
 private:
   ThemeHost& host_;
   Raster64 raster_;
   MediaClip clips_[2];
+  Fluid64* fluid_=nullptr;
   char clipIds_[2][33]={};
   uint32_t seed_=12345;
   ThemeClock now_;
@@ -73,6 +75,7 @@ private:
   static int extended(lua_State*);
   static int navigation(lua_State*);
   static int resource(lua_State*);
+  static int fluid(lua_State*);
   static ThemeRuntime& self(lua_State*);
   bool call(int handler,bool argument=false,uint32_t value=0,const char* text=nullptr);
   bool result(int code);

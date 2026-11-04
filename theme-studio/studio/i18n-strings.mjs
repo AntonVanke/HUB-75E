@@ -1,4 +1,102 @@
 const pairs = `
+添加图片（最多 32 张）|Add images (up to 32)
+每张停留（秒）|Seconds per slide
+幻灯片图片|Slideshow images
+上移|Move up
+下移|Move down
+移除图片|Remove image
+播放预览|Play preview
+暂停预览|Pause preview
+淡入淡出|Crossfade
+时钟与文字|Clock and text
+编辑图层|Edit layer
+增加文字|Add text
+删除文字|Delete text
+水平居中|Center horizontally
+文字内容（支持中文和换行）|Text (Unicode and newlines supported)
+字体|Font
+像素|Pixel
+数码管|Seven segment
+等宽|Monospace
+无衬线|Sans serif
+衬线|Serif
+高度（像素）|Height (pixels)
+颜色|Color
+显示时钟|Show clock
+时间格式|Time format
+24 小时|24 hour
+12 小时|12 hour
+显示秒|Show seconds
+冒号闪烁|Blink colon
+离线目标芯片|Offline target chip
+保存编辑工程|Save editable project
+打开编辑工程|Open editable project
+鼠标或触摸拖动位置，方向键移动 1 像素。虚线框不会写入屏幕。|Drag with a mouse or touch; arrow keys move by one pixel. The guide outline is not exported.
+连接设备后自动匹配芯片。素材保存在应用包中，设备无需联网播放。|The chip is detected after connecting. Assets are stored in the app; playback works offline.
+在线版本与应用更新|Online firmware and app updates
+检查版本更新|Check for updates
+在线 USB 烧录 / 更新|Online USB install / update
+尚未检查|Not checked yet
+发布版本|Release version
+更新固件|Update firmware
+安装此版本的四个应用|Install apps for this version
+从 GitHub Pages 获取与芯片对应的固件和原生应用。通过当前浏览器下载并校验，设备无需额外分配 TLS 内存。|Get matching firmware and native apps from GitHub Pages. This browser downloads and verifies files, avoiding extra TLS memory on the device.
+硬件测试|Hardware diagnostics
+开始实时检测|Start live diagnostics
+停止检测|Stop diagnostics
+IMU 自检|IMU self-test
+蜂鸣器试鸣 0.5 秒|Test buzzer for 0.5 seconds
+屏幕测试 30 秒|Display test for 30 seconds
+恢复主题|Restore theme
+实时检查 IMU、温湿度、光敏电阻和物理按键；蜂鸣器与屏幕效果需要实际观察。|Read live IMU, temperature, humidity, light and physical buttons. Check sound and display output in person.
+综合致谢 · 开源项目与参考来源|Acknowledgements · Open source and references
+感谢以下项目的开发者与贡献者：|Thanks to the developers and contributors of these projects:
+完整来源与第三方许可说明|Full source and third-party license notices
+下载 C/C++ SDK|Download C/C++ SDK
+
+首次设置|First-time setup
+先确认屏幕驱动，再连接家庭 Wi-Fi。手机连接热点后，自动轮测会暂停。|Confirm the display driver, then connect to your Wi-Fi. Automatic driver cycling pauses when a phone joins the setup hotspot.
+1. 配置屏幕驱动|1. Configure display driver
+2. 配置 Wi-Fi|2. Configure Wi-Fi
+热点：|Hotspot: 
+密码：|Password: 
+屏幕驱动轮测|Display driver trial
+依次测试本机支持的全部驱动，每种显示 20 秒；观察序号、边框、圆形和 R/G/B 色块。切换驱动时短暂重启，完成后恢复原配置。|Test every driver supported by this device for 20 seconds each. Check the number, border, circle and R/G/B bars. The device briefly restarts between drivers and restores your original settings when finished.
+测试所有屏幕驱动|Test all display drivers
+暂停轮测|Pause trial
+继续轮测|Resume trial
+下一个驱动|Next driver
+画面正常，使用此驱动|Picture is correct: use this driver
+退出轮测，恢复原驱动|Exit trial and restore saved driver
+7 号仅用于慢速诊断，不能作为日常主题驱动。轮测只比较驱动，不会自动判断画面是否正常。|Driver 7 is a slow diagnostic backend, not a normal theme driver. The trial compares drivers; it cannot automatically judge the displayed picture.
+当前驱动：|Current driver: 
+已暂停|Paused
+点击开始轮测；也可手动选择驱动。|Start the trial, or select a driver manually.
+正在切换驱动，设备将短暂重启；页面会自动重连。|Switching driver. The device will briefly restart and this page will reconnect automatically.
+驱动轮测操作已执行|Driver trial action applied.
+恢复出厂设置|Factory reset
+清除 Wi-Fi、屏幕与重力校正、播放计划及所有已安装主题和素材。保留固件版本，重启后重新进入驱动轮测和配网引导。|Erase Wi-Fi, display settings, gravity calibration, schedules, and all installed themes and assets. Keep the firmware and restart into display trials and Wi-Fi setup.
+确定恢复出厂设置？将删除所有已安装主题、Wi-Fi、显示设置和校正数据；此操作无法撤销。|Factory reset? All installed themes, Wi-Fi, display settings and calibration data will be deleted. This cannot be undone.
+请连接屏幕显示的 HUB75 热点，密码 12345678，然后访问 http://192.168.4.1/。|Join the HUB75 hotspot shown on the screen using password 12345678, then open http://192.168.4.1/.
+已恢复出厂设置，等待重新配网|Factory reset complete; awaiting Wi-Fi setup.
+出厂设置已恢复，即将重启进入配网引导；热点密码 12345678|Factory reset complete. Restarting into setup; hotspot password: 12345678.
+出厂设置已恢复，即将重启进入配网引导|Factory reset complete. Restarting into setup.
+设备正在更新或重启，请稍后重试|The device is updating or restarting. Please try again shortly.
+无法保存轮测状态|Unable to save driver trial state.
+当前没有进行驱动轮测|No driver trial is active.
+7号是慢速诊断驱动，请选择能够正常播放主题的驱动|Driver 7 is diagnostic only. Select a driver that supports normal themes.
+轮测操作无效|Invalid driver trial action.
+恢复出厂设置需要确认 RESET|Factory reset requires RESET confirmation.
+清除应用存储失败，网络设置尚未清除|Unable to erase app storage. Network settings have not been cleared.
+应用存储已清除，但设置清除失败，请重试|App storage was erased, but settings could not be cleared. Please retry.
+屏幕选择保存失败|Unable to save the selected display driver.
+缺少轮测 action|Driver trial action is required.
+扫描刷新率上限（Hz）|Scan refresh rate limit (Hz)
+0 = 自动最高；手动可设 120–500 Hz。实际扫描速度受硬件和负载限制，以实测值为准；重力水需实际扫描不低于 120 Hz。双缓冲始终开启，保存后重启生效。|0 = maximum automatic rate; manual range: 120–500 Hz. Actual scanning depends on hardware and load; use the measured value. Gravity Water requires at least 120 Hz scanning. Double buffering is always enabled. Save and restart to apply.
+实测扫描：|Measured scan: 
+双缓冲：|Double buffer: 
+已开启|Enabled
+未开启|Disabled
 Clockwise · 主题工坊|Clockwise · Theme Studio
 主题工坊首页|Theme Studio home
 主题工坊|Theme Studio
@@ -745,5 +843,60 @@ IMU 有效|IMU valid
 向左倾斜|Tilt left
 向右倾斜|Tilt right
 平放|Lay flat
+重力方向校正|Gravity calibration
+传感器安装方向|Sensor mounting rotation
+朝向校正：先关闭自动旋转，选择让文字正立的手动方向并保存，再将屏幕竖直放正、静止 1 秒，点击“校正朝向”。完成后可重新开启自动旋转。|To align: disable automatic rotation, select and save the manual rotation that makes text upright, stand the screen upright and still for one second, then select Align orientation. You can then re-enable automatic rotation.
+校正朝向|Align orientation
+平放归零|Zero on level surface
+重置校正|Reset calibration
+平放归零：将屏幕放在水平桌面、静止 1 秒后点击；仅修正 X/Y 零点。校正保存在设备中，重启后仍然生效。|Lay the screen on a level table and hold still for one second before zeroing X/Y. Calibration is saved on the device and survives restart.
+安装校正|Mounting correction
+XY 零点|XY offset
+请将屏幕平放并保持静止至少 1 秒后校正|Lay the screen flat and hold still for at least one second before calibration.
+请将屏幕竖直放正并保持静止至少 1 秒后校正|Stand the screen upright and hold still for at least one second before calibration.
+重力安装角度须为 0、90、180 或 270|Gravity mounting rotation must be 0, 90, 180 or 270.
+重力安装角度须为整数|Gravity mounting rotation must be an integer.
+未知的重力校正操作|Unknown gravity calibration operation.
+目标帧率应为 1–240|Target frame rate must be 1–240.
+原生主题工坊|Native theme workshop
+二进制主题应用|Binary theme apps
+图片时钟制作|Image clock maker
+选择图片|Choose an image
+应用名称|App name
+图片适配|Image fit
+裁剪填满|Crop to fill
+完整显示|Fit entire image
+拉伸填满|Stretch to fill
+目标芯片|Target chip
+时间 X|Clock X
+时间 Y|Clock Y
+字号|Font size
+文字颜色|Text color
+黑色阴影|Black shadow
+下载二进制时钟|Download binary clock
+安装到设备|Install on device
+图片和时间分别绘制|Background and clock are rendered separately
+让 Codex 制作主题|Create a theme with Codex
+复制提示词|Copy prompt
+SDK 开发手册|SDK documentation
+提示词已复制|Prompt copied
+请复制已选中的提示词|Copy the selected prompt
+选择应用或制作图片时钟，生成包含素材的安装包。|Choose an app or create an image clock with bundled resources.
+复制提示词，填写主题效果和目标芯片，让 Codex 编写 C/C++ 并交付可安装包。|Copy the prompt, describe the theme and target chip, and ask Codex to build an installable C/C++ app.
+个原生主题|native themes
+需要原生架构固件|Requires native firmware
+下载安装包|Download app
+FPS 目标|FPS target
+安装二进制主题包|Install a binary theme
+导入为当前芯片编译的 CWP3 包，内含 C/C++ 机器码和所需素材。|Import a CWP3 package compiled for this chip, containing native C/C++ code and resources.
+C/C++ 主题 SDK 与 Codex 提示词|C/C++ theme SDK and Codex prompts
+C/C++ 原生主题|Native C/C++ themes
+原生代码和状态|Native code and state
+二进制代码|Native binary
+时间超出屏幕，请调整位置或字号|Clock exceeds the display; adjust position or size.
+请先导入图片|Import an image first.
+图片时钟已安装。|Image clock installed.
+二进制时钟包已下载，图片已包含在包内。|Binary clock downloaded with its image included.
 `;
-export const strings = Object.fromEntries(pairs.trim().split('\n').filter(Boolean).map(line=>{const at=line.indexOf('|');return [line.slice(0,at),line.slice(at+1)];}));
+export const strings = Object.fromEntries(pairs.trim().split('\n').filter(Boolean).map(line=>{
+const at=line.indexOf('|');return [line.slice(0,at),line.slice(at+1)];}));

@@ -1,15 +1,17 @@
 {
   "name": "clockwise-theme-studio",
-  "version": "0.5.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "node tools/server.mjs",
     "test": "node --test tests/*.test.mjs",
-    "embed": "node tools/embed.mjs",
+    "embed": "node native/embed.mjs",
     "build:apps": "node tools/build-theme-apps.mjs",
-    "build": "node tools/bundle-runtime.mjs && node tools/embed.mjs",
-    "check:gallery": "node tools/check-gallery.mjs"
+    "build": "python native/build.py && node native/embed.mjs",
+    "check:gallery": "node tools/check-gallery.mjs",
+    "build:native": "python native/build.py",
+    "test:native": "node --test tests/native-package.test.mjs && python native/tests/check.py"
   },
   "dependencies": {
     "fengari-web": "0.1.4",

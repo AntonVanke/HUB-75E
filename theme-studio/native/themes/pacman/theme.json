@@ -1,0 +1,13 @@
+{
+  "packageName": "org.clockwise.pacman",
+  "id": "pacman",
+  "title": "Pac-Man",
+  "appVersion": "1.0.1",
+  "description": "C++ 风险路径规划、追逐、彩色能量豆、胜负提示。",
+  "author": "HUB-75E",
+  "requirements": {
+    "targetFps": 60,
+    "stateBytes": 8192,
+    "graphicsBytes": 12288
+  }
+}

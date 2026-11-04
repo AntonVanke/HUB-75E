@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "releases": [
+    {
+      "version": "1.0.1",
+      "runtimeApi": 4,
+      "nativeAbi": 1,
+      "notes": "原生二进制主题、可拖动图片时钟与幻灯片、硬件检测、版本对应应用更新。",
+      "catalog": "applications/1.0.1/catalog.json",
+      "targets": {
+        "esp32": {
+          "chip": "esp32",
+          "flashBytes": 4194304,
+          "psramBytes": 0,
+          "manifest": "firmware/esp32-v1.0.1/manifest.json",
+          "updateManifest": "firmware/esp32-v1.0.1/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32-v1.0.1/app.bin",
+            "bytes": 1238800,
+            "sha256": "d59910933606697284238de80ad19743173cb9331483e03f88bc4bfc0c75688e"
+          }
+        },
+        "esp32s3": {
+          "chip": "esp32s3",
+          "flashBytes": 8388608,
+          "psramBytes": 8388608,
+          "manifest": "firmware/esp32s3-v1.0.1/manifest.json",
+          "updateManifest": "firmware/esp32s3-v1.0.1/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32s3-v1.0.1/app.bin",
+            "bytes": 1232368,
+            "sha256": "81a22591fdc012d01121950bd9cfb42c44425cf74b410e2a26d0f6c12ab9867d"
+          }
+        }
+      }
+    }
+  ],
+  "latest": "1.0.1"
+}

@@ -1,0 +1,16 @@
+{
+  "packageName": "org.clockwise.gravity-liquid",
+  "id": "gravity-liquid",
+  "title": "全屏重力水",
+  "appVersion": "1.0.1",
+  "description": "原生 C++ 水模拟，前景时钟，120 FPS 目标。",
+  "author": "HUB-75E",
+  "requirements": {
+    "sensors": [
+      "imu"
+    ],
+    "targetFps": 120,
+    "stateBytes": 16,
+    "graphicsBytes": 32768
+  }
+}

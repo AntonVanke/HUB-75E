@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import importlib.util
 import json
+import re
 import shutil
 import struct
 import zipfile
@@ -17,10 +18,10 @@ spec.loader.exec_module(helpers)
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--version", default="0.9.8")
+    parser.add_argument("--version", default=(ROOT / "VERSION").read_text().strip())
     args = parser.parse_args()
-    if args.version != "0.9.8":
-        parser.error("This package describes the 0.9.8 sensor/rotation/discovery feature build")
+    if not re.fullmatch(r"1\.\d+\.\d+", args.version):
+        parser.error("Expected 1.x.y; patch for small fixes, minor for major features")
     packages = Path.home() / ".platformio/packages"
     tool = packages / "tool-esptoolpy/esptool.py"
     for chip, family, env, size, chip_id, boot_offset in (
@@ -52,13 +53,14 @@ def main():
         helpers.write(out / "manifest.json", json.dumps({"name": "HUB-75E " + family,
             "version": args.version, "builds": [{"chipFamily": family,
             "parts": [{"path": "merged.bin", "offset": 0}]}]}, indent=2) + "\n")
+        helpers.write(out / "update-manifest.json", json.dumps({"name": "HUB-75E " + family + " update", "version": args.version, "builds": [{"chipFamily": family, "parts": [{"path":"app.bin","offset":65536},{"path":"boot_app0.bin","offset":57344}]}]}, indent=2)+"\n")
         helpers.flash_scripts(out, {"chip": chip, "size": size})
         helpers.write(out / "README.md", f"""# HUB-75E {family} v{args.version}
 
 新功能构建 / Feature build — 已通过编译与电脑模拟测试，本次未烧录或完成实屏验证。
 Compiled and simulator-tested; not flashed or physically validated in this update.
 
-Runtime API 2: sensor themes, manual/gravity rotation, one-click application installation and LAN discovery.
+Runtime API 4 / native ABI 1: C/C++ binary applications, slideshow image clocks, hardware diagnostics and versioned updates.
 经典 ESP32 支持手动方向、应用管理与发现，没有本项目 S3 板的传感器。
 ESP32 uses 4 MB Flash. The ESP32-S3 package requires 8 MB Flash and OPI PSRAM; S3 N4 is not supported.
 
@@ -71,7 +73,7 @@ USB: `powershell -File ./flash.ps1 -Port COM28` or `sh ./flash.sh /dev/ttyUSB0`.
 No device was modified while generating this package. Historical v0.9.3/v0.9.7 packages are unchanged.
 """)
         names = ["app.bin", "merged.bin", "bootloader.bin", "partitions.bin", "partitions.csv",
-                 "boot_app0.bin", "manifest.json", "flash.ps1", "flash.sh", "README.md"]
+                 "boot_app0.bin", "manifest.json", "update-manifest.json", "flash.ps1", "flash.sh", "README.md"]
         helpers.write(out / "SHA256SUMS", "".join(f"{helpers.sha(out / n)}  {n}\n" for n in sorted(names)))
         with zipfile.ZipFile(ROOT / "releases" / (name + ".zip"), "w", compression=zipfile.ZIP_DEFLATED) as archive:
             for filename in sorted(names + ["SHA256SUMS"]):

@@ -7,10 +7,11 @@
 .orientation-check,.app-select-heading{display:flex;align-items:center;gap:9px}.orientation-check input,.app-select-heading input,.app-select{width:18px;height:18px;flex:none;margin:0;accent-color:#078355}.app-select{display:inline-block;vertical-align:middle;margin-right:8px}.app-select-heading{margin:0}.discovery-list{padding:0;list-style:none;max-height:260px;overflow:auto}.discovery-list li{display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px;border-top:1px solid #e0e9ec;padding:10px 0}.discovery-list a{font-weight:600}.discovery-list small{flex:1;min-width:160px}.discovery-list button{padding:5px 9px;font-size:12px}
 </style>
 <header><h1 class="factory-logo">Clockwise</h1><span class="factory-title">设备管理</span><a id="studio-link" href="/">返回主题工坊</a><span id="connection-state">尚未连接</span></header>
-<nav class="statusbar"><span>♧ Firmware v0.9.7</span><span>⌁ Wi-Fi · OTA</span></nav>
+<nav class="statusbar"><span id="firmware-version">♧ Firmware</span><span>⌁ Wi-Fi · OTA</span></nav>
 <main>
 <div class="connection" id="connection-form"><label>设备地址<input id="address" placeholder="http://设备 IP 或 VPN 地址" autocomplete="url"></label><button id="connect">连接设备</button></div>
 <aside id="toast" hidden><div id="message" role="status" aria-live="polite" aria-atomic="true"></div><button id="dismiss-message" type="button" aria-label="关闭提示">×</button></aside>
+<section id="setup-guide" class="card" hidden><h2>首次设置</h2><p>先确认屏幕驱动，再连接家庭 Wi-Fi。手机连接热点后，自动轮测会暂停。</p><p id="setup-access"></p><div class="row"><button type="button" id="setup-display">1. 配置屏幕驱动</button><button type="button" id="setup-wifi" class="secondary">2. 配置 Wi-Fi</button></div></section>
 <nav class="settings-tabs" role="tablist" aria-label="设备设置分类">
 <button id="tab-overview" data-panel="overview" role="tab" aria-controls="panel-overview" aria-selected="true" tabindex="0">概览</button>
 <button id="tab-display" data-panel="display" role="tab" aria-controls="panel-display" aria-selected="false" tabindex="-1">显示</button>
@@ -25,8 +26,8 @@
 </div>
 <div id="panel-display" class="panel" role="tabpanel" aria-labelledby="tab-display" hidden>
 <section class="card narrow"><h2>显示设置</h2><form id="config"><fieldset disabled><label>默认主题（无指定时段时）<select id="theme" name="theme"></select></label><small>固定播放时使用此主题；轮换或指定时段可能显示其他主题，实际画面请查看“概览”。</small><div class="field-row"><label>固定亮度（1–255）<input id="brightness" name="brightness" type="number" min="1" max="255" value="80" required></label><label>时区（POSIX）<input id="timezone" name="timezone" value="CST-8" maxlength="63" required></label></div><input id="rotation" name="rotationMinutes" type="hidden" value="0"><p>中国标准时间为 <code>CST-8</code>，设备通过网络自动校时。</p><div class="savebar"><small id="config-dirty">显示设置已同步</small><button>保存显示设置</button></div></fieldset></form></section>
-<section class="card narrow"><h2>屏幕方向</h2><form id="orientation-config"><fieldset disabled><label>手动方向 / 自动旋转回退<select id="manual-rotation"><option value="0">0°</option><option value="90">90°</option><option value="180">180°</option><option value="270" selected>270°</option></select></label><label class="orientation-check"><input id="auto-rotate" type="checkbox">根据重力自动旋转</label><p id="orientation-state">连接设备后读取屏幕方向。</p><small>自动模式使用低通滤波、方向滞回和稳定等待；平放时保持方向，传感器离线时回退手动方向。保存后立即生效，不需要重启。</small><div class="savebar"><small id="orientation-dirty">方向设置未同步</small><button>保存方向设置</button></div></fieldset></form></section>
-<section class="card narrow"><h2>屏幕接口与颜色</h2><form id="panel-config"><fieldset disabled><p>64 × 64 · 1/32 扫描（HUB75E）</p><label>面板 RGB 颜色顺序<select id="color-order" name="colorOrder"><option>RGB</option><option>RBG</option><option>GRB</option><option>GBR</option><option>BRG</option><option>BGR</option></select></label><small>选择与面板实际接线对应的顺序；颜色配置在重启后生效，不增加逐像素转换开销。</small><details><summary>高级：屏幕时序兼容性</summary><fieldset id="panel-timing" disabled><label>屏幕驱动方式<select id="panel-driver" name="driver"><option value="0">0 · SHIFTREG（标准二进制行选）</option><option value="1">1 · FM6124</option><option value="2">2 · FM6126A</option><option value="3">3 · ICN2038S</option><option value="4">4 · MBI5124（强制正相位）</option><option value="5">5 · SM5266P（串行行选）</option><option value="6">6 · DP3246 + SM5368（串行行选）</option><option value="7">7 · GPIO 慢速扫描（S3，仅自检）</option><option value="8">8 · Clockwise 原版显示参数</option><option value="9">9 · Protomatter 独立驱动（S3）</option></select></label><small>GPIO 仅用于固定图形自检；Protomatter 支持正常主题播放。下方时序参数只作用于 DMA 驱动。Clockwise 基准使用 8 MHz、反相位、8 bit、单缓冲、最低刷新率 60 Hz。FM6124、FM6126A、ICN2038S 共用初始化程序。</small><fieldset id="dma-timing"><div class="field-row"><label>像素时钟<select id="panel-clock" name="clockMHz"><option value="4">4 MHz · 低速兼容（S3）</option><option value="8" selected>8 MHz · 标准</option><option value="16">16 MHz · 高速</option></select></label><label>采样相位<select id="panel-phase" name="clockPhase"><option value="1" selected>正相位（默认 / MBI5124）</option><option value="0">反相位</option></select></label></div><label>换行消隐<select id="panel-blank" name="latchBlanking"><option value="1">1 个时钟</option><option value="2" selected>2 个时钟（默认）</option><option value="3">3 个时钟</option><option value="4">4 个时钟</option></select></label></fieldset><small>出现乱码时可先尝试 4 MHz；拖影可增加消隐。低速时钟可能减少色阶，主题设定的帧率不变。保存后重启生效。</small></fieldset></details><p>自检时应看到完整白色边框和圆形，底部从左到右依次为 <span style="color:#c32626">红 R</span>、<span style="color:#087f35">绿 G</span>、<span style="color:#174ecc">蓝 B</span>。若边框断裂、图形拉长或分段错位，需要检查行选与排线，RGB 切换只修正颜色。</p><div class="row"><button id="panel-test" type="button" class="secondary">屏幕自检（30 秒）</button><small id="panel-state">连接支持屏幕设置的设备后可用</small></div><div class="savebar"><small id="panel-dirty">颜色设置未同步</small><button>保存屏幕设置并重启</button></div></fieldset></form></section>
+<section class="card narrow"><h2>屏幕方向</h2><form id="orientation-config"><fieldset disabled><label>手动方向 / 自动旋转回退<select id="manual-rotation"><option value="0">0°</option><option value="90">90°</option><option value="180">180°</option><option value="270" selected>270°</option></select></label><label class="orientation-check"><input id="auto-rotate" type="checkbox">根据重力自动旋转</label><p id="orientation-state">连接设备后读取屏幕方向。</p><small>自动模式使用低通滤波、方向滞回和稳定等待；平放时保持方向，传感器离线时回退手动方向。保存后立即生效，不需要重启。</small><details id="gravity-calibration"><summary>重力方向校正</summary><label>传感器安装方向<select id="gravity-rotation"><option value="0">0°</option><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option></select></label><p>朝向校正：先关闭自动旋转，选择让文字正立的手动方向并保存，再将屏幕竖直放正、静止 1 秒，点击“校正朝向”。完成后可重新开启自动旋转。</p><div class="row"><button type="button" data-calibration="upright">校正朝向</button><button type="button" data-calibration="flat">平放归零</button><button type="button" class="secondary" data-calibration="reset">重置校正</button></div><small>平放归零：将屏幕放在水平桌面、静止 1 秒后点击；仅修正 X/Y 零点。校正保存在设备中，重启后仍然生效。</small><p id="gravity-calibration-state"></p></details><div class="savebar"><small id="orientation-dirty">方向设置未同步</small><button>保存方向设置</button></div></fieldset></form></section>
+<section class="card narrow"><h2>屏幕接口与颜色</h2><form id="panel-config"><fieldset disabled><p>64 × 64 · 1/32 扫描（HUB75E）</p><label>面板 RGB 颜色顺序<select id="color-order" name="colorOrder"><option>RGB</option><option>RBG</option><option>GRB</option><option>GBR</option><option>BRG</option><option>BGR</option></select></label><small>选择与面板实际接线对应的顺序；颜色配置在重启后生效，不增加逐像素转换开销。</small><fieldset id="scan-timing" disabled hidden><label>扫描刷新率上限（Hz）<input id="panel-refresh" name="refreshHz" type="number" min="0" max="500" step="1" value="0"></label><small>0 = 自动最高；手动可设 120–500 Hz。实际扫描速度受硬件和负载限制，以实测值为准；重力水需实际扫描不低于 120 Hz。双缓冲始终开启，保存后重启生效。</small><p id="panel-refresh-live">实测扫描：—</p></fieldset><details><summary>高级：屏幕时序兼容性</summary><fieldset id="panel-timing" disabled><label>屏幕驱动方式<select id="panel-driver" name="driver"><option value="0">0 · SHIFTREG（标准二进制行选）</option><option value="1">1 · FM6124</option><option value="2">2 · FM6126A</option><option value="3">3 · ICN2038S</option><option value="4">4 · MBI5124（强制正相位）</option><option value="5">5 · SM5266P（串行行选）</option><option value="6">6 · DP3246 + SM5368（串行行选）</option><option value="7">7 · GPIO 慢速扫描（S3，仅自检）</option><option value="8">8 · Clockwise 原版显示参数</option><option value="9">9 · Protomatter 独立驱动（S3）</option></select></label><small>GPIO 仅用于固定图形自检；Protomatter 支持正常主题播放。下方时序参数只作用于 DMA 驱动。Clockwise 基准使用 8 MHz、反相位、8 bit、单缓冲、最低刷新率 60 Hz。FM6124、FM6126A、ICN2038S 共用初始化程序。</small><fieldset id="dma-timing"><div class="field-row"><label>像素时钟<select id="panel-clock" name="clockMHz"><option value="4">4 MHz · 低速兼容（S3）</option><option value="8" selected>8 MHz · 标准</option><option value="16">16 MHz · 高速</option></select></label><label>采样相位<select id="panel-phase" name="clockPhase"><option value="1" selected>正相位（默认 / MBI5124）</option><option value="0">反相位</option></select></label></div><label>换行消隐<select id="panel-blank" name="latchBlanking"><option value="1">1 个时钟</option><option value="2" selected>2 个时钟（默认）</option><option value="3">3 个时钟</option><option value="4">4 个时钟</option></select></label></fieldset><small>出现乱码时可先尝试 4 MHz；拖影可增加消隐。低速时钟可能减少色阶，主题设定的帧率不变。保存后重启生效。</small></fieldset></details><p>自检时应看到完整白色边框和圆形，底部从左到右依次为 <span style="color:#c32626">红 R</span>、<span style="color:#087f35">绿 G</span>、<span style="color:#174ecc">蓝 B</span>。若边框断裂、图形拉长或分段错位，需要检查行选与排线，RGB 切换只修正颜色。</p><fieldset id="panel-trial-controls" hidden><h3>屏幕驱动轮测</h3><p>依次测试本机支持的全部驱动，每种显示 20 秒；观察序号、边框、圆形和 R/G/B 色块。切换驱动时短暂重启，完成后恢复原配置。</p><p id="panel-trial-state"></p><div class="row"><button type="button" id="panel-trial-start">测试所有屏幕驱动</button><button type="button" id="panel-trial-pause" class="secondary" hidden>暂停轮测</button><button type="button" id="panel-trial-next" class="secondary" hidden>下一个驱动</button></div><div class="row"><button type="button" id="panel-trial-keep" hidden>画面正常，使用此驱动</button><button type="button" id="panel-trial-stop" class="secondary" hidden>退出轮测，恢复原驱动</button></div><small>7 号仅用于慢速诊断，不能作为日常主题驱动。轮测只比较驱动，不会自动判断画面是否正常。</small></fieldset><div class="row"><button id="panel-test" type="button" class="secondary">屏幕自检（30 秒）</button><small id="panel-state">连接支持屏幕设置的设备后可用</small></div><div class="savebar"><small id="panel-dirty">颜色设置未同步</small><button>保存屏幕设置并重启</button></div></fieldset></form></section>
 </div>
 <div id="panel-schedule" class="panel" role="tabpanel" aria-labelledby="tab-schedule" hidden>
 <section class="card"><h2>播放计划</h2><div class="summary-box" id="schedule-summary" role="status">连接设备后显示播放规则。</div><form id="schedule-form"><fieldset disabled><div class="plan-layout"><div class="plan-defaults"><div class="section-intro"><h3>未命中时段时</h3><small>先设置日常播放方式。下方指定时段可临时覆盖它。</small></div>
@@ -37,7 +38,8 @@
 </div><div class="plan-times"><div class="section-intro"><h3>指定时段优先播放</h3><small>到点后使用指定主题；结束后恢复左侧的日常播放方式。跨午夜时段会标注“次日”。</small></div><div id="schedule-rules"></div><div class="row"><button type="button" id="add-rule" class="secondary">添加时段</button><button type="button" id="lunch-rule" class="secondary">中午菜单</button></div><p class="muted">重叠时上方规则优先；设备完成校时后执行时段计划。</p></div></div><div id="schedule-warnings" class="warning-box" hidden></div><div class="savebar"><small id="schedule-dirty">播放计划已同步</small><button id="schedule-save" type="submit">保存播放计划</button></div></fieldset></form></section>
 </div>
 <div id="panel-apps" class="panel" role="tabpanel" aria-labelledby="tab-apps" hidden>
-<section class="card apps-section"><h2>主题应用</h2><fieldset id="app-controls" disabled><p class="lead">安装、运行和管理主题应用。</p><div class="row"><label>显示<select id="app-filter"><option value="installed">已安装</option><option value="all">全部应用</option><option value="available">未安装</option></select></label><label class="app-search">搜索<input id="app-search" type="search" placeholder="应用名称、包名或描述"></label><button id="app-refresh" class="secondary" type="button">刷新</button></div><p><a id="theme-guide" href="/studio/theme-guide.html" target="_blank" rel="noopener">编写主题：开发手册与示例</a></p><p id="app-storage">正在读取应用存储…</p><p id="app-catalog-state" class="muted">连接后读取主题库，可直接安装兼容应用。</p><div class="row"><button id="app-remove-selected" class="secondary" type="button" disabled>卸载选中应用</button><small id="app-selection-count"></small></div><div class="app-table-wrap"><table class="app-table"><thead><tr><th><label class="app-select-heading"><input id="app-select-all" type="checkbox" aria-label="选择当前列表中已安装的应用">应用</label></th><th>状态</th><th>占用</th><th>操作</th></tr></thead><tbody id="app-list"></tbody></table></div><p id="app-empty" hidden>尚未安装主题应用。</p><details class="install-details"><summary>安装应用文件或主题文件夹</summary><p>支持 CWP 应用包、包含 theme.json 的 ZIP 或文件夹，以及单文件 Lua。</p><p id="app-limits">连接设备后显示该设备的实际容量限制。</p><label>应用文件<input id="app-file" type="file" accept=".cwp,.zip,.lua"></label><label>或选择主题文件夹<input id="app-folder" type="file" webkitdirectory multiple></label><button id="app-install" type="button">安装并运行</button></details><p><small>主题和素材独立保存在设备中。卸载会释放空间；卸载正在运行的主题会切回基础时钟并清理相关计划。导出应用可备份，导出源码可修改后重新导入。</small></p></fieldset></section>
+<section id="image-clock-maker" class="card apps-section"></section>
+<section class="card apps-section"><h2>主题应用</h2><fieldset id="app-controls" disabled><p class="lead">安装、运行和管理主题应用。</p><div class="row"><label>显示<select id="app-filter"><option value="installed">已安装</option><option value="all">全部应用</option><option value="available">未安装</option></select></label><label class="app-search">搜索<input id="app-search" type="search" placeholder="应用名称、包名或描述"></label><button id="app-refresh" class="secondary" type="button">刷新</button></div><p><a id="theme-guide" href="/studio/theme-guide.html" target="_blank" rel="noopener">C/C++ 主题 SDK 与 Codex 提示词</a></p><p id="app-storage">正在读取应用存储…</p><p id="app-catalog-state" class="muted">连接后读取主题库，可直接安装兼容应用。</p><div class="row"><button id="app-remove-selected" class="secondary" type="button" disabled>卸载选中应用</button><small id="app-selection-count"></small></div><div class="app-table-wrap"><table class="app-table"><thead><tr><th><label class="app-select-heading"><input id="app-select-all" type="checkbox" aria-label="选择当前列表中已安装的应用">应用</label></th><th>状态</th><th>占用</th><th>操作</th></tr></thead><tbody id="app-list"></tbody></table></div><p id="app-empty" hidden>尚未安装主题应用。</p><details class="install-details"><summary>安装二进制主题包</summary><p>导入为当前芯片编译的 CWP3 包，内含 C/C++ 机器码和所需素材。</p><p id="app-limits">连接设备后显示该设备的实际容量限制。</p><label>应用文件<input id="app-file" type="file" accept=".cwp"></label><label hidden>或选择主题文件夹<input id="app-folder" type="file" webkitdirectory multiple></label><button id="app-install" type="button">安装并运行</button></details><p><small>主题和素材独立保存在设备中。卸载会释放空间；卸载正在运行的主题会切回基础时钟并清理相关计划。导出应用可备份，源码在电脑上修改、编译后导入。</small></p></fieldset></section>
 </div>
 <div id="panel-network" class="panel" role="tabpanel" aria-labelledby="tab-network" hidden>
 <section class="card narrow"><h2>局域网设备</h2><div class="row"><button id="discover-devices" type="button" class="secondary" disabled>发现同网设备</button><small id="discovery-state">先连接一台支持发现的设备，再查找同一局域网内的 Clockwise。</small></div><p><small>发现由当前设备发送局域网广播，持续约 5 秒；VPN、访客网络或路由隔离可能阻止广播。</small> <small>仅发现运行 v0.9.8 或更新固件的设备。</small></p><ul id="discovery-list" class="discovery-list"></ul></section>
@@ -45,7 +47,7 @@
 <section class="card narrow"><h2>Wi-Fi 配网</h2><form id="wifi"><fieldset disabled><div class="row"><button id="scan" type="button" class="secondary">扫描 2.4 GHz 网络</button><span id="scan-state"></span></div><label>扫描到的网络<select id="networks" disabled aria-describedby="network-help"><option value="">请先扫描附近网络</option></select></label><label>网络名称（也可手动输入）<input name="ssid" id="ssid" maxlength="32" autocomplete="off" autocapitalize="none" spellcheck="false" required></label><small id="network-help">选择扫描结果会填入网络名称；隐藏网络可手动输入。</small><label>密码<input name="password" id="wifi-password" type="password" maxlength="63" autocomplete="new-password"></label><p>连接成功后保存。失败时保留原网络，仍可通过设备热点重新配网。</p><div class="savebar"><button>连接并保存</button></div></fieldset></form></section>
 </div>
 <div id="panel-maintenance" class="panel" role="tabpanel" aria-labelledby="tab-maintenance" hidden>
-<div class="maintenance-grid"><section class="card"><h2>固件更新与重启</h2><fieldset id="ota-controls" disabled><p>选择本设备对应的应用固件 <code>firmware.bin</code>，通过局域网或 VPN 更新，保留已保存的设置。</p><label>应用固件<input id="firmware" type="file" accept=".bin"></label><small id="ota-size"></small><progress id="ota-progress" max="100" value="0"></progress><div class="row"><button id="send-ota">上传并更新</button><button id="restart" class="secondary">重启设备</button></div><small>更新时保留最后一帧并暂停主题；完整校验通过后重启。</small></fieldset></section><section class="card"><h2>应用存储</h2><fieldset id="storage-controls" disabled><p id="storage-state">存储状态未读取。</p><button id="init-storage" class="secondary" type="button">初始化应用存储</button><p><small>设备存储已就绪时无需初始化，应用容量和占用可在“主题应用”查看。</small></p></fieldset></section></div><section class="card spaced"><h2>串口设置</h2><p>串口选择设备端口和 <code>115200</code> 波特率，每条 JSON 命令以换行结束。输入 <code>{"cmd":"help"}</code> 查看命令；回复以 <code>CWJSON:</code> 开头。</p><details><summary>常用命令示例</summary><pre class="serial-examples">{"cmd":"status"}
+<section id="online-updates" class="card"></section><section id="hardware-tests" class="card"></section><div class="maintenance-grid"><section class="card"><h2>固件更新与重启</h2><fieldset id="ota-controls" disabled><p>选择本设备对应的应用固件 <code>firmware.bin</code>，通过局域网或 VPN 更新，保留已保存的设置。</p><label>应用固件<input id="firmware" type="file" accept=".bin"></label><small id="ota-size"></small><progress id="ota-progress" max="100" value="0"></progress><div class="row"><button id="send-ota">上传并更新</button><button id="restart" class="secondary">重启设备</button></div><small>更新时保留最后一帧并暂停主题；完整校验通过后重启。</small></fieldset></section><section class="card"><h2>应用存储</h2><fieldset id="storage-controls" disabled><p id="storage-state">存储状态未读取。</p><button id="init-storage" class="secondary" type="button">初始化应用存储</button><p><small>设备存储已就绪时无需初始化，应用容量和占用可在“主题应用”查看。</small></p></fieldset></section></div><section id="factory-controls" class="card spaced" hidden><h2>恢复出厂设置</h2><fieldset disabled><p>清除 Wi-Fi、屏幕与重力校正、播放计划及所有已安装主题和素材。保留固件版本，重启后重新进入驱动轮测和配网引导。</p><button type="button" id="factory-reset" class="secondary">恢复出厂设置</button></fieldset></section><section class="card spaced"><h2>串口设置</h2><p>串口选择设备端口和 <code>115200</code> 波特率，每条 JSON 命令以换行结束。输入 <code>{"cmd":"help"}</code> 查看命令；回复以 <code>CWJSON:</code> 开头。</p><details><summary>常用命令示例</summary><pre class="serial-examples">{"cmd":"status"}
 {"cmd":"ap"}
 {"cmd":"wifi","ssid":"你的WiFi名称","password":"你的WiFi密码"}
 {"cmd":"config","brightness":80,"timezone":"CST-8"}
@@ -54,18 +56,23 @@
 {"cmd":"app.uninstall","packageName":"org.clockwise.pacman"}
 {"cmd":"panel","colorOrder":"RGB","clockMHz":8,"clockPhase":1,"latchBlanking":2}
 {"cmd":"panel.test","action":"start"}
+{"cmd":"panel.trial","action":"start"}
 {"cmd":"orientation","manualRotation":270,"autoRotate":true}
 {"cmd":"discover"}
 {"cmd":"restart"}</pre><small>优先使用 apps 返回的 packageName；数字位置仅为旧接口兼容。设备不会回显家庭 Wi-Fi 密码。</small></details></section>
 </div>
-<p class="footer"><span>Clockwise · 64 × 64 · Lua 主题引擎</span> · <span class="credits"><span>致谢</span> <a href="https://topyuan.top/clock/" target="_blank" rel="noopener noreferrer">ClockWise Plus</a> · <span>作者</span> <a href="https://github.com/yuan910715" target="_blank" rel="noopener noreferrer">冯雪原 / MonsterYuan (yuan910715)</a></span></p>
+<footer id="credits" class="footer"></footer>
 </main>
 <script type="module">
+import {creditsHTML} from "./credits.mjs";
+import {releaseControls} from "./releases.mjs";
+import {diagnosticControls} from "./diagnostics.mjs";
+import {imageClockControls} from "./image-clock.mjs";
 import {applicationControls} from "./device-apps.mjs";
 import {scheduleControls} from "./device-schedule.mjs";
 import {localizeTheme,registerThemes,onLanguageChange,translate,refreshLanguage} from "./i18n.mjs";
 const $=id=>document.getElementById(id);
-let base='',connected=false,timer,failures=0,maxFirmware=0,deviceChip='ESP32',configDirty=false,panelDirty=false,panelSupported=false,panelTimingSupported=false,deviceThemes=[],latestStatus,orientationDirty=false,orientationSupported=false,discoverySupported=false,discovering=false;
+let base='',connected=false,timer,failures=0,maxFirmware=0,deviceChip='ESP32',configDirty=false,panelDirty=false,panelSupported=false,panelTimingSupported=false,panelRefreshSupported=false,deviceThemes=[],latestStatus,orientationDirty=false,orientationSupported=false,discoverySupported=false,discovering=false;
 const tabs=[...document.querySelectorAll('[role="tab"][data-panel]')];
 function showPanel(name,focus=false){
  const selected=tabs.find(tab=>tab.dataset.panel===name)||tabs[0];if(!selected)return;
@@ -95,19 +102,38 @@ async function request(path,options={}){
  const body=await response.json().catch(()=>({error:'返回内容不是 Studio API 数据'}));
  if(!response.ok)throw new Error(body.error||'HTTP '+response.status);return body;
 }
+imageClockControls($('image-clock-maker'),{device:()=>latestStatus||{},base:()=>base,upload,changed:async()=>{const list=await request('themes');themeOptions(list);status(await request('status'));await loadSchedule(list);await appManager.refresh();},message});
+$('credits').innerHTML=creditsHTML;
+releaseControls($('online-updates'),{device:()=>latestStatus||{},request,upload,sha256,message,changed:async()=>{await appManager.refresh();status(await request('status'));}});
+diagnosticControls($('hardware-tests'),{request,message,device:()=>latestStatus});
 function status(data,initial=false){
  latestStatus=data;
- if(!/^0\.[5-9]\.\d+$/.test(data.version||''))throw new Error('设备固件不是受支持的 Studio 版本，当前固件不会被自动替换。');
+ const trial=data.panelTrial,setup=data.setup;
+ $('setup-guide').hidden=!setup?.required;
+ if(setup?.required){$('setup-access').textContent=translate('热点：')+setup.ssid+' · '+translate('密码：')+setup.password+' · '+setup.url;if(initial)showPanel('display');}
+ $('factory-controls').hidden=data.features?.factoryReset!==1;
+ $('panel-trial-controls').hidden=data.features?.panelTrial!==1;
+ if(trial){
+  const active=!!trial.active;
+  $('panel-trial-start').hidden=active;
+  for(const id of ['pause','next','keep','stop'])$('panel-trial-'+id).hidden=!active;
+  $('panel-trial-pause').textContent=trial.paused?'继续轮测':'暂停轮测';
+  $('panel-trial-keep').disabled=trial.driver===7;
+  $('panel-trial-state').textContent=active?translate('当前驱动：')+trial.driver+' · '+trial.position+'/'+trial.count+' · '+(trial.paused?translate('已暂停'):trial.remainingSeconds+' s'):translate('点击开始轮测；也可手动选择驱动。');
+ }
+
+ if(!/^(0\.[5-9]\.\d+|1\.\d+\.\d+(?:-[a-z0-9.]+)?)$/.test(data.version||''))throw new Error('设备固件不是受支持的 Studio 版本，当前固件不会被自动替换。');
  orientationSupported=data.features?.orientation===1&&!!data.orientation;discoverySupported=data.features?.discovery===1;
  $('orientation-config').querySelector('fieldset').disabled=!orientationSupported;$('discover-devices').disabled=!discoverySupported||discovering;
  if(!discovering&&!discoverySupported)$('discovery-state').textContent='当前设备不支持局域网发现，请升级到 v0.9.8 或更新固件。';
  else if(!discovering&&!$('discovery-list').children.length)$('discovery-state').textContent='可发现同一局域网内的 Clockwise，点击按钮开始。';
- if(orientationSupported){const o=data.orientation;if(!orientationDirty){$('manual-rotation').value=String(o.manualRotation);$('auto-rotate').checked=!!o.autoRotate;$('orientation-dirty').textContent='方向设置已与设备同步';}$('auto-rotate').disabled=!o.autoRotateSupported;$('orientation-state').textContent='当前方向：'+o.rotationDegrees+'° · '+(!o.autoRotateSupported?'当前设备无 IMU，可使用手动方向。':o.autoRotate?(o.imuValid?'重力自动旋转已启用。':'IMU 读数离线，暂用手动方向。'):'使用手动方向。');}
+ $('firmware-version').textContent='♧ Firmware v'+data.version;
+ if(orientationSupported){const o=data.orientation;const calibrationSupported=Number.isFinite(o.gravityRotation);$('gravity-calibration').hidden=!calibrationSupported;if(calibrationSupported){if(!orientationDirty)$('gravity-rotation').value=String(o.gravityRotation);$('gravity-calibration-state').textContent='安装校正：'+o.gravityRotation+'° · XY 零点：'+(o.gravityZero||[]).join(', ')+' g';for(const b of document.querySelectorAll('[data-calibration]'))b.disabled=!o.autoRotateSupported;}if(!orientationDirty){$('manual-rotation').value=String(o.manualRotation);$('auto-rotate').checked=!!o.autoRotate;$('orientation-dirty').textContent='方向设置已与设备同步';}$('auto-rotate').disabled=!o.autoRotateSupported;$('orientation-state').textContent='当前方向：'+o.rotationDegrees+'° · '+(!o.autoRotateSupported?'当前设备无 IMU，可使用手动方向。':o.autoRotate?(o.imuValid?'重力自动旋转已启用。':'IMU 读数离线，暂用手动方向。'):'使用手动方向。');}
  else $('orientation-state').textContent='方向设置需要 v0.9.8 或更新固件。';
  deviceChip=data.chip||'ESP32';$('version').textContent=data.version+' / '+deviceChip+' / 64×64';$('wifi-status').textContent=data.connected?data.ssid+' · '+data.rssi+' dBm':data.networkState;
  $('uptime').textContent=Math.floor(data.uptime/3600)+'h '+Math.floor(data.uptime%3600/60)+'m';$('heap').textContent=(data.heap/1024).toFixed(1)+' KiB';
- panelSupported=!!data.panel;panelTimingSupported=Number.isInteger(data.panel?.clockMHz);$('panel-config').querySelector('fieldset').disabled=!panelSupported;$('panel-timing').disabled=!panelTimingSupported;$('panel-clock').querySelector('option[value="4"]').disabled=!deviceChip.includes('S3');$('panel-driver').disabled=!Number.isInteger(data.panel?.driver);for(const value of ['7','9'])$('panel-driver').querySelector('option[value="'+value+'"]').disabled=!deviceChip.includes('S3');
- if(data.panel){if(!panelDirty){$('color-order').value=data.panel.colorOrder;$('panel-driver').value=data.panel.driver??0;$('panel-clock').value=data.panel.clockMHz??8;$('panel-phase').value=data.panel.clockPhase??1;$('panel-blank').value=data.panel.latchBlanking??2;panelDriverFields();$('panel-dirty').textContent='屏幕设置已与设备同步';}$('panel-test').dataset.testing=String(!!data.panel.testing);$('panel-test').textContent=data.panel.testing?'结束自检，恢复主题':'屏幕自检（30 秒）';$('panel-state').textContent=data.panel.testing?'自检中，30 秒后自动恢复主题':'自检不会修改主题和播放计划';}else $('panel-state').textContent='需要 v0.9.4 或更新固件';
+ panelSupported=!!data.panel;panelRefreshSupported=Number.isInteger(data.panel?.refreshHz);panelTimingSupported=Number.isInteger(data.panel?.clockMHz);$('panel-config').querySelector('fieldset').disabled=!panelSupported;$('panel-timing').disabled=!panelTimingSupported;$('panel-clock').querySelector('option[value="4"]').disabled=!deviceChip.includes('S3');$('panel-driver').disabled=!Number.isInteger(data.panel?.driver);for(const value of ['7','9'])$('panel-driver').querySelector('option[value="'+value+'"]').disabled=!deviceChip.includes('S3');
+ if(data.panel){const hz=Number(data.panel.active?.refreshHz);$('panel-refresh-live').textContent='实测扫描：'+(Number.isFinite(hz)&&hz>0?hz.toFixed(1)+' Hz':'—')+' · 双缓冲：'+(data.panel.active?.doubleBuffer?'已开启':'未开启');if(!panelDirty){const candidate=data.panelTrial?.active?data.panelTrial:data.panel;$('color-order').value=data.panel.colorOrder;$('panel-refresh').value=candidate.refreshHz??0;$('panel-driver').value=candidate.driver??0;$('panel-clock').value=candidate.clockMHz??8;$('panel-phase').value=candidate.clockPhase??1;$('panel-blank').value=candidate.latchBlanking??2;panelDriverFields();$('panel-dirty').textContent='屏幕设置已与设备同步';}$('panel-test').dataset.testing=String(!!data.panel.testing);$('panel-test').textContent=data.panel.testing?'结束自检，恢复主题':'屏幕自检（30 秒）';$('panel-state').textContent=data.panel.testing?'自检中，30 秒后自动恢复主题':'自检不会修改主题和播放计划';}else $('panel-state').textContent='需要 v0.9.4 或更新固件';
  const p=data.performance||{};$('compute').textContent=((p.computeUs||0)/1000).toFixed(2)+' ms';$('maximum').textContent=((p.maxUs||0)/1000).toFixed(2)+' ms';$('late').textContent=p.late??'—';$('missed').textContent=p.missed??'—';const pending=data.generation!==undefined&&(p.generation!==data.generation||p.theme!==data.theme);
  const title=[...$('theme').options].find(option=>Number(option.value)===Number(data.theme))?.text||'主题 '+data.theme;
  $('active-theme').textContent=pending?'正在切换 → '+title:title;$('device-time').textContent=data.timeValid?data.localTime:'等待网络校时';loadSchedule.status(data);
@@ -138,11 +164,17 @@ $('connect').onclick=async()=>{
  }catch(e){message(e.message,true);$('connection-state').textContent='连接失败';}
 };
 $('orientation-config').addEventListener('change',()=>{orientationDirty=true;$('orientation-dirty').textContent='方向设置有未保存的修改';});
-$('orientation-config').onsubmit=async event=>{
- event.preventDefault();const button=event.target.querySelector('button');button.disabled=true;
- try{const result=await request('orientation',{method:'POST',body:new URLSearchParams({manualRotation:$('manual-rotation').value,autoRotate:String($('auto-rotate').checked&&!$('auto-rotate').disabled)})});orientationDirty=false;message(result.message||'方向设置已保存并生效。');status(await request('status'));}
- catch(error){message(error.message,true);}finally{button.disabled=false;}
-};
+async function saveOrientation(calibration=''){
+ const buttons=[...$('orientation-config').querySelectorAll('button')];for(const b of buttons)b.disabled=true;
+ try{
+  const fields={manualRotation:$('manual-rotation').value,autoRotate:String($('auto-rotate').checked&&!$('auto-rotate').disabled)};
+  if(!$('gravity-calibration').hidden)fields.gravityRotation=$('gravity-rotation').value;
+  if(calibration)fields.calibration=calibration;
+  const result=await request('orientation',{method:'POST',body:new URLSearchParams(fields)});orientationDirty=false;message(result.message||'方向设置已保存并生效。');status(await request('status'));
+ }catch(error){message(error.message,true);}finally{for(const b of buttons)b.disabled=false;}
+}
+$('orientation-config').onsubmit=event=>{event.preventDefault();saveOrientation();};
+for(const b of document.querySelectorAll('[data-calibration]'))b.onclick=()=>saveOrientation(b.dataset.calibration);
 function discoveredDevices(data){
  const validIp=ip=>typeof ip==='string'&&/^\d{1,3}(?:\.\d{1,3}){3}$/.test(ip)&&ip.split('.').every(part=>Number(part)<=255);
  const devices=(data.devices||[]).filter(item=>validIp(item.ip)).slice(0,12);
@@ -163,6 +195,7 @@ $('discover-devices').onclick=async()=>{
 };
 function panelDriverFields(){
  const driver=Number($('panel-driver').value),positive=driver===4||driver===6;
+ $('scan-timing').hidden=driver!==9||!panelRefreshSupported;$('scan-timing').disabled=driver!==9||!panelRefreshSupported;
  $('dma-timing').disabled=!panelTimingSupported||driver===7||driver===8||driver===9;
  $('panel-phase').querySelector('option[value="0"]').disabled=positive;
  if(positive)$('panel-phase').value='1';
@@ -174,6 +207,28 @@ $('panel-config').onsubmit=async e=>{
  e.preventDefault();const button=e.target.querySelector('button:not([type])');button.disabled=true;
  try{const data=await request('panel',{method:'POST',body:new URLSearchParams(new FormData(e.target))});panelDirty=false;message(data.message);$('panel-dirty').textContent='已保存，正在重启设备…';clearTimeout(timer);timer=setTimeout(poll,7000);}
  catch(e){message(e.message,true);}finally{button.disabled=false;}
+};
+$('setup-display').onclick=()=>showPanel('display');
+$('setup-wifi').onclick=()=>showPanel('network');
+for(const action of ['start','pause','next','keep','stop'])$('panel-trial-'+action).onclick=async()=>{
+ const button=$('panel-trial-'+action);button.disabled=true;
+ const operation=action==='pause'&&latestStatus?.panelTrial?.paused?'resume':action;
+ try{
+  const result=await request('panel/trial',{method:'POST',body:new URLSearchParams({action:operation})});
+  if(operation==='keep')panelDirty=false;
+  message(['pause','resume'].includes(operation)?result.message:'正在切换驱动，设备将短暂重启；页面会自动重连。');
+  clearTimeout(timer);timer=setTimeout(poll,['pause','resume'].includes(operation)?500:4000);
+ }catch(e){message(e.message,true);}finally{button.disabled=false;}
+};
+$('factory-reset').onclick=async()=>{
+ if(!confirm(translate('确定恢复出厂设置？将删除所有已安装主题、Wi-Fi、显示设置和校正数据；此操作无法撤销。')))return;
+ const button=$('factory-reset');button.disabled=true;
+ try{
+  const result=await request('factory-reset',{method:'POST',body:new URLSearchParams({confirm:'RESET'})});
+  clearTimeout(timer);connected=false;enable(false);
+  message(result.message+' '+translate('请连接屏幕显示的 HUB75 热点，密码 12345678，然后访问 http://192.168.4.1/。'));
+  $('connection-state').textContent='已恢复出厂设置，等待重新配网';
+ }catch(e){message(e.message,true);button.disabled=false;}
 };
 $('panel-test').onclick=async()=>{
  const button=$('panel-test');button.disabled=true;

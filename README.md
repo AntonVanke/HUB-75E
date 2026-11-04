@@ -2,7 +2,27 @@
 
 简体中文 · [English](README.en.md)
 
-基于 ESP32 / ESP32-S3 与 HUB75 RGB LED 面板的 64×64 Lua 主题时钟。主题脚本控制画面、动画、时间和随机逻辑，原生绘图、字体、图块及精灵接口承担主要渲染工作。
+基于 ESP32 / ESP32-S3 与 HUB75 RGB LED 面板的 64×64 原生主题时钟。主题使用 C/C++ 编译为 Xtensa 机器码，打包为 CWP3；当前固件不运行 Lua。
+
+## 当前版本：1.0.1
+
+- [下载 1.0.1](https://github.com/AntonVanke/HUB-75E/releases/tag/v1.0.1)：经典 ESP32 4 MB，以及 ESP32-S3 8 MB Flash + 8 MB OPI PSRAM。
+- 四个原生应用：超级马里奥全 32 关、Pac-Man、全屏重力水、滚珠迷宫；重力应用需要实际存在的 IMU。
+- 图片时钟：32 张幻灯片、鼠标/触摸拖动、中文文字图层、五种时钟字体、秒显示、12/24 小时、颜色/阴影、淡入淡出，以及编辑工程保存/恢复。
+- Pages 可选择固件版本、USB 首次烧录或兼容分区保留配置更新、安装该版本的应用。
+- 设备维护页增加版本检查和 OTA：浏览器下载、校验 SHA-256 后发送至设备，避免额外占用设备 TLS 内存。
+- 维护检测：IMU 自检及加速度/角速度、蜂鸣器、温湿度、屏幕测试图、光敏 ADC、按键计数；不支持的硬件明确报告。
+- 编译和电脑验证已完成，本版尚未烧录实屏验证。小修改递增 PATCH（1.0.2），大功能递增 MINOR（1.1.0）。
+
+[原生 SDK 与 Codex 提示词](theme-studio/native/README.md) · [图片时钟工坊](https://antonvanke.github.io/HUB-75E/studio/index.html)
+
+```powershell
+python theme-studio/native/build.py
+node theme-studio/native/embed.mjs
+pio run -d theme-studio/embedded/demo -e esp32s3-hub75
+```
+
+以下 0.9.x 内容保留作历史说明；旧 Lua/CWP2 包不能在 1.0.1 原生运行时执行。
 
 **[在线烧录、主题下载与串口配置](https://antonvanke.github.io/HUB-75E/)** · **[固件下载](https://github.com/AntonVanke/HUB-75E/releases)** · **[烧录说明](FLASHING.md)**
 
@@ -16,7 +36,7 @@
 | [ESP32-S3 v0.9.7](https://github.com/AntonVanke/HUB-75E/releases/tag/esp32s3-v0.9.7) | 当前验证的 8 MB Flash、OPI PSRAM 控制板 | 可选原 DMA 与 Protomatter；9 号 Protomatter 已在 P2.5-2121-32S-V1 面板上实屏验证 |
 | [ESP32 / S3 v0.9.8 新功能版](https://github.com/AntonVanke/HUB-75E/releases/tag/v0.9.8) | 分别提供经典 4 MB / S3 8 MB + OPI PSRAM 构建 | API 2、传感器主题、方向、USB 安装与发现；本次源码构建，尚未烧录实屏验证 |
 
-v0.9.3 / v0.9.7 下载保留已实测的历史预编译成品。当前主分支为 v0.9.8，不能把重新构建的经典 ESP32 目标当作历史 v0.9.3 原始镜像。发布脚本保留历史应用二进制，不替换其版本内容。
+v0.9.3 / v0.9.7 下载保留已实测的历史预编译成品。当前主分支为 v1.0.1，不能把重新构建的经典 ESP32 目标当作历史 v0.9.3 原始镜像。发布脚本保留历史应用二进制，不替换其版本内容。
 
 S3 包使用 8 MB Flash 分区和 OPI PSRAM 配置，**不适用于只有 4 MB Flash 的 S3 N4 模组**。其它模组需要按实际 Flash、PSRAM 和接线重新构建。S3 与经典 ESP32 接线不同。
 

@@ -9,12 +9,12 @@ struct ThemePackage {
   static uint32_t word(const uint8_t* p){return uint32_t(p[0])|uint32_t(p[1])<<8|uint32_t(p[2])<<16|uint32_t(p[3])<<24;}
   bool read(File& f,const DeviceLimits& limits=DeviceLimits::detect()){
     *this={};if(!f)return false;uint8_t h[24];f.seek(0);const size_t n=f.read(h,16);
-    if(n>=4&&!std::memcmp(h,"CWP1",4))version=1;else if(n>=4&&!std::memcmp(h,"CWP2",4))version=2;
+    if(n>=4&&!std::memcmp(h,"CWP1",4))version=1;else if(n>=4&&!std::memcmp(h,"CWP2",4))version=2;else if(n>=4&&!std::memcmp(h,"CWP3",4))version=3;
     if(!version){if(n>=3&&!std::memcmp(h,"CWP",3))return false;sourceSize=f.size();return sourceSize>0&&sourceSize<=limits.sourceBytes;}
     if(n!=16)return false;sourceSize=word(h+4);archiveSize=word(h+8);count=word(h+12);
-    if(f.size()>limits.appBytes||count>8||!sourceSize||sourceSize>limits.sourceBytes||!archiveSize||archiveSize>limits.archiveBytes)return false;
-    const uint32_t header=version==2?24:16;
-    if(version==2){if(f.read(h+16,8)!=8||word(h+20))return false;metadataSize=word(h+16);if(!metadataSize||metadataSize>2048)return false;metadataOffset=header+count*40;}
+    if(f.size()>limits.appBytes||count>8||!sourceSize||sourceSize>(version==3?512*1024:limits.sourceBytes)||(version!=3&&!archiveSize)||archiveSize>limits.archiveBytes)return false;
+    const uint32_t header=version>=2?24:16;
+    if(version>=2){if(f.read(h+16,8)!=8||word(h+20))return false;metadataSize=word(h+16);if(!metadataSize||metadataSize>2048)return false;metadataOffset=header+count*40;}
     sourceOffset=header+count*40+metadataSize;archiveOffset=sourceOffset+sourceSize;uint32_t end=archiveOffset+archiveSize;
     if(end>f.size())return false;
     for(uint32_t i=0;i<count;i++){uint8_t row[40];if(f.read(row,40)!=40||row[31])return false;

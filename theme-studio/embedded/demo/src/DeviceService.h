@@ -11,6 +11,7 @@
 #include "DeviceLimits.h"
 #include "AppManifest.h"
 #include "PanelSettings.h"
+#include "PanelTrial.h"
 class DeviceService {
   class UploadServer final:public WebServer {
   public:
@@ -22,14 +23,21 @@ public:
   String lastError,networkState="idle";
   char metrics[512]="{}";
   bool hasCustom=false;
+  PanelTrial panelTrial;
+  bool needsSetup()const{return ssid_.isEmpty();}
+  const String& setupName()const{return apName_;}
+  const String& setupPassword()const{return apPassword_;}
   uint32_t generation=0,buttonAUntil=0,buttonBUntil=0,panelTestUntil=0;
   std::function<bool(const char*,String&)> applyScript;
   std::function<void()> stopScript;
   std::function<bool(bool)> renderLock;
   std::function<const uint16_t*()> framePixels;
   std::function<String()> sensorStatus;
+  std::function<String()> hardwareStatus;
+  std::function<bool(const String&,String&)> hardwareTest;
   std::function<String()> panelStatus;
   std::function<void(const PanelOrientation&)> orientationChanged;
+  std::function<bool(PanelOrientation&,bool)> orientationCalibrate;
   std::function<String()> orientationStatus;
   void begin(int count,const char* titlesJson);
   void poll();
@@ -67,6 +75,9 @@ private:
   void finishScript();
   void uploadOTA();
   const char* titlesJson_=nullptr;
+  const char* catalogRows_[64]={};
+  uint16_t catalogLengths_[64]={};
+  void indexCatalog();
   uint64_t installed_=0;
   uint64_t incompatible_=0;
   DeviceLimits limits_;
@@ -92,7 +103,7 @@ private:
   String completeInstall(int& code,bool serial=false);
   uint8_t sensorCapabilities()const;
   String sensorCapabilitiesJson()const;
-  bool saveOrientation(int manualRotation,bool automatic,String& error);
+  bool saveOrientation(int manualRotation,bool automatic,int gravityRotation,const String& calibration,String& error);
   String appId(int index);
   String appTitle(int index);
   String appPackageName(int index);
@@ -114,6 +125,10 @@ private:
   bool connectWifi(const String& ssid,const String& password,String& error);
   bool saveConfig(int nextTheme,int nextBrightness,int nextRotation,const String& tz,String& error);
   bool savePanel(const String& order,PanelTiming timing,String& error);
+  bool trialAction(const String& action,String& error);
+  String trialJson()const;
+  bool factoryReset(const String& confirmation,String& error);
+  bool factoryResetting_=false;
   String panelOrder_="RGB";
   PanelTiming panelTiming_;
   String statusJson();
