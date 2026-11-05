@@ -1,0 +1,27 @@
+{
+  "id": "twinkle-twinkle",
+  "packageName": "org.clockwise.twinkle-twinkle",
+  "title": "Twinkle Twinkle",
+  "appVersion": "1.0.0",
+  "description": "小星星、浮动角色与时间",
+  "author": "Clockwise Theme Studio",
+  "category": "粒子",
+  "width": 64,
+  "height": 64,
+  "resources": {
+    "background": "background.cwa"
+  },
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "stateBytes": 49152,
+    "graphicsBytes": 8192,
+    "targetFps": 60,
+    "sensors": []
+  },
+  "verification": {
+    "status": "unverified"
+  }
+}

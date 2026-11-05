@@ -1,5 +1,5 @@
 """Compile C/C++ themes to chip-specific Xtensa machine code and CWP3 packages."""
-import argparse, hashlib, json, os, struct, subprocess, zipfile, zlib
+import argparse, hashlib, importlib.util, json, os, struct, subprocess, zipfile, zlib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -93,6 +93,10 @@ def main():
         for chip in ['esp32','esp32s3'] if a.chip=='all' else [a.chip]:
             if chip in json.loads(f.read_text(encoding='utf-8')).get('requirements',{}).get('chips',['esp32','esp32s3']):entries.append(build(f.parent,chip,a.output))
             elif a.chip!='all':raise ValueError('Theme does not support '+chip)
+    if a.theme=='all' and a.chip in ('all','esp32s3'):
+        spec=importlib.util.spec_from_file_location('legacy_migration',ROOT/'legacy/migrate.py')
+        legacy=importlib.util.module_from_spec(spec);spec.loader.exec_module(legacy)
+        entries.extend(build(folder,'esp32s3',a.output) for folder in legacy.generate())
     (a.output/'catalog.json').write_text(json.dumps({'format':3,'apps':[x for x in entries if x['id']!='image-clock']},ensure_ascii=False,indent=2),encoding='utf-8')
     if a.theme=='all' and a.chip=='all':
         order=['mario-1-1','pacman','gravity-liquid','gravity-maze','ferrofluid-clock','ambient-clock']

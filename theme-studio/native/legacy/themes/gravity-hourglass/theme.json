@@ -1,0 +1,27 @@
+{
+  "id": "gravity-hourglass",
+  "packageName": "org.clockwise.gravity-hourglass",
+  "title": "重力沙漏",
+  "appVersion": "1.0.0",
+  "description": "28粒金砂随屏幕重力滑动，A键复位；固定预算的视觉玩具，不是校准计时器。",
+  "author": "AntonVanke / HUB-75E",
+  "category": "重力互动",
+  "width": 64,
+  "height": 64,
+  "resources": {},
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "stateBytes": 49152,
+    "graphicsBytes": 8192,
+    "targetFps": 60,
+    "sensors": [
+      "imu"
+    ]
+  },
+  "verification": {
+    "status": "unverified"
+  }
+}

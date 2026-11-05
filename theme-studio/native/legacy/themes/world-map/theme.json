@@ -1,0 +1,36 @@
+{
+  "id": "world-map",
+  "packageName": "org.clockwise.world-map",
+  "title": "World Map",
+  "appVersion": "1.0.0",
+  "description": "UTC 太阳赤纬与均时差 · 真实晨昏线及民用曙暮光",
+  "author": "Clockwise Theme Studio",
+  "category": "风景",
+  "width": 64,
+  "height": 64,
+  "resources": {
+    "background": "background.cwa"
+  },
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "stateBytes": 49152,
+    "graphicsBytes": 8192,
+    "targetFps": 1,
+    "sensors": []
+  },
+  "verification": {
+    "status": "unverified"
+  },
+  "parameters": {
+    "utcOffset": {
+      "label": "时区 UTC 偏移 / UTC offset",
+      "min": -12,
+      "max": 14,
+      "step": 0.25,
+      "default": 8
+    }
+  }
+}

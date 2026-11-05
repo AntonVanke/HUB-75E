@@ -1,0 +1,27 @@
+{
+  "id": "minecraft-torch",
+  "packageName": "org.clockwise.minecraft-torch",
+  "title": "Minecraft-Torch",
+  "appVersion": "1.0.0",
+  "description": "砖墙缓存与火焰粒子",
+  "author": "Clockwise Theme Studio",
+  "category": "粒子",
+  "width": 64,
+  "height": 64,
+  "resources": {
+    "background": "background.cwa"
+  },
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "stateBytes": 49152,
+    "graphicsBytes": 8192,
+    "targetFps": 60,
+    "sensors": []
+  },
+  "verification": {
+    "status": "unverified"
+  }
+}

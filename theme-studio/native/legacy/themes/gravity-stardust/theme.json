@@ -1,0 +1,27 @@
+{
+  "id": "gravity-stardust",
+  "packageName": "org.clockwise.gravity-stardust",
+  "title": "引力星尘",
+  "appVersion": "1.0.0",
+  "description": "32颗流光响应重力与Z轴角速度，叠加实时数字钟；缺失IMU停动提示。",
+  "author": "AntonVanke / HUB-75E",
+  "category": "重力互动",
+  "width": 64,
+  "height": 64,
+  "resources": {},
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "stateBytes": 49152,
+    "graphicsBytes": 8192,
+    "targetFps": 60,
+    "sensors": [
+      "imu"
+    ]
+  },
+  "verification": {
+    "status": "unverified"
+  }
+}

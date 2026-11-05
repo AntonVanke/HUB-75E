@@ -1,0 +1,27 @@
+{
+  "id": "particle-time",
+  "packageName": "org.clockwise.particle-time",
+  "title": "Particle Time",
+  "appVersion": "1.0.0",
+  "description": "流动星尘与大字时钟",
+  "author": "Clockwise Theme Studio",
+  "category": "粒子",
+  "width": 64,
+  "height": 64,
+  "resources": {
+    "background": "background.cwa"
+  },
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "stateBytes": 49152,
+    "graphicsBytes": 8192,
+    "targetFps": 60,
+    "sensors": []
+  },
+  "verification": {
+    "status": "unverified"
+  }
+}

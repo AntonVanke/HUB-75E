@@ -1,0 +1,25 @@
+{
+  "id": "zootopia",
+  "packageName": "org.clockwise.zootopia",
+  "title": "Zootopia",
+  "appVersion": "1.0.0",
+  "description": "原版像素肖像 · C++ 心跳、独立眨眼、分钟互动",
+  "author": "Clockwise Theme Studio",
+  "category": "角色",
+  "width": 64,
+  "height": 64,
+  "resources": {},
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "stateBytes": 49152,
+    "graphicsBytes": 8192,
+    "targetFps": 60,
+    "sensors": []
+  },
+  "verification": {
+    "status": "unverified"
+  }
+}

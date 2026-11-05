@@ -1,0 +1,27 @@
+{
+  "id": "codex",
+  "packageName": "org.clockwise.codex",
+  "title": "Codex",
+  "appVersion": "1.0.0",
+  "description": "终端打字、闪烁光标与状态数据",
+  "author": "Clockwise Theme Studio",
+  "category": "文字",
+  "width": 64,
+  "height": 64,
+  "resources": {
+    "background": "background.cwa"
+  },
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "stateBytes": 49152,
+    "graphicsBytes": 8192,
+    "targetFps": 60,
+    "sensors": []
+  },
+  "verification": {
+    "status": "unverified"
+  }
+}

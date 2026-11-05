@@ -1,0 +1,27 @@
+{
+  "id": "genshin-impact",
+  "packageName": "org.clockwise.genshin-impact",
+  "title": "原神 · 蒙德城",
+  "appVersion": "1.0.0",
+  "description": "蒙德城 · 局部水波、场景动效与随机相位",
+  "author": "Clockwise Theme Studio",
+  "category": "游戏风景",
+  "width": 64,
+  "height": 64,
+  "resources": {
+    "background": "background.cwa"
+  },
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "stateBytes": 49152,
+    "graphicsBytes": 8192,
+    "targetFps": 60,
+    "sensors": []
+  },
+  "verification": {
+    "status": "unverified"
+  }
+}

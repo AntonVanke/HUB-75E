@@ -1,0 +1,27 @@
+{
+  "id": "time-in-words",
+  "packageName": "org.clockwise.time-in-words",
+  "title": "Time In Words",
+  "appVersion": "1.0.0",
+  "description": "时间映射、单词排版与日期",
+  "author": "Clockwise Theme Studio",
+  "category": "文字",
+  "width": 64,
+  "height": 64,
+  "resources": {
+    "background": "background.cwa"
+  },
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "stateBytes": 49152,
+    "graphicsBytes": 8192,
+    "targetFps": 1,
+    "sensors": []
+  },
+  "verification": {
+    "status": "unverified"
+  }
+}

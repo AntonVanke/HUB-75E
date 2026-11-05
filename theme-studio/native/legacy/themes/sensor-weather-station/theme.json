@@ -1,0 +1,28 @@
+{
+  "id": "sensor-weather-station",
+  "packageName": "org.clockwise.sensor-weather-station",
+  "title": "微气象站",
+  "appVersion": "1.0.0",
+  "description": "独立温度计、湿度条与室内状态，使用真实温湿度；缺失时显示占位。",
+  "author": "AntonVanke / HUB-75E",
+  "category": "传感器",
+  "width": 64,
+  "height": 64,
+  "resources": {},
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "stateBytes": 49152,
+    "graphicsBytes": 8192,
+    "targetFps": 30,
+    "sensors": [
+      "temperature",
+      "humidity"
+    ]
+  },
+  "verification": {
+    "status": "unverified"
+  }
+}

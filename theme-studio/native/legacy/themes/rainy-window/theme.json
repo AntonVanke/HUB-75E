@@ -1,0 +1,27 @@
+{
+  "id": "rainy-window",
+  "packageName": "org.clockwise.rainy-window",
+  "title": "Rainy Window",
+  "appVersion": "1.0.0",
+  "description": "窗外落雨、摇曳烛火与数字时钟",
+  "author": "Clockwise Theme Studio",
+  "category": "粒子",
+  "width": 64,
+  "height": 64,
+  "resources": {
+    "background": "background.cwa"
+  },
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "stateBytes": 49152,
+    "graphicsBytes": 8192,
+    "targetFps": 60,
+    "sensors": []
+  },
+  "verification": {
+    "status": "unverified"
+  }
+}

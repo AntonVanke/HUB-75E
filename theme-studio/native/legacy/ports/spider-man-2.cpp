@@ -1,0 +1,39 @@
+struct Scene:State{int stage,phase,side,durations[9];};
+static bool start(void* p,const CwApi* a){
+  auto& s=*(Scene*)p;s.seed=a->random(a->context)|1;int durations[]={4200,1100,240,300,220,1600,460,160,300};memcpy(s.durations,durations,sizeof(durations));clip(s,a);return s.media.load(a,BACKGROUND_BYTES);
+}
+static bool update(void* p,const CwApi*,uint32_t dt){
+  auto& s=*(Scene*)p;s.elapsed+=dt;s.phase+=cw::min(dt,250u);
+  while(s.phase>=s.durations[s.stage]){
+    s.phase-=s.durations[s.stage];s.stage++;
+    if(s.stage==9){s.stage=0;s.side=1-s.side;s.durations[0]=randomInt(s,3500,5500);}
+  }
+  return true;
+}
+static float ease(float x){return x*x*(3-2*x);}
+static bool draw(void* p,const CwApi* a){
+  auto& s=*(Scene*)p;if(!s.media.draw(a,0))return false;clip(s,a,0,12,64,52);
+  for(int i=0;i<6;i++){int x=(i*19+s.elapsed/320)%70-3,y=12+(i*13+s.elapsed/110)%52;a->line(a->context,x,y,x-1,y+2,0x63b1);}
+  for(int i=0;i<3;i++){int y=44+(s.elapsed/180+i*7)%20;pixel(s,a,34+(y-44)/7,y,0xfe91);}
+  a->rect(a->context,0,60,32,4,0x10e6);a->line(a->context,0,60,31,60,0x7c33);a->rect(a->context,38,56,26,8,0x10e6);a->line(a->context,38,56,63,56,0x7c33);
+  float q=float(s.phase)/s.durations[s.stage],x=0,y=s.side?18:22,startY=y,endY=s.side?22:18;int frame=1,hx=28,hy=4;bool web=false;
+  switch(s.stage){
+    case 0:frame=s.phase/950%2+1;break;
+    case 1:frame=s.phase<220?11:12;break;
+    case 2:frame=q<.35f?11:3;break;
+    case 3:frame=4;y=startY-2*ease(q);break;
+    case 4:frame=5;y=startY-2;web=true;break;
+    case 5:{float angle=-.35f+1.15f*q;frame=q<.48f?6:7;hx=frame==6?26:23;hy=2;x=32+14*sinf(angle)-hx;y=10+14*cosf(angle)-hy;web=true;break;}
+    case 6:frame=q<.55f?8:9;x=19+13*q;y=18+(endY-18)*q-5*sinf(q*3.14159265f);break;
+    case 7:frame=10;x=32;y=endY;break;
+    case 8:frame=q<.6f?11:1;x=32;y=endY;break;
+  }
+  if(s.side)x=32-x;x=floorf(x+.5f);y=floorf(y+.5f);
+  if(web){int hand=x+(s.side?31-hx:hx);a->line(a->context,s.side?31:32,12,hand,y+hy,0xcefc);if(s.stage==4&&s.phase<80)a->line(a->context,hand-1,y+hy,hand+1,y+hy,0xffff);}
+  sprite(s,a,peter,int(x),int(y),frame,s.side);clip(s,a);a->rect(a->context,0,0,64,11,0x0864);
+  a->rect(a->context,7,3,2,5,0xea2c);
+  for(int i=0;i<4;i++){int dy=i==0?1:i==1?4:i==2?8:10;a->line(a->context,7,4+i,3+i%2,dy,0xd9aa);a->line(a->context,8,4+i,12-i%2,dy,0xd9aa);}
+  ClockText c(a);a->text(a->context,63-a->textWidth(a->context,c.hm,2),0,c.hm,0xff9b,2);
+  a->metric(a->context,"pose",frame);return true;
+}
+CW_EXPORT const CwTheme* cw_theme(){static const CwTheme t={1,sizeof(CwTheme),sizeof(Scene),60,start,update,draw,nullptr,nullptr};return &t;}

@@ -1,0 +1,27 @@
+{
+  "id": "lord-of-the-rings",
+  "packageName": "org.clockwise.lord-of-the-rings",
+  "title": "指环王 · 瑞文戴尔",
+  "appVersion": "1.0.0",
+  "description": "瑞文戴尔 · 局部水波、场景动效与随机相位",
+  "author": "Clockwise Theme Studio",
+  "category": "影视风景",
+  "width": 64,
+  "height": 64,
+  "resources": {
+    "background": "background.cwa"
+  },
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "stateBytes": 49152,
+    "graphicsBytes": 8192,
+    "targetFps": 60,
+    "sensors": []
+  },
+  "verification": {
+    "status": "unverified"
+  }
+}

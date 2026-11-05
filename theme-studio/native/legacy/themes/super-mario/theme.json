@@ -1,0 +1,25 @@
+{
+  "id": "super-mario",
+  "packageName": "org.clockwise.super-mario",
+  "title": "Super Mario",
+  "appVersion": "1.0.0",
+  "description": "持续奔跑与独立视差图层；仅在小时或分钟变化时跳起顶对应时间方块",
+  "author": "Clockwise Theme Studio",
+  "category": "游戏",
+  "width": 64,
+  "height": 64,
+  "resources": {},
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "stateBytes": 49152,
+    "graphicsBytes": 8192,
+    "targetFps": 60,
+    "sensors": []
+  },
+  "verification": {
+    "status": "unverified"
+  }
+}

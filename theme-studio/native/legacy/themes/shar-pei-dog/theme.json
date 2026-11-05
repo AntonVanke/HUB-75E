@@ -1,0 +1,27 @@
+{
+  "id": "shar-pei-dog",
+  "packageName": "org.clockwise.shar-pei-dog",
+  "title": "Shar Pei Dog",
+  "appVersion": "1.0.0",
+  "description": "小狗眨眼与轻微起伏",
+  "author": "Clockwise Theme Studio",
+  "category": "角色",
+  "width": 64,
+  "height": 64,
+  "resources": {
+    "background": "background.cwa"
+  },
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "stateBytes": 49152,
+    "graphicsBytes": 8192,
+    "targetFps": 60,
+    "sensors": []
+  },
+  "verification": {
+    "status": "unverified"
+  }
+}

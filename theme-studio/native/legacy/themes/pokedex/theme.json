@@ -1,0 +1,27 @@
+{
+  "id": "pokedex",
+  "packageName": "org.clockwise.pokedex",
+  "title": "Pokedex",
+  "appVersion": "1.0.0",
+  "description": "双屏图鉴、指示灯与交互按钮",
+  "author": "Clockwise Theme Studio",
+  "category": "角色",
+  "width": 64,
+  "height": 64,
+  "resources": {
+    "background": "background.cwa"
+  },
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "stateBytes": 49152,
+    "graphicsBytes": 8192,
+    "targetFps": 60,
+    "sensors": []
+  },
+  "verification": {
+    "status": "unverified"
+  }
+}

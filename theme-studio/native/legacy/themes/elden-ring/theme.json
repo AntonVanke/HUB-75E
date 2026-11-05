@@ -1,0 +1,27 @@
+{
+  "id": "elden-ring",
+  "packageName": "org.clockwise.elden-ring",
+  "title": "艾尔登法环 · 黄金树",
+  "appVersion": "1.0.0",
+  "description": "黄金树 · 局部水波、场景动效与随机相位",
+  "author": "Clockwise Theme Studio",
+  "category": "游戏风景",
+  "width": 64,
+  "height": 64,
+  "resources": {
+    "background": "background.cwa"
+  },
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "stateBytes": 49152,
+    "graphicsBytes": 8192,
+    "targetFps": 60,
+    "sensors": []
+  },
+  "verification": {
+    "status": "unverified"
+  }
+}

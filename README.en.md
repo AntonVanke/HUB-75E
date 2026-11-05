@@ -10,6 +10,8 @@ Ferrofluid CPU preview: rest, shake, magnetic reassembly and changing digits, re
 
 ## Current release: 1.4.2
 
+The other 53 public legacy themes now have ESP32-S3 native CWP3 builds, including game and film landscapes, character animations, climate and gravity themes. The workshop lists 59 applications with chip filtering. [Download the legacy theme bundle](https://antonvanke.github.io/HUB-75E/native/dist/legacy-themes-esp32s3.zip) · [Migration source and build instructions](theme-studio/native/legacy/README.md)
+
 First-time Wi-Fi setup now closes the wizard after obtaining an IP address and starts the theme after the startup countdown.
 
 Fixes portal navigation, adds white-on-black setup QR codes capped at 24/255 brightness, and restores configured brightness afterward. Device requests are serialized; transient reads retry, writes are not replayed, and Wi-Fi/driver changes wait for reconnection.

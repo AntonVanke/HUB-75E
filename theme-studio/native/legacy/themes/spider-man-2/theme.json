@@ -1,0 +1,27 @@
+{
+  "id": "spider-man-2",
+  "packageName": "org.clockwise.spider-man-2",
+  "title": "漫威蜘蛛侠 2 · 纽约守望",
+  "appVersion": "1.0.0",
+  "description": "纽约屋顶 · 十二个独立人体姿势 · 蓄力、起跳、射丝、摆荡、松手、三点落地",
+  "author": "Clockwise Theme Studio",
+  "category": "游戏",
+  "width": 64,
+  "height": 64,
+  "resources": {
+    "background": "background.cwa"
+  },
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "stateBytes": 49152,
+    "graphicsBytes": 8192,
+    "targetFps": 60,
+    "sensors": []
+  },
+  "verification": {
+    "status": "unverified"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "star-wars",
+  "packageName": "org.clockwise.star-wars",
+  "title": "星球大战 · 双日落",
+  "appVersion": "1.0.0",
+  "description": "双日落 · 局部水波、场景动效与随机相位",
+  "author": "Clockwise Theme Studio",
+  "category": "影视风景",
+  "width": 64,
+  "height": 64,
+  "resources": {
+    "background": "background.cwa"
+  },
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "stateBytes": 49152,
+    "graphicsBytes": 8192,
+    "targetFps": 60,
+    "sensors": []
+  },
+  "verification": {
+    "status": "unverified"
+  }
+}

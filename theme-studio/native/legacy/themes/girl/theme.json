@@ -1,0 +1,27 @@
+{
+  "id": "girl",
+  "packageName": "org.clockwise.girl",
+  "title": "Girl",
+  "appVersion": "1.0.0",
+  "description": "C++ 一秒一拍，保留原版动作像素",
+  "author": "Clockwise Theme Studio",
+  "category": "角色",
+  "width": 64,
+  "height": 64,
+  "resources": {
+    "background": "background.cwa"
+  },
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "stateBytes": 49152,
+    "graphicsBytes": 8192,
+    "targetFps": 60,
+    "sensors": []
+  },
+  "verification": {
+    "status": "unverified"
+  }
+}

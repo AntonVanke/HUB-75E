@@ -1,0 +1,27 @@
+{
+  "id": "stardew-valley",
+  "packageName": "org.clockwise.stardew-valley",
+  "title": "星露谷 · 秋日农场",
+  "appVersion": "1.0.0",
+  "description": "秋日农场 · 局部水波、场景动效与随机相位",
+  "author": "Clockwise Theme Studio",
+  "category": "游戏风景",
+  "width": 64,
+  "height": 64,
+  "resources": {
+    "background": "background.cwa"
+  },
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "stateBytes": 49152,
+    "graphicsBytes": 8192,
+    "targetFps": 60,
+    "sensors": []
+  },
+  "verification": {
+    "status": "unverified"
+  }
+}

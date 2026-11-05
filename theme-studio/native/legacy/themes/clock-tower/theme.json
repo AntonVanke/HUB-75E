@@ -1,0 +1,27 @@
+{
+  "id": "clock-tower",
+  "packageName": "org.clockwise.clock-tower",
+  "title": "Clock Tower",
+  "appVersion": "1.0.0",
+  "description": "模拟表盘与连续秒针",
+  "author": "Clockwise Theme Studio",
+  "category": "时钟",
+  "width": 64,
+  "height": 64,
+  "resources": {
+    "background": "background.cwa"
+  },
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "stateBytes": 49152,
+    "graphicsBytes": 8192,
+    "targetFps": 10,
+    "sensors": []
+  },
+  "verification": {
+    "status": "unverified"
+  }
+}

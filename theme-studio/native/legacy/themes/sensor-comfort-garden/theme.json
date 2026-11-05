@@ -1,0 +1,28 @@
+{
+  "id": "sensor-comfort-garden",
+  "packageName": "org.clockwise.sensor-comfort-garden",
+  "title": "舒适度花园",
+  "appVersion": "1.0.0",
+  "description": "温湿度驱动花朵舒展与雨滴，展示装饰性舒适度提示，不作天气预报。",
+  "author": "AntonVanke / HUB-75E",
+  "category": "传感器",
+  "width": 64,
+  "height": 64,
+  "resources": {},
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "stateBytes": 49152,
+    "graphicsBytes": 8192,
+    "targetFps": 30,
+    "sensors": [
+      "temperature",
+      "humidity"
+    ]
+  },
+  "verification": {
+    "status": "unverified"
+  }
+}

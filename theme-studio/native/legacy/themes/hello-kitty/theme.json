@@ -1,0 +1,27 @@
+{
+  "id": "hello-kitty",
+  "packageName": "org.clockwise.hello-kitty",
+  "title": "Hello Kitty",
+  "appVersion": "1.0.0",
+  "description": "猫咪眨眼与粉色日期",
+  "author": "Clockwise Theme Studio",
+  "category": "角色",
+  "width": 64,
+  "height": 64,
+  "resources": {
+    "background": "background.cwa"
+  },
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "stateBytes": 49152,
+    "graphicsBytes": 8192,
+    "targetFps": 60,
+    "sensors": []
+  },
+  "verification": {
+    "status": "unverified"
+  }
+}

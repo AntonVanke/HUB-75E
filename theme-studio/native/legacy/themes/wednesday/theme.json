@@ -1,0 +1,27 @@
+{
+  "id": "wednesday",
+  "packageName": "org.clockwise.wednesday",
+  "title": "星期三 · 永封学院",
+  "appVersion": "1.0.0",
+  "description": "永封学院 · 局部水波、场景动效与随机相位",
+  "author": "Clockwise Theme Studio",
+  "category": "影视风景",
+  "width": 64,
+  "height": 64,
+  "resources": {
+    "background": "background.cwa"
+  },
+  "requirements": {
+    "chips": [
+      "esp32s3"
+    ],
+    "psramBytes": 0,
+    "stateBytes": 49152,
+    "graphicsBytes": 8192,
+    "targetFps": 60,
+    "sensors": []
+  },
+  "verification": {
+    "status": "unverified"
+  }
+}
