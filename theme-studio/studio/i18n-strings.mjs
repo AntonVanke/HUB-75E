@@ -1,4 +1,46 @@
 const pairs = `
+实时屏幕|Live screen
+当前主题画面|Current theme frame
+读取设备正在绘制的 64 × 64 画面，不在电脑重新模拟。|Read the actual 64 × 64 theme framebuffer from the device. No PC simulation.
+开始查看|Start preview
+停止查看|Stop preview
+默认关闭；安装期间和页面隐藏时自动暂停预览。|Off by default. Preview pauses during installation and while the page is hidden.
+预览速度由 USB / 网络传输决定，与屏幕的主题帧率不同；不反映实物接线、扫描闪烁和亮度。|Preview speed depends on USB / network bandwidth, not the theme FPS. Wiring, scan flicker and physical brightness are not captured.
+请连接设备并更新至 1.5.0 或更新固件。|Connect a device running firmware 1.5.0 or later.
+实时画面|Live frame
+预览已停止|Preview stopped
+查看设备画面|View device screen
+刷新已安装应用|Refresh installed apps
+运行|Run
+电脑直接下载主题包，通过 USB 串口传给设备；无需设备访问 GitHub。|Your computer downloads the package and sends it over USB serial. The device does not need GitHub access.
+桌面 Chrome / Edge · 连接后自动识别芯片并显示安装、运行与卸载按钮。|Desktop Chrome / Edge. Connect to identify the chip and enable Install, Run and Uninstall.
+芯片与内存筛选来自应用包的需求声明。实际帧率以设备运行结果为准；安装仅保存应用，不切换当前主题。|Chip and memory filters use package requirements. FPS depends on the device; installation keeps the current theme running.
+硬件测试|Hardware diagnostics
+实时检查 IMU、温湿度、光敏电阻和物理按键；蜂鸣器与屏幕效果需要实际观察。|Read IMU, temperature, humidity, light sensor and physical buttons. Confirm sound and display output in person.
+开始实时检测|Start live readings
+停止检测|Stop readings
+IMU 自检|IMU self-test
+蜂鸣器试鸣 0.5 秒|Beep for 0.5 seconds
+屏幕测试 30 秒|Screen test for 30 seconds
+恢复主题|Restore theme
+尚未开始。检测开启时每秒读取两次，离开维护页自动暂停。|Not started. Read up to twice per second; pause when the panel is hidden.
+转动设备观察角速度和加速度；遮挡光敏电阻观察 ADC 变化；依次按按钮观察按下状态与计数。电气数据正常不等于已确认声音、颜色或亮度正确。|Rotate the device to inspect motion, cover the light sensor, and press each button to inspect its counter. Verify sound, colors and brightness on the actual hardware.
+请等待当前操作完成|Wait for the current operation to finish
+正在读取真实传感器和物理按键|Reading physical sensors and buttons
+检测已停止|Diagnostics stopped
+温度|Temperature
+湿度|Humidity
+加速度 XYZ|Acceleration XYZ
+角速度 XYZ|Angular velocity XYZ
+采样 / 错误|Samples / errors
+亮度传感器|Light sensor
+蜂鸣器|Buzzer
+无有效读数|No valid readings
+无有效数据|No valid data
+当前板型未配置|Not fitted on this board
+未检测到|Not detected
+安装期间暂停预览，屏幕主题继续运行|Preview pauses during installation; the theme keeps running
+应用已安装，当前主题继续运行；点击运行以启用新版本|App installed. Current theme keeps running; click Run to activate the new version
 连接已恢复，设备状态已更新。|Connection restored. Device status is up to date.
 设备地址已切换，请重新操作|The device address changed. Please try again.
 请直接打开设备的 HTTP 后台；HTTPS 工坊请使用 USB 串口连接|Open the device HTTP interface directly; use USB serial in the HTTPS workshop.

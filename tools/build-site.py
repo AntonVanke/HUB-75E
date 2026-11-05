@@ -67,12 +67,19 @@ def main():
         app["requirements"].setdefault("psramBytes", 0)
         shutil.copyfile(source, output / app["path"])
         assert hashlib.sha256(source.read_bytes()).hexdigest() == app["sha256"]
+    for chip in ("esp32", "esp32s3"):
+        apps = [app for app in catalog["apps"] if chip in app["requirements"]["chips"]]
+        bundle = output / "native/dist" / ("all-themes-" + chip + ".zip")
+        with zipfile.ZipFile(bundle, "w", zipfile.ZIP_DEFLATED) as archive:
+            for app in apps:
+                archive.write(ROOT / "theme-studio/native/dist" / app["file"], app["file"])
+            archive.writestr("catalog.json", json.dumps({"format":3,"apps":[{**a,"path":a["file"]} for a in apps]}, ensure_ascii=False, indent=2))
     encoded = json.dumps(catalog, ensure_ascii=False, indent=2) + "\n"
     (output / "theme-catalog.json").write_text(encoded, encoding="utf-8")
     (appdir / "catalog.json").write_text(encoded, encoding="utf-8")
     indexPath=output / "releases.json"
     index=json.loads(indexPath.read_text(encoding="utf-8")) if indexPath.exists() else {"schema":1,"releases":[]}
-    release={"version":version,"runtimeApi":5,"nativeAbi":1,"notes":"首次配网取得 IP 后自动进入主题，保留手动设置向导。", "catalog":"applications/"+version+"/catalog.json","targets":{}}
+    release={"version":version,"runtimeApi":5,"nativeAbi":1,"notes":"USB 主题页直连、实时屏幕与硬件检测；后台安装保持当前主题，响应式设备页面与重力阴影。", "catalog":"applications/"+version+"/catalog.json","targets":{}}
     for chip in ("esp32", "esp32s3"):
         name=chip+"-v"+version
         source=ROOT / "releases" / name

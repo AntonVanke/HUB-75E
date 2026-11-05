@@ -8,7 +8,7 @@
   <title>Clockwise · HUB75 像素时钟</title>
   <link rel="stylesheet" href="style.css">
   <script type="module" src="vendor/esp-web-tools-10.1.0/install-button.js"></script>
-  <script type="module" src="app.mjs?v=1.4.2-offline"></script>
+  <script type="module" src="app.mjs?v=1.5.0-offline"></script>
 </head>
 <body>
   <header class="hero">
@@ -34,15 +34,15 @@
           <fieldset class="board-picker"><legend class="sr-only">硬件型号</legend>
             <label class="board-option"><input type="radio" name="board" value="esp32" checked><span><strong>ESP32</strong><small>4 MB Flash · 无 PSRAM</small></span></label>
             <label class="board-option"><input type="radio" name="board" value="esp32s3"><span><strong>ESP32-S3</strong><small>至少 8 MB Flash · 8 MB OPI PSRAM</small></span></label>
-          </fieldset><label>发布版本<select id="release-version"><option>1.4.2</option></select></label><label>烧录方式<select id="flash-mode"><option value="update">更新固件，保留设置和应用</option><option value="install">全新安装，重置设置</option></select></label>
+          </fieldset><label>发布版本<select id="release-version"><option>1.5.0</option></select></label><label>烧录方式<select id="flash-mode"><option value="update">更新固件，保留设置和应用</option><option value="install">全新安装，重置设置</option></select></label>
           <p id="board-note" class="note">适用于本项目经典 ESP32 接线与 4 MB Flash 分区。</p>
           <div class="install-row">
-            <esp-web-install-button id="installer" manifest="firmware/esp32-v1.4.2/update-manifest.json">
+            <esp-web-install-button id="installer" manifest="firmware/esp32-v1.5.0/update-manifest.json">
               <button id="install-button" class="primary" slot="activate" type="button">连接并烧录 ESP32</button>
               <span slot="unsupported" class="note">此浏览器不支持在线烧录，请下载离线包。</span>
               <span slot="not-allowed" class="note">请通过 HTTPS 或 localhost 打开此页。</span>
             </esp-web-install-button>
-            <a id="release-link" class="button secondary" href="firmware/esp32-v1.4.2.zip" target="_blank" rel="noopener noreferrer">下载离线包 ↗</a>
+            <a id="release-link" class="button secondary" href="firmware/esp32-v1.5.0.zip" target="_blank" rel="noopener noreferrer">下载离线包 ↗</a>
           </div>
           <p id="flash-support" class="small" role="status"></p>
         </article>
@@ -52,19 +52,22 @@
     </section>
 
     <section id="panel-themes" role="tabpanel" aria-labelledby="tab-themes" hidden>
-      <div class="section-heading"><div><p class="eyebrow">THEME LIBRARY</p><h2>小屏幕，大世界 <span id="theme-count" class="count">—</span></h2><p>下载 CWP 应用包，在设备自己的网页后台安装；C/C++ 源码和 Codex 提示词在主题工坊提供。</p></div><a class="button secondary" href="studio/index.html">进入主题工坊 ↗</a></div>
+      <div class="section-heading"><div><p class="eyebrow">THEME LIBRARY</p><h2>小屏幕，大世界 <span id="theme-count" class="count">—</span></h2><p>电脑直接下载主题包，通过 USB 串口传给设备；无需设备访问 GitHub。</p></div><a class="button secondary" href="studio/index.html">进入主题工坊 ↗</a></div>
+      <div class="card theme-connection"><div class="connection-actions"><button id="theme-connect" type="button" class="primary">连接 USB 串口</button><button id="theme-disconnect" type="button" class="secondary" disabled>断开</button><button id="theme-read-apps" type="button" class="secondary" data-connected disabled>刷新已安装应用</button><span id="theme-connection-state" class="tag">未连接</span></div><p id="theme-serial-note" class="small">桌面 Chrome / Edge · 连接后自动识别芯片并显示安装、运行与卸载按钮。</p><p id="theme-message" role="status"></p></div>
+      <details class="card"><summary>查看设备画面</summary><div id="theme-screen-preview"></div></details>
       <div class="card theme-toolbar"><label class="search"><span class="sr-only">搜索主题</span><input id="theme-search" type="search" placeholder="搜索名称、描述或分类…" autocomplete="off"></label><label>芯片 <select id="theme-chip"><option value="all">全部</option><option value="esp32">ESP32</option><option value="esp32s3">ESP32-S3</option></select></label><label>PSRAM <select id="theme-memory"><option value="all">全部需求</option><option value="none">无需 PSRAM</option><option value="required">需要 PSRAM</option></select></label></div>
       <label>对应固件版本<select id="app-release"><option value="">最新发布</option></select></label><p id="theme-result" class="small" role="status">正在读取主题目录…</p>
       <div id="theme-install-state" class="notice" hidden><p id="theme-install-message" role="status"></p><progress id="theme-install-progress" max="100" value="0"></progress><button id="cancel-install" type="button" class="text-button">取消安装</button></div>
       <div id="theme-list" class="theme-list" aria-live="polite"></div>
-      <div class="library-note"><span>◇</span><p>芯片与内存筛选来自应用包的需求声明。实际帧率以设备运行结果为准；应用安装与空间管理请使用设备网页后台。</p><a href="studio/theme-guide.html">主题手册 ↗</a></div>
+      <div class="quick-links"><a href="native/dist/all-themes-esp32s3.zip" download>ESP32-S3 · 全部主题 ZIP ↓</a><a href="native/dist/all-themes-esp32.zip" download>ESP32 · 全部主题 ZIP ↓</a></div>
+      <div class="library-note"><span>◇</span><p>芯片与内存筛选来自应用包的需求声明。实际帧率以设备运行结果为准；安装仅保存应用，不切换当前主题。</p><a href="studio/theme-guide.html">主题手册 ↗</a></div>
     </section>
 
     <section id="panel-config" role="tabpanel" aria-labelledby="tab-config" hidden>
       <div id="serial-setup" class="card" hidden><h3>完成首次设置</h3><p>先连接 Wi-Fi，再保存屏幕驱动，最后完成设置以自动初始化空白应用存储；也可打开设备后台使用分步引导。</p><div class="row"><button id="finish-setup" class="button" type="button">完成设置并初始化存储</button><button id="skip-setup" class="button secondary" type="button">跳过引导，手动配置</button></div></div>
       <div class="section-heading"><div><p class="eyebrow">DEVICE SETTINGS</p><h2>把时钟设为你喜欢的样子</h2><p>USB 串口直连设备，115200 波特率。只有你点击操作后才会连接或写入。</p></div><span id="connection-state" class="tag">未连接</span></div>
       <div class="card connection-card"><div class="connection-actions"><button id="connect" class="primary" type="button">连接 USB 串口</button><button id="disconnect" class="secondary" type="button" disabled>断开</button><button id="read-status" class="secondary" type="button" data-connected disabled>读取状态</button><button id="read-apps" class="secondary" type="button" data-connected disabled>读取应用</button><a id="device-link" class="button secondary" target="_blank" rel="noopener noreferrer" hidden>打开设备后台 ↗</a></div><p id="serial-support" class="small"></p><p id="config-message" class="notice" role="status">烧录完成后在此设置 Wi-Fi 和屏幕驱动；配置不会自动写入。</p><dl class="device-stats"><div><dt>芯片</dt><dd id="status-chip">—</dd></div><div><dt>固件</dt><dd id="status-version">—</dd></div><div><dt>IP</dt><dd id="status-ip">—</dd></div><div><dt>亮度</dt><dd id="status-brightness">—</dd></div><div><dt>默认主题</dt><dd id="status-theme">—</dd></div><div><dt>时区</dt><dd id="status-timezone">—</dd></div></dl></div>
-      <div class="config-grid">
+      <div class="config-grid"><article id="usb-screen-preview" class="card"></article><article id="usb-hardware-tests" class="card"></article>
         <article class="card"><h3>应用快捷管理</h3><p class="note">连接 USB 并读取应用后，可在「主题应用」中一键安装公开主题；已安装应用可在这里运行或卸载。USB 一键安装需要 v0.9.8 或更新固件。</p><label>已安装应用<select id="managed-app"><option value="">请先读取应用</option></select></label><div class="connection-actions"><button id="manage-run" type="button" class="secondary" data-connected disabled>运行选中应用</button><button id="manage-uninstall" type="button" class="secondary" data-connected disabled>卸载选中应用</button><button id="cancel-install-config" type="button" class="text-button" hidden>取消安装</button></div></article>
         <article class="card"><h3>发现局域网时钟</h3><p class="note">由已连接 USB 的时钟在自己的 Wi-Fi 子网内发现本项目设备，再通过串口返回结果；此网页不会扫描局域网 HTTP 地址。需 v0.9.8 或更新固件。</p><button id="discover-devices" type="button" class="secondary" data-connected disabled>发现同网设备（5 秒）</button><p id="discovery-state" class="small" role="status">尚未开始发现。设备需先连接局域网 Wi-Fi。</p><div id="discovered-devices"></div><small>不同子网、访客隔离或阻止广播的网络可能无法发现设备；也可从串口状态获得 IP 后直接打开设备后台。</small></article>
         <article class="card"><div class="card-heading"><h3>显示与播放</h3><span class="small">非密码设置</span></div><form id="settings-form"><div class="form-grid"><label>亮度 <span class="field-hint">1–255</span><input id="brightness" type="number" min="1" max="255" value="80" required></label><label>时区 <span class="field-hint">POSIX</span><input id="timezone" value="CST-8" maxlength="63" required spellcheck="false"></label><label class="full">默认主题<select id="device-theme"><option value="-1">内置基础时钟</option></select></label><label class="full">轮换间隔（分钟）<input id="rotation" type="number" min="0" max="1440" value="0" required><small>0 为固定主题；轮换主题池需在设备后台设置。</small></label></div><button class="primary" type="submit" data-connected disabled>保存显示设置</button></form><div class="file-actions"><button id="export-settings" type="button" class="text-button">↓ 导出配置</button><button id="import-settings" type="button" class="text-button">↑ 导入草稿</button><input id="settings-file" type="file" accept="application/json,.json" hidden><span>导入后需手动保存</span></div></article>

@@ -1,3 +1,5 @@
+import {screenPreview} from './studio/screen-preview.mjs';
+import {diagnosticControls} from './studio/diagnostics.mjs';
 import {groupThemes,selectVariant} from './theme-groups.mjs';
 import { language, setLanguage, t, metadata, translatePage, translateText, translations } from './i18n.mjs';
 const $ = (id) => document.getElementById(id);
@@ -28,6 +30,8 @@ let scanning=false;
 const serialWaiters = new Set();
 
 function message(text, error = false) {
+  $('theme-message').textContent = translateText(text);
+  $('theme-message').classList.toggle('error',error);
   $('config-message').textContent = translateText(text);
   $('config-message').classList.toggle('error', error);
 }
@@ -65,6 +69,10 @@ function updateConnection() {
   $('connection-state').textContent = closing ? t('正在断开…') : connecting ? t('正在连接…') : connected ? t('USB 已连接') : t('未连接');
   $('connect').disabled = !supported || connected || connecting || closing;
   $('disconnect').disabled = !connected || sending;
+  $('theme-connect').disabled = $('connect').disabled;
+  $('theme-disconnect').disabled = $('disconnect').disabled;
+  $('theme-connection-state').textContent = $('connection-state').textContent;
+  $('theme-serial-note').textContent = t(connected&&!device?.features?.backgroundInstall?'当前固件安装会暂停主题；更新至 1.5.0 可保持当前主题运行。':'桌面 Chrome / Edge · 连接后自动识别芯片并显示安装、运行与卸载按钮。');
   document.querySelectorAll('[data-connected]').forEach((button) => { button.disabled = !connected || sending || appInstalling || scanning; });
   $('panel-fields').disabled = !connected || !panelAvailable() || sending || appInstalling;
   for(const option of $('panel-driver').options)option.disabled=!!device&&!/S3/i.test(device.chip)&&['7','9'].includes(option.value);
@@ -250,6 +258,8 @@ function renderThemes() {
       action.dataset.incompatible = String(Boolean(reason));
       action.disabled = !port || appInstalling || Boolean(reason) || !device?.features?.serialAppInstall;
       action.addEventListener('click', () => installed ? manageApplication(installed.packageName, true) : startThemeInstall(app));
+      if(installed){const run=element('button','button primary',t('运行'));run.dataset.themeAction='run';run.addEventListener('click',()=>manageApplication(installed.packageName));run.disabled=!port||appInstalling;downloads.append(run);}
+      if(installed&&installed.appVersion!==app.appVersion){const upgrade=element('button','button secondary',t('更新应用'));upgrade.dataset.themeAction=app.packageName;upgrade.dataset.incompatible=String(Boolean(themeCompatibility(app)));upgrade.disabled=!port||appInstalling||Boolean(themeCompatibility(app));upgrade.addEventListener('click',()=>startThemeInstall(app));downloads.append(upgrade);}
       downloads.append(action);
       if (reason) card.append(element('p', 'theme-device-note', reason));
     }
@@ -432,7 +442,11 @@ async function send(command, quiet = false) {
   }
 }
 
-function requestSerial(command, matches, timeout = 15000) {
+let serialQueue=Promise.resolve(),serialJobs=0;
+function requestSerial(command,matches,timeout=15000){
+ serialJobs++;const job=serialQueue.then(()=>requestSerialNow(command,matches,timeout));serialQueue=job.catch(()=>{});return job.finally(()=>serialJobs--);
+}
+function requestSerialNow(command, matches, timeout = 15000) {
   return new Promise((resolve, reject) => {
     let timer;
     const finish = (callback, value) => { clearTimeout(timer); serialWaiters.delete(waiter); callback(value); };
@@ -606,8 +620,8 @@ async function connectSerial(preselected) {
     await requestSerial({cmd:'status'},d=>Boolean(d.chip&&d.version),15000);
     await requestSerial({cmd:'apps'},d=>Array.isArray(d.apps));
     message(t('USB 已连接，可搜索 Wi-Fi 并配置屏幕驱动。'));
-    if (!$('panel-config').hidden) updateConnection();
-    else await disconnect();
+    updateConnection();
+    renderThemes();
   } catch (error) {
     if (error.name === 'NotFoundError') message(t('未选择串口。'));
     else throw error;
@@ -616,12 +630,25 @@ async function connectSerial(preselected) {
     updateConnection();
   }
 }
-$('connect').addEventListener('click',()=>action(()=>connectSerial()));
+for(const id of ['connect','theme-connect'])$(id).addEventListener('click',()=>action(()=>connectSerial()));
+$('theme-disconnect').addEventListener('click',()=>action(disconnect));
+$('theme-read-apps').addEventListener('click',()=>action(()=>requestSerial({cmd:'apps'},d=>Array.isArray(d.apps))));
 window.addEventListener('hub75-configure',e=>action(async()=>{await selectTab('config');await connectSerial(e.detail.port);}));
 $('disconnect').addEventListener('click', () => action(disconnect));
 $('read-status').addEventListener('click', () => action(() => send({ cmd: 'status' })));
 $('read-apps').addEventListener('click', () => action(() => send({ cmd: 'apps' })));
 $('clear-log').addEventListener('click', () => $('serial-log').replaceChildren());
+
+const serialBusy=()=>sending||appInstalling||scanning||serialJobs>0||connecting||closing;
+for(const id of ['theme-screen-preview','usb-screen-preview'])screenPreview($(id),{readFrame:()=>requestSerial({cmd:'frame'},d=>d.frame===true,12000),ready:()=>!!port&&!!device?.features?.screenPreview,busy:serialBusy,message,translate:t});
+diagnosticControls($('usb-hardware-tests'),{device:()=>device,busy:serialBusy,message,translate:t,request:async(path,options={})=>{
+ if(!port)throw Error(t('请先连接 USB 串口，并等待当前操作完成。'));
+ if(!device?.features?.serialDiagnostics)throw Error(t('请连接设备并更新至 1.5.0 或更新固件。'));
+ if(path==='diagnostics')return requestSerial({cmd:'diagnostics',...(options.method==='POST'?{test:options.body.get('test')}:{})},d=>options.method==='POST'?typeof d.ok==='boolean':!!d.hardware&&!!d.sensors);
+ if(path==='panel/test')return requestSerial({cmd:'panel.test',action:options.body.get('action')},d=>typeof d.ok==='boolean');
+ throw Error('Unsupported USB operation');
+}});
+
 
 function settingsDraft() {
   const brightness = Number($('brightness').value);

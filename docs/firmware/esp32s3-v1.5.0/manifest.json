@@ -1,0 +1,17 @@
+{
+  "name": "HUB-75E ESP32-S3",
+  "version": "1.5.0",
+  "new_install_improv_wait_time": 0,
+  "hub75_config": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32-S3",
+      "parts": [
+        {
+          "path": "merged.bin",
+          "offset": 0
+        }
+      ]
+    }
+  ]
+}

@@ -306,6 +306,7 @@ static void drawDriverGuide(){
   for(int i=0;i<3;i++)g->fillRect(2+i*20,60,19,2,panelColor(i==0?0xf800:i==1?0x07e0:0x001f));
   showPanel();
 }
+static void publishInputs();
 static void renderTask(void*){
   Metrics metrics;int current=-2;uint32_t generation=0;int64_t previous=esp_timer_get_time()/1000,reportAt=esp_timer_get_time(),nextFrameAt=0;bool healthy=false;
   bool testing=false;
@@ -458,7 +459,20 @@ void setup(){
   if(!snapshotQueue||!metricsQueue||!renderGate){Serial.println("Queue allocation failed");return;}
   service.renderLock=[](bool lock){if(lock)return xSemaphoreTake(renderGate,pdMS_TO_TICKS(2000))==pdTRUE;xSemaphoreGive(renderGate);return true;};
   service.stopScript=[](){runtime.stop();host.releasePackage();};
-  service.framePixels=[](){return runtime.pixels();};
+  service.ioTick=publishInputs;
+  service.copyFrame=[](uint16_t* out,uint8_t& rotation){
+    if(!renderHandle||service.panelTrial.active||service.needsSetup()||diagnosticPanel()||(service.panelTestUntil&&int32_t(service.panelTestUntil-millis())>0))return false;
+    if(xSemaphoreTake(renderGate,pdMS_TO_TICKS(40))!=pdTRUE)return false;
+    memcpy(out,runtime.pixels(),8192);rotation=snapshot.rotation;xSemaphoreGive(renderGate);return true;
+  };
+  service.validateScript=[](const char* path,String& error){
+    File file=LittleFS.open(path,"r");ThemePackage package;
+    if(!package.read(file,limits)||package.version!=3){error="无效的原生应用包";return false;}
+    struct Input{File* file;size_t offset;};Input input{&file,package.sourceOffset};
+    auto reader=[](void* p,size_t at,char* out,size_t n)->size_t{auto& i=*(Input*)p;if(!i.file->seek(i.offset+at))return 0;size_t read=i.file->read((uint8_t*)out,n);if(service.ioTick)service.ioTick();return read;};
+    const char* result=NativeRuntime::validate(reader,&input,package.sourceSize);
+    if(result){error=result;return false;}return true;
+  };
   service.applyScript=[](const char* path,String& error){
     if(!panelInitialized||diagnosticPanel()){error="当前为屏幕驱动自检模式，请切回普通驱动再运行主题";return false;}
     if(loadScript(path))return true;
@@ -474,22 +488,12 @@ void setup(){
   service.lastError=panelInitError;
   Serial.printf("64x64, 240 MHz, render core 1, service core 0; %d catalog apps. Serial: {\"cmd\":\"help\"}\n",THEME_COUNT);
 }
-void loop(){
+static void publishInputs(){
+  static uint32_t last=0;const uint32_t now=millis();if(now-last<4)return;last=now;
 #ifdef HUB75_S3_BOARD
-  sensors.poll();if(diagnostics.poll())service.ambient.sample(diagnostics.lightRaw(),diagnostics.lightMillivolts(),millis());
+  sensors.poll();if(diagnostics.poll())service.ambient.sample(diagnostics.lightRaw(),diagnostics.lightMillivolts(),now);
 #endif
-  if(!snapshotQueue||!metricsQueue){delay(100);return;}
-  service.poll();
-  if(service.panelTrial.active||service.needsSetup()){
-    if(panelInitialized){
-      if(millis()-bootDrawAt>=250){bootDrawAt=millis();drawDriverGuide();}
-#ifdef HUB75_S3_BOARD
-      if(diagnosticPanel())gpioProbe.scan();
-      else if(selectedPanelDriver==9)protomatterProbe.takeScanCount();
-#endif
-    }
-    delay(2);return;
-  }
+  if(!snapshotQueue||service.panelTrial.active||service.needsSetup())return;
   static Snapshot next;next.a=service.buttonAUntil&&int32_t(service.buttonAUntil-millis())>0;next.b=service.buttonBUntil&&int32_t(service.buttonBUntil-millis())>0;next.theme=service.theme;next.generation=service.generation;next.brightness=service.ambient.tick(service.brightness,millis());
   next.panelTest=service.panelTestUntil&&int32_t(service.panelTestUntil-millis())>0;
 #ifdef HUB75_S3_BOARD
@@ -507,6 +511,22 @@ void loop(){
   next.clock.day=t.tm_mday;next.clock.month=t.tm_mon+1;next.clock.year=t.tm_year+1900;next.clock.weekday=t.tm_wday;
   next.clock.millisecond=tv.tv_usec/1000;
   xQueueOverwrite(snapshotQueue,&next);
+}
+void loop(){
+  publishInputs();
+  if(!snapshotQueue||!metricsQueue){delay(100);return;}
+  service.poll();
+  if(service.panelTrial.active||service.needsSetup()){
+    if(panelInitialized){
+      if(millis()-bootDrawAt>=250){bootDrawAt=millis();drawDriverGuide();}
+#ifdef HUB75_S3_BOARD
+      if(diagnosticPanel())gpioProbe.scan();
+      else if(selectedPanelDriver==9)protomatterProbe.takeScanCount();
+#endif
+    }
+    delay(2);return;
+  }
+  publishInputs();
   if(!renderHandle){
     if(panelInitialized&&!diagnosticPanel()&&showBoot()){delay(10);return;}
     if(xTaskCreatePinnedToCore(renderTask,"theme-render",12288,nullptr,3,&renderHandle,1)!=pdPASS){Serial.println("Render task allocation failed");delay(100);return;}

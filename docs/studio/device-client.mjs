@@ -18,6 +18,7 @@ export function createDeviceClient(getBase){
     let response,text;
     try{
      response=await fetch(origin+'/api/'+path,{...init,credentials:'omit',cache:'no-store',signal:init.signal||AbortSignal.timeout(12000)});
+     if(responseType==='arrayBuffer'&&response.ok)return await response.arrayBuffer();
      text=await response.text();
     }catch(error){
      if(init.signal?.aborted)throw error;

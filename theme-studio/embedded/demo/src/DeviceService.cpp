@@ -58,7 +58,7 @@ bool DeviceService::saveOrientation(int degrees,bool automatic,int gravityDegree
 }
 String DeviceService::discoveryIdentity()const{
   char id[17];snprintf(id,sizeof(id),"%012llx",ESP.getEfuseMac()&0xffffffffffffULL);
-  return "{\"product\":\"clockwise-hub75\",\"id\":"+quote(id)+",\"chip\":"+quote(ESP.getChipModel())+",\"version\":\"1.4.2\"}";
+  return "{\"product\":\"clockwise-hub75\",\"id\":"+quote(id)+",\"chip\":"+quote(ESP.getChipModel())+",\"version\":\"1.5.0\"}";
 }
 bool DeviceService::startDiscovery(String& error){
   if(WiFi.status()!=WL_CONNECTED){error="请先让设备连接局域网 Wi-Fi";return false;}
@@ -113,13 +113,36 @@ void DeviceService::access(){
   web_.sendHeader("Cache-Control","no-store");
 }
 void DeviceService::reply(int code,const String& body){access();web_.send(code,"application/json; charset=utf-8",body);}
+void DeviceService::sendFrame(bool serial){
+  auto fail=[&](const char* error){String body="{\"ok\":false,\"error\":"+quote(error)+"}";if(serial){Serial.print("CWJSON:");Serial.println(body);}else reply(503,body);};
+  if(ota_||scriptLocked_){fail("安装期间暂停预览，屏幕主题继续运行");return;}
+  auto* pixels=(uint16_t*)heap_caps_malloc(8192,MALLOC_CAP_SPIRAM|MALLOC_CAP_8BIT);
+  if(!pixels)pixels=(uint16_t*)heap_caps_malloc(8192,MALLOC_CAP_8BIT);
+  if(!pixels){fail("预览缓冲内存不足");return;}
+  uint8_t rotation=0;
+  if(!copyFrame||!copyFrame(pixels,rotation)){free(pixels);fail("画面暂不可用，设置或屏幕自检结束后再试");return;}
+  if(!serial){
+    access();web_.sendHeader("X-Screen-Rotation",String(rotation*90));web_.setContentLength(8192);web_.send(200,"application/octet-stream","");
+    for(int at=0;at<8192;at+=512){if(web_.client().write((uint8_t*)pixels+at,512)!=512){web_.client().stop();break;}if(ioTick)ioTick();}
+    free(pixels);return;
+  }
+  size_t packed=0;for(int i=0;i<4096;){int n=1;while(n<255&&i+n<4096&&pixels[i+n]==pixels[i])n++;i+=n;packed+=3;}
+  uint8_t* rle=packed<8192?(uint8_t*)malloc(packed):nullptr;
+  if(rle){size_t at=0;for(int i=0;i<4096;){int n=1;while(n<255&&i+n<4096&&pixels[i+n]==pixels[i])n++;rle[at++]=n;rle[at++]=pixels[i]&255;rle[at++]=pixels[i]>>8;i+=n;}}
+  const uint8_t* data=rle?rle:(uint8_t*)pixels;const size_t size=rle?packed:8192;
+  Serial.print("CWJSON:{\"frame\":true,\"width\":64,\"height\":64,\"rotation\":");Serial.print(rotation*90);
+  Serial.print(",\"encoding\":\"");Serial.print(rle?"rle565":"rgb565le");Serial.print("\",\"data\":\"");
+  unsigned char encoded[513];
+  for(size_t at=0;at<size;at+=384){size_t n=0;mbedtls_base64_encode(encoded,sizeof(encoded),&n,data+at,std::min(size-at,size_t(384)));Serial.write(encoded,n);if(ioTick)ioTick();delay(1);}
+  Serial.println("\"}");free(rle);free(pixels);
+}
 void DeviceService::sendFlash(const char* type,const char* data,size_t size){
   web_.setContentLength(size);web_.send(200,type,"");
   size_t at=0;
   while(at<size&&web_.client().connected()){
     const size_t n=std::min(size-at,size_t(512));
     const size_t sent=web_.client().write((const uint8_t*)data+at,n);
-    if(!sent)break;at+=sent;delay(1);
+    if(!sent)break;at+=sent;if(ioTick)ioTick();delay(1);
   }
   if(at!=size)web_.client().stop();
 }
@@ -244,14 +267,7 @@ void DeviceService::begin(int count,const char* titlesJson){
     if(web_.hasArg("gravityRotation")&&!integer(web_.arg("gravityRotation"),gravityDegrees)){reply(400,"{\"error\":\"重力安装角度须为整数\"}");return;}
     if(!saveOrientation(degrees,automatic,gravityDegrees,web_.arg("calibration"),error)){reply(400,"{\"error\":"+quote(error)+"}");return;}reply(200,"{\"message\":\"方向设置已保存\"}");
   });
-  web_.on("/api/frame",HTTP_GET,[this](){
-    if(!renderLock(true)){reply(503,"{\"error\":\"渲染任务忙\"}");return;}
-    if(!framePixels()){renderLock(false);reply(503,"{\"error\":\"当前驱动没有主题帧缓冲\"}");return;}
-    access();web_.setContentLength(8192);web_.send(200,"application/octet-stream","");
-    const auto* pixels=reinterpret_cast<const uint8_t*>(framePixels());
-    for(int offset=0;offset<8192;offset+=512)if(web_.client().write(pixels+offset,512)!=512){web_.client().stop();break;}
-    renderLock(false);
-  });
+  web_.on("/api/frame",HTTP_GET,[this](){sendFrame(false);});
   web_.on("/api/networks",HTTP_GET,[this](){int code;String result=networksJson(code);reply(code,result);});
   web_.on("/api/wifi",HTTP_POST,[this](){
     String error;if(!connectWifi(web_.arg("ssid"),web_.arg("password"),error)){reply(400,"{\"error\":"+quote(error)+"}");return;}
@@ -311,7 +327,7 @@ void DeviceService::begin(int count,const char* titlesJson){
   });
   web_.begin();
   Serial.printf("Provision AP: %s  Password: %s\n",apName_.c_str(),apPassword_.c_str());
-  Serial.println("CWJSON:{\"ok\":true,\"version\":\"1.4.2\",\"message\":\"串口设置已就绪，发送 {\\\"cmd\\\":\\\"help\\\"} 查看命令\"}");
+  Serial.println("CWJSON:{\"ok\":true,\"version\":\"1.5.0\",\"message\":\"串口设置已就绪，发送 {\\\"cmd\\\":\\\"help\\\"} 查看命令\"}");
 }
 void DeviceService::uploadScript(){
   auto& u=web_.upload();
@@ -328,8 +344,7 @@ void DeviceService::uploadScript(){
     if(ota_)uploadError_="固件更新中";
     else if(!fs_)uploadError_="请先初始化脚本存储";
     if(uploadError_.isEmpty()){
-      if(!renderLock(true))uploadError_="渲染任务忙";
-      else {scriptLocked_=true;stopScript();scriptFile_=LittleFS.open("/apps/install.tmp","w");if(!scriptFile_)uploadError_="无法创建应用文件";}
+      scriptLocked_=true;scriptFile_=LittleFS.open("/apps/install.tmp","w");if(!scriptFile_)uploadError_="无法创建应用文件";
     }
   }
   else if(u.status==UPLOAD_FILE_WRITE&&uploadError_.isEmpty()){
@@ -337,12 +352,13 @@ void DeviceService::uploadScript(){
     else if(LittleFS.totalBytes()-LittleFS.usedBytes()<u.currentSize+8192)uploadError_="存储空间不足；更新需同时保留旧应用和新包，请先卸载其他应用";
     else if(scriptFile_.write(u.buf,u.currentSize)!=u.currentSize)uploadError_="应用写入失败，存储空间可能不足";
     else scriptBytes_+=u.currentSize;
+    if(ioTick)ioTick();
   }else if(u.status==UPLOAD_FILE_END)scriptFile_.close();
   else if(u.status==UPLOAD_FILE_ABORTED){uploadError_="上传中断";scriptFile_.close();LittleFS.remove("/apps/install.tmp");finishScript();}
 }
 void DeviceService::finishScript(){
   candidateChecked_=false;candidateTargetFps_=60;
-  if(scriptLocked_){generation++;renderLock(false);scriptLocked_=false;}
+  scriptLocked_=false;
 }
 void DeviceService::finishOTA(){
   if(ota_){Update.abort();mbedtls_sha256_free(&hash_);ota_=false;}
@@ -401,7 +417,7 @@ void DeviceService::poll(){
   if(updater.due(now)&&WiFi.status()==WL_CONNECTED&&time(nullptr)>1700000000&&!needsSetup()&&!panelTrial.active&&!ota_&&!scriptLocked_&&!serialInstall_&&!restartAt_){
     if(renderLock(true)){
       updater.busy=true;stopScript();
-      const bool ready=updater.run("1.4.2");
+      const bool ready=updater.run("1.5.0");
       updater.busy=false;Serial.println("[UPDATE] "+updater.state);
       if(ready){restartAt_=millis()+500;}else{generation++;renderLock(false);}
     }
@@ -559,10 +575,10 @@ void DeviceService::sendApps(bool serial){
   if(serial)Serial.print("CWJSON:");else{access();web_.setContentLength(CONTENT_LENGTH_UNKNOWN);web_.send(200,"application/json; charset=utf-8","");}
   char output[1460];size_t used=0;
   auto send=[this,serial,&output,&used](const String& s){
-    if(serial){Serial.print(s);return;}
+    if(serial){Serial.print(s);if(ioTick)ioTick();return;}
     size_t at=0;while(at<s.length()){
       const size_t n=std::min(sizeof(output)-used,s.length()-at);memcpy(output+used,s.c_str()+at,n);used+=n;at+=n;
-      if(used==sizeof(output)){web_.sendContent(output,used);used=0;}
+      if(used==sizeof(output)){web_.sendContent(output,used);used=0;if(ioTick)ioTick();}
     }
   };
   send("{\"apps\":[");bool comma=false;
@@ -596,13 +612,13 @@ String DeviceService::statusJson(){
   const char* source=windowTheme_>=0?"window":schedule_.mode==1?"interval":!timeValid&&(schedule_.windowCount||schedule_.mode==2)?"waiting-time":schedule_.mode==2?"daily":"fixed";
   if(windowTheme_<0&&schedule_.mode==1){const uint32_t period=uint32_t(schedule_.interval)*60000,elapsed=uint32_t(millis()-rotateAt_);snprintf(remaining,sizeof(remaining),"%u",unsigned(elapsed>=period?0:(period-elapsed+999)/1000));}
   String ip=(WiFi.status()==WL_CONNECTED?WiFi.localIP():WiFi.softAPIP()).toString();
-  const int length=snprintf(body,sizeof(body),"{\"version\":\"1.4.2\",\"chip\":%s,\"width\":64,\"height\":64,\"ip\":%s,\"stationIP\":%s,\"apIP\":%s,\"configUrl\":%s,\"ssid\":%s,\"connected\":%s,\"networkState\":%s,\"rssi\":%d,\"uptime\":%u,\"heap\":%u,\"largestBlock\":%u,\"theme\":%d,\"generation\":%u,\"brightness\":%d,\"rotationMinutes\":%d,\"timezone\":%s,\"otaMaxBytes\":%u,\"storage\":%s,\"hasCustom\":%s,\"appSlots\":64,\"catalogCount\":%d,\"error\":%s,\"performance\":%s,\"limits\":%s,\"baseTheme\":%d,\"timeValid\":%s,\"localTime\":\"%s\",\"clock\":{\"weekday\":%d,\"hour\":%d,\"minute\":%d,\"second\":%d},\"playbackSource\":\"%s\",\"rotationRemainingSeconds\":%s}",
+  const int length=snprintf(body,sizeof(body),"{\"version\":\"1.5.0\",\"chip\":%s,\"width\":64,\"height\":64,\"ip\":%s,\"stationIP\":%s,\"apIP\":%s,\"configUrl\":%s,\"ssid\":%s,\"connected\":%s,\"networkState\":%s,\"rssi\":%d,\"uptime\":%u,\"heap\":%u,\"largestBlock\":%u,\"theme\":%d,\"generation\":%u,\"brightness\":%d,\"rotationMinutes\":%d,\"timezone\":%s,\"otaMaxBytes\":%u,\"storage\":%s,\"hasCustom\":%s,\"appSlots\":64,\"catalogCount\":%d,\"error\":%s,\"performance\":%s,\"limits\":%s,\"baseTheme\":%d,\"timeValid\":%s,\"localTime\":\"%s\",\"clock\":{\"weekday\":%d,\"hour\":%d,\"minute\":%d,\"second\":%d},\"playbackSource\":\"%s\",\"rotationRemainingSeconds\":%s}",
     quote(ESP.getChipModel()).c_str(),quote(ip).c_str(),quote(WiFi.localIP().toString()).c_str(),quote(WiFi.softAPIP().toString()).c_str(),quote("http://"+ip+"/").c_str(),quote(WiFi.SSID()).c_str(),WiFi.status()==WL_CONNECTED?"true":"false",quote(networkState).c_str(),WiFi.RSSI(),millis()/1000,
     heap_caps_get_free_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT),heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT),theme,generation,brightness,rotationMinutes,
     quote(prefs_.getString("tz","CST-8")).c_str(),unsigned(next?next->size:0),fs_?"true":"false",hasCustom?"true":"false",themeCount,quote(lastError).c_str(),metrics,limits_.json().c_str(),
     baseTheme_,timeValid?"true":"false",localTime,local.tm_wday,local.tm_hour,local.tm_min,local.tm_sec,source,remaining);
   if(length<0||length>=int(sizeof(body))-128)return "{\"error\":\"状态信息过长\"}";
-  String result(body);result.remove(result.length()-1);result+=",\"updates\":{\"enabled\":"+String(updater.enabled?"true":"false")+",\"state\":"+quote(updater.state)+",\"intervalHours\":6}";result+=",\"brightnessControl\":"+brightnessJson();result+=",\"flashBytes\":"+String(ESP.getFlashChipSize());result+=",\"sensorCapabilities\":"+sensorCapabilitiesJson()+",\"features\":{\"wifiScan\":1,\"serialAppInstall\":1,\"discovery\":1,\"orientation\":1,\"panelTrial\":1,\"factoryReset\":1,\"diagnostics\":1},\"orientation\":"+(orientationStatus?orientationStatus():String("{}"));result+=",\"packageVersion\":3,\"runtimeApi\":5,\"internalHeapBytes\":"+String(heap_caps_get_total_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT))+",\"panel\":{\"colorOrder\":"+quote(panelOrder_)+",\"scan\":32,\"clockMHz\":"+String(panelTiming_.clockMHz)+",\"clockPhase\":"+String(panelTiming_.clockPhase)+",\"latchBlanking\":"+String(panelTiming_.latchBlanking)+",\"driver\":"+String(panelTiming_.driver)+",\"refreshHz\":"+String(panelTiming_.refreshHz)+",\"driverName\":"+quote(panelDriverName(panelTiming_.driver))+",\"active\":"+(panelStatus?panelStatus():String("{}"))+",\"testing\":"+(panelTestUntil&&int32_t(panelTestUntil-millis())>0?"true":"false")+"}}";
+  String result(body);result.remove(result.length()-1);result+=",\"updates\":{\"enabled\":"+String(updater.enabled?"true":"false")+",\"state\":"+quote(updater.state)+",\"intervalHours\":6}";result+=",\"brightnessControl\":"+brightnessJson();result+=",\"flashBytes\":"+String(ESP.getFlashChipSize());result+=",\"sensorCapabilities\":"+sensorCapabilitiesJson()+",\"features\":{\"wifiScan\":1,\"serialAppInstall\":1,\"discovery\":1,\"orientation\":1,\"panelTrial\":1,\"factoryReset\":1,\"diagnostics\":1,\"serialDiagnostics\":1,\"screenPreview\":1,\"backgroundInstall\":1},\"orientation\":"+(orientationStatus?orientationStatus():String("{}"));result+=",\"packageVersion\":3,\"runtimeApi\":5,\"internalHeapBytes\":"+String(heap_caps_get_total_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT))+",\"panel\":{\"colorOrder\":"+quote(panelOrder_)+",\"scan\":32,\"clockMHz\":"+String(panelTiming_.clockMHz)+",\"clockPhase\":"+String(panelTiming_.clockPhase)+",\"latchBlanking\":"+String(panelTiming_.latchBlanking)+",\"driver\":"+String(panelTiming_.driver)+",\"refreshHz\":"+String(panelTiming_.refreshHz)+",\"driverName\":"+quote(panelDriverName(panelTiming_.driver))+",\"active\":"+(panelStatus?panelStatus():String("{}"))+",\"testing\":"+(panelTestUntil&&int32_t(panelTestUntil-millis())>0?"true":"false")+"}}";
   result.remove(result.length()-1);
   result+=",\"panelTrial\":"+trialJson()+",\"setup\":{\"required\":"+(needsSetup()?String("true"):String("false"))+",\"ssid\":"+quote(apName_)+",\"password\":"+(needsSetup()?quote(apPassword_):String("null"))+",\"url\":\"http://192.168.4.1/\",\"wizard\":true,\"step\":"+String(WiFi.status()!=WL_CONNECTED?1:!prefs_.getBool("panelChosen",false)?2:3)+",\"panelChosen\":"+String(prefs_.getBool("panelChosen",false)?"true":"false")+"}}";
   return result;
@@ -770,22 +786,21 @@ String DeviceService::completeInstall(int& code,bool serial){
       else{candidateTargetFps_=manifest.targetFps;candidateChecked_=true;}
     }
   }
-  // Parsing has finished; release the multipart buffer before the Lua compiler's peak allocation.
   if(!serial)web_.releaseParsedUpload();
-  if(uploadError_.isEmpty()&&(!applyScript||!applyScript("/apps/install.tmp",uploadError_))){if(uploadError_.isEmpty())uploadError_="应用初始化失败";}
-  if(scriptLocked_)stopScript();
+  // Validate without executing or replacing the running application.
+  if(uploadError_.isEmpty()&&(!validateScript||!validateScript("/apps/install.tmp",uploadError_))){if(uploadError_.isEmpty())uploadError_="应用验证失败";}
   if(!uploadError_.isEmpty()){LittleFS.remove("/apps/install.tmp");finishScript();return "{\"error\":"+quote(uploadError_)+"}";}
   const String path=appPath(installIndex_),backup=path+".bak";
   bool saved=true,old=LittleFS.exists(path);
   if(old){LittleFS.remove(backup);saved=LittleFS.rename(path,backup);}
   if(saved)saved=LittleFS.rename("/apps/install.tmp",path);
   if(!saved){if(old&&LittleFS.exists(backup))LittleFS.rename(backup,path);LittleFS.remove("/apps/install.tmp");finishScript();code=500;return "{\"error\":\"应用保存失败，原应用已保留\"}";}
-  LittleFS.remove(backup);installed_|=uint64_t(1)<<installIndex_;incompatible_&=~(uint64_t(1)<<installIndex_);appBytes_[installIndex_]=scriptBytes_;
+  if(theme!=installIndex_)LittleFS.remove(backup);installed_|=uint64_t(1)<<installIndex_;incompatible_&=~(uint64_t(1)<<installIndex_);appBytes_[installIndex_]=scriptBytes_;
   appTargetFps_[installIndex_]=candidateTargetFps_;
   prefs_.putString(appKey(installIndex_,'i').c_str(),installId_);prefs_.putString(appKey(installIndex_,'t').c_str(),installTitle_);
   if(installPackageName_.length())prefs_.putString(appKey(installIndex_,'n').c_str(),installPackageName_);else prefs_.remove(appKey(installIndex_,'n').c_str());
-  hasCustom=appInstalled(63);theme=baseTheme_=installIndex_;windowTheme_=-1;prefs_.putInt("theme",theme);prefs_.putBool("custom",theme==63);finishScript();
-  code=200;return "{\"message\":\"应用已安装并设为默认主题；指定时段仍优先播放\",\"index\":"+String(installIndex_)+",\"id\":"+quote(installId_)+",\"packageName\":"+quote(appPackageName(installIndex_))+"}";
+  hasCustom=appInstalled(63);finishScript();
+  code=200;return "{\"message\":\"应用已安装，当前主题继续运行；点击运行以启用新版本\",\"index\":"+String(installIndex_)+",\"id\":"+quote(installId_)+",\"packageName\":"+quote(appPackageName(installIndex_))+"}";
 }
 void DeviceService::abortSerialInstall(){
   if(!serialInstall_)return;
@@ -808,7 +823,7 @@ void DeviceService::serialInstallCommand(const String& cmd,const String& line){
     if(!fs_){answer(false,"请先初始化脚本存储");return;}
     const size_t free=LittleFS.totalBytes()-LittleFS.usedBytes();
     if(size>limits_.appBytes||free<8192||size>free-8192){answer(false,"应用包超出设备容量或安装空间不足");return;}
-    if(!renderLock(true)){answer(false,"渲染任务忙");return;}scriptLocked_=true;stopScript();
+    scriptLocked_=true;
     scriptFile_=LittleFS.open("/apps/install.tmp","w");if(!scriptFile_){finishScript();answer(false,"无法创建应用文件");return;}
     scriptBytes_=0;uploadError_="";installIndex_=-1;installId_="";installTitle_="";installPackageName_="";legacyUpload_=false;candidateChecked_=false;candidateTargetFps_=60;
     serialInstallExpected_=size;serialInstallPackage_=identity;serialInstallHash_=hash;serialInstallAt_=serialInstallStarted_=millis();
@@ -822,7 +837,7 @@ void DeviceService::serialInstallCommand(const String& cmd,const String& line){
       ||mbedtls_base64_decode(data,sizeof(data),&size,(const unsigned char*)encoded.c_str(),encoded.length())||!size
       ||size>serialInstallExpected_-scriptBytes_){answer(false,"应用分块顺序或内容无效");return;}
     if(scriptFile_.write(data,size)!=size){abortSerialInstall();answer(false,"应用写入失败，原应用已保留");return;}
-    mbedtls_sha256_update_ret(&serialInstallDigest_,data,size);scriptBytes_+=size;serialInstallAt_=millis();answer(true);return;
+    mbedtls_sha256_update_ret(&serialInstallDigest_,data,size);scriptBytes_+=size;serialInstallAt_=millis();if(ioTick)ioTick();answer(true);return;
   }
   if(phase=="finish"){
     if(scriptBytes_!=serialInstallExpected_){abortSerialInstall();answer(false,"应用包尚未完整上传");return;}
@@ -861,6 +876,12 @@ void DeviceService::serialCommand(const String& line){
   if(panelTrial.mode==2&&panelTrial.active&&!panelTrial.paused&&cmd!="panel.trial")panelTrial.pause(true);
   if(cmd=="help"){
     Serial.println("CWJSON:{\"ok\":true,\"baud\":115200,\"commands\":[{\"cmd\":\"discover\",\"action\":\"start\"},{\"cmd\":\"orientation\",\"manualRotation\":270,\"autoRotate\":false},{\"cmd\":\"status\"},{\"cmd\":\"wifi\",\"ssid\":\"网络名称\",\"password\":\"网络密码\"},{\"cmd\":\"config\",\"brightness\":80,\"theme\":-1,\"timezone\":\"CST-8\",\"rotationMinutes\":0},{\"cmd\":\"apps\"},{\"cmd\":\"app.run\",\"packageName\":\"org.clockwise.super-mario\"},{\"cmd\":\"app.uninstall\",\"packageName\":\"org.clockwise.super-mario\"},{\"cmd\":\"ap\"},{\"cmd\":\"sensors\"},{\"cmd\":\"panel\",\"colorOrder\":\"RGB\"},{\"cmd\":\"panel.test\",\"action\":\"start\"},{\"cmd\":\"restart\"}],\"note\":\"config字段可单独修改；每条命令以换行结束，密码不回显\"}");return;
+  }
+  if(cmd=="frame"){sendFrame(true);return;}
+  if(cmd=="diagnostics"){
+    String test;bool present;if(!jsonField(line,"test",test,present)){answer(false,"测试参数无效");return;}
+    if(present){if(!hardwareTest){answer(false,"当前板型未配置该测试硬件");return;}const bool ok=hardwareTest(test,error);answer(ok,ok?"测试已执行，请读取结果并观察实物":error);return;}
+    Serial.print("CWJSON:{\"sensors\":");Serial.print(sensorStatus?sensorStatus():String("{}"));Serial.print(",\"hardware\":");Serial.print(hardwareStatus?hardwareStatus():String("{\"supported\":false}"));Serial.println("}");return;
   }
   if(cmd=="status"){const String status=statusJson();Serial.print("CWJSON:");Serial.println(status);return;}
   if(cmd=="panel.trial"){

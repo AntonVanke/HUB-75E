@@ -2,6 +2,39 @@
   "schema": 1,
   "releases": [
     {
+      "version": "1.5.0",
+      "runtimeApi": 5,
+      "nativeAbi": 1,
+      "notes": "USB 主题页直连、实时屏幕与硬件检测；后台安装保持当前主题，响应式设备页面与重力阴影。",
+      "catalog": "applications/1.5.0/catalog.json",
+      "targets": {
+        "esp32": {
+          "chip": "esp32",
+          "flashBytes": 4194304,
+          "psramBytes": 0,
+          "manifest": "firmware/esp32-v1.5.0/manifest.json",
+          "updateManifest": "firmware/esp32-v1.5.0/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32-v1.5.0/app.bin",
+            "bytes": 1439184,
+            "sha256": "e313db2c7bfe7c0c06320f864a4561f35ea3ac5bcf55742d1aa3ec89d676bf30"
+          }
+        },
+        "esp32s3": {
+          "chip": "esp32s3",
+          "flashBytes": 8388608,
+          "psramBytes": 8388608,
+          "manifest": "firmware/esp32s3-v1.5.0/manifest.json",
+          "updateManifest": "firmware/esp32s3-v1.5.0/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32s3-v1.5.0/app.bin",
+            "bytes": 1446064,
+            "sha256": "db440041bcdaef3cf3df6c7e7c11e1baa7347aac7aeb7f72e04dbfb649d409b7"
+          }
+        }
+      }
+    },
+    {
       "version": "1.4.2",
       "runtimeApi": 5,
       "nativeAbi": 1,
@@ -233,5 +266,5 @@
       }
     }
   ],
-  "latest": "1.4.2"
+  "latest": "1.5.0"
 }

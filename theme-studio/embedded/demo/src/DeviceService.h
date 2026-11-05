@@ -36,9 +36,11 @@ public:
   const String& setupPassword()const{return apPassword_;}
   uint32_t generation=0,buttonAUntil=0,buttonBUntil=0,panelTestUntil=0;
   std::function<bool(const char*,String&)> applyScript;
+  std::function<bool(const char*,String&)> validateScript;
+  std::function<void()> ioTick;
   std::function<void()> stopScript;
   std::function<bool(bool)> renderLock;
-  std::function<const uint16_t*()> framePixels;
+  std::function<bool(uint16_t*,uint8_t&)> copyFrame;
   std::function<String()> sensorStatus;
   std::function<String()> hardwareStatus;
   std::function<bool(const String&,String&)> hardwareTest;
@@ -81,6 +83,7 @@ private:
   void finishOTA();
   void uploadScript();
   void finishScript();
+  void sendFrame(bool serial);
   void uploadOTA();
   const char* titlesJson_=nullptr;
   const char* catalogRows_[64]={};

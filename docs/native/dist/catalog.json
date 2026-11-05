@@ -113,7 +113,7 @@
       "packageName": "org.clockwise.ferrofluid-clock",
       "id": "ferrofluid-clock",
       "title": "磁流体时钟",
-      "appVersion": "1.3.0",
+      "appVersion": "1.4.0",
       "description": "S3 专用：黑色油性液滴聚合成字，磁场约束、惯性摇散、重力回落与光泽液面；参数可调。",
       "author": "HUB-75E",
       "requirements": {
@@ -126,7 +126,7 @@
         "chips": [
           "esp32s3"
         ],
-        "codeBytes": 13280,
+        "codeBytes": 13896,
         "dataBytes": 500
       },
       "parameters": {
@@ -177,8 +177,8 @@
       "nativeAbi": 1,
       "runtimeApi": 5,
       "file": "ferrofluid-clock-esp32s3.cwp",
-      "bytes": 15019,
-      "sha256": "f66b442536146de8b8fb419c829370583bf6c8a1168ed70abfaad1a346565f65"
+      "bytes": 15643,
+      "sha256": "27179338b140b7dc056a301707469abb0d0a0fa164267a2af2ac4141543d2866"
     },
     {
       "packageName": "org.clockwise.gravity-liquid",

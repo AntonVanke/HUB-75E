@@ -7,6 +7,7 @@ public:
   explicit NativeRuntime(ThemeHost& host):host_(host){}
   ~NativeRuntime(){stop();}
   bool load(SourceReader reader,void* context,size_t bytes);
+  static const char* validate(SourceReader reader,void* context,size_t bytes);
   bool basicClock();
   bool update(uint32_t dt);
   bool draw();

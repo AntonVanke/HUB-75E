@@ -46,6 +46,30 @@ void NativeRuntime::stop(){
 }
 bool NativeRuntime::basicClock(){stop();error_[0]=0;initializeApi();basic_=true;return true;}
 size_t NativeRuntime::graphicsMemoryUsed()const{return sizeof(raster_.pixels)+raster_.memoryUsed()+(fluid_?sizeof(Fluid64):0);}
+const char* NativeRuntime::validate(SourceReader reader,void* context,size_t bytes){
+  uint8_t h[40],chunk[512];
+  auto read=[&](size_t at,void* out,size_t n){return at<=bytes&&n<=bytes-at&&reader(context,at,(char*)out,n)==n;};
+  if(!reader||!read(0,h,sizeof(h))||memcmp(h,"CWN1",4)||word(h+4)!=1||word(h+32)||word(h+36))return "原生主题头部或 ABI 无效";
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+  constexpr uint32_t chip=2;
+#else
+  constexpr uint32_t chip=1;
+#endif
+  if(word(h+8)!=chip)return "主题机器码与当前 ESP32 芯片不匹配";
+  const uint32_t code=word(h+12),data=word(h+16),entry=word(h+20),relocs=word(h+24);
+  if(!code||code>96*1024||data>256*1024||(code|data)&3||entry>=code||relocs>16384||bytes!=40u+code+data+relocs*8u)return "原生主题段大小无效";
+  uint32_t crc=0;
+  for(size_t at=40;at<bytes;){size_t n=std::min(bytes-at,sizeof(chunk));if(!read(at,chunk,n))return "原生主题读取失败";crc=esp_rom_crc32_le(crc,chunk,n);at+=n;}
+  if(crc!=word(h+28))return "原生主题校验失败";
+  for(uint32_t i=0;i<relocs;i++){
+    uint8_t r[8];if(!read(40+code+data+i*8,r,8))return "重定位表读取失败";
+    for(int j=0;j<2;j++){uint32_t v=word(r+j*4),segment=v>>30,off=v&0x3fffffff,size=segment==0?code:segment==1?data:0;
+      if(j==1&&segment==2){if(off>=sizeof(imports)/sizeof(imports[0]))return "原生主题导入越界";}
+      else if(off>=size||(!j&&(off%4||size-off<4)))return "原生主题重定位越界";
+    }
+  }
+  return nullptr;
+}
 bool NativeRuntime::load(SourceReader reader,void* context,size_t bytes){
   stop();error_[0]=0;initializeApi();uint8_t h[40];
   auto read=[&](size_t at,void* out,size_t n){return at<=bytes&&n<=bytes-at&&reader(context,at,(char*)out,n)==n;};

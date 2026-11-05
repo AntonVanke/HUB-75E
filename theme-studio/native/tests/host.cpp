@@ -57,6 +57,11 @@ int main(){
   for(int frame=0;frame<16000;frame++){assert(update(&s,&a,8));assert(draw(&s,&a));if(frame){for(int i=0;i<4096;i++){int delta=abs(int(a.pixels[i]>>11)-int(previous[i]>>11))+abs(int((a.pixels[i]>>5)&63)-int((previous[i]>>5)&63))+abs(int(a.pixels[i]&31)-int(previous[i]&31));biggest=std::max(biggest,delta);}}memcpy(previous,a.pixels,8192);}
   assert(biggest<=8);puts("Ambient: full 128 second loop, bounded color changes and 2048 byte state PASS");
 #elif defined(TEST_FERRO)
+  {Ferrofluid lighting;uint16_t left[4096],right[4096];lighting.reset(12,34);
+   for(int i=0;i<90;i++)lighting.lighting(8.333f,-1,0,true);lighting.render(left);assert(lighting.lightX<-.9f);
+   for(int i=0;i<90;i++)lighting.lighting(8.333f,1,0,true);lighting.render(right);assert(lighting.lightX>.15f);
+   int different=0;for(int i=0;i<4096;i++)different+=left[i]!=right[i];assert(different>50);
+   for(int i=0;i<180;i++)lighting.lighting(8.333f,9,9,false);assert(fabsf(lighting.lightX+.65f)<.001f);puts("Tilt lighting: stationary tilt, subpixel shadows and sensor fallback PASS");}
   AutoBrightnessController light;light.supported=true;light.settings.enabled=true;
   for(int i=0;i<25;i++)light.sample(0,0,i*100);assert(!light.present&&light.tick(80,2400)==80);
   for(int i=25;i<45;i++)light.sample(1500,1200,i*100);assert(light.present&&light.active(4400));

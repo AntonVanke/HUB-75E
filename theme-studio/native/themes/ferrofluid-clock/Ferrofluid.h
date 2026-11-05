@@ -13,6 +13,12 @@ public:
   uint16_t nearest[4096],surface[4096],seeds[512],goals[N];
   int16_t heads[256],links[N];
   float weight[256],inverse[256],poolX[PerDigit],poolY[PerDigit];
+  float lightX=-.65f,lightY=-.25f;
+  void lighting(float dt,float gx,float gy,bool valid){
+    const float a=limit(dt/(120.f+dt),0,1);
+    lightX+=(limit(-.65f+(valid?gx*.85f:0),-1,1)-lightX)*a;
+    lightY+=(limit(-.25f+(valid?gy*.85f:0),-1,1)-lightY)*a;
+  }
   float accumulated=0,slowX=0,slowY=1,omega=0,energy=0,shapeTime[4]={};
   int digits[4]={-1,-1,-1,-1};
   uint32_t rng=784891;int seedCount=0,hour=-1,minute=-1;bool magnetic=true,inputReady=false;
@@ -180,18 +186,26 @@ public:
       for(int y=0;y<64;y++)row[y]=(surface[imax(0,y-1)*64+x]+2*surface[y*64+x]+surface[imin(63,y+1)*64+x])/4;
       for(int y=0;y<64;y++)surface[y*64+x]=row[y];
     }
+    const float sx=-lightX*3.f,sy=-lightY*3.f;
+    const int dx=int(floorf(sx)),dy=int(floorf(sy));
+    const int wx=int((sx-dx)*256),wy=int((sy-dy)*256);
+    const float norm=1.f/sqrtf(lightX*lightX+lightY*lightY+.48f*.48f);
+    const float lx=lightX*norm,ly=lightY*norm,lz=.48f*norm;
     for(int y=0;y<64;y++)for(int x=0;x<64;x++){
       int at=y*64+x;float illumination=1-.16f*x/63.f-.09f*y/63.f;
       const int grain=int((uint32_t(x*917+y*313)*1664525u+1013904223u)>>30)-1;
       int r=int(215*illumination)+grain,g=int(179*illumination)+grain,b=int(122*illumination)+grain;
       if(!x||x==63||!y||y==63){pixels[at]=color(55,45,33);continue;}
-      // The backing is behind the fluid: a soft shadow falls down and right.
-      const int shadow=surface[imax(0,y-1)*64+imax(0,x-2)]+surface[imax(0,y-2)*64+imax(0,x-1)];
+      const int ax=imin(63,imax(0,x-dx)),bx=imin(63,imax(0,x-dx-1));
+      const int ay=imin(63,imax(0,y-dy)),by=imin(63,imax(0,y-dy-1));
+      const int upper=(surface[ay*64+ax]*(256-wx)+surface[ay*64+bx]*wx)>>8;
+      const int lower=(surface[by*64+ax]*(256-wx)+surface[by*64+bx]*wx)>>8;
+      const int shadow=2*((upper*(256-wy)+lower*wy)>>8);
       const float shadeBack=1-.30f*limit(shadow/1300.f,0,1);r=int(r*shadeBack);g=int(g*shadeBack);b=int(b*shadeBack);
       int f=surface[at];
       if(f>60){
         float nx=(float(surface[at-1])-surface[at+1])*.005f,ny=(float(surface[at-64])-surface[at+64])*.005f;
-        float inv=1/sqrtf(nx*nx+ny*ny+1),light=limit((-.65f*nx-.25f*ny+.48f)*inv*1.18f,0,1);
+        float inv=1/sqrtf(nx*nx+ny*ny+1),light=limit((lx*nx+ly*ny+lz)*inv,0,1);
         float shine=light*light;shine*=shine;shine*=shine;
         float gradient=sqrtf(nx*nx+ny*ny)*100;
         int edge=int(limit((f-210)/(gradient+30)+.5f,0,1)*255),spec=int(shine*210),dark=7+int(light*4);
