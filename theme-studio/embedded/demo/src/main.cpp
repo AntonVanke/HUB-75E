@@ -70,9 +70,12 @@ static void showPanel(){
 #endif
   matrix->flipDMABuffer();
 }
+static int appliedBrightness=-1;
 static void panelBrightness(uint8_t brightness){
+  if(appliedBrightness==brightness)return;
+  appliedBrightness=brightness;
 #ifdef HUB75_S3_BOARD
-  if(selectedPanelDriver==7)return;
+  if(selectedPanelDriver==7){gpioProbe.setBrightness(brightness);return;}
   if(selectedPanelDriver==9){protomatterProbe.setBrightness(brightness);return;}
 #endif
   matrix->setBrightness8(brightness);
@@ -226,6 +229,7 @@ static bool loadTheme(int index){
 }
 static void timerTick(void*){xTaskNotifyGive(renderHandle);}
 static bool showBoot(){
+  panelBrightness(service.brightness);
   const uint32_t now=millis();
   const bool connected=WiFi.status()==WL_CONNECTED&&WiFi.localIP()!=IPAddress(0,0,0,0);
   const IPAddress ip=connected?WiFi.localIP():WiFi.softAPIP();
@@ -267,17 +271,23 @@ static void drawPanelTest(){
 }
 static void drawDriverGuide(){
   auto* g=panelGraphics();if(!g)return;
+  const bool qr=service.needsSetup()&&setupQr.size()&&(service.panelTrial.qrManual?service.panelTrial.showQr:(millis()-service.panelTrial.startedAt)%PanelTrial::durationMs>=8000);
+  panelBrightness(qr?std::min(service.brightness,24):service.brightness);
+  static bool previousQr=false;static int qrRotation=-1;
+  const bool unchanged=qr&&previousQr&&qrRotation==orientation.configuration().rotation;
+  previousQr=qr;qrRotation=orientation.configuration().rotation;
+  if(unchanged)return;
   g->setRotation(orientation.configuration().rotation);
   if(!service.needsSetup()){
     drawPanelTest();
     return;
   }
-  if(setupQr.size()&&(service.panelTrial.qrManual?service.panelTrial.showQr:(millis()-service.panelTrial.startedAt)%PanelTrial::durationMs>=8000)){
-    g->fillScreen(panelColor(0xffff));g->setTextSize(1);g->setTextWrap(false);g->setTextColor(0);
+  if(qr){
+    g->fillScreen(0);g->setTextSize(1);g->setTextWrap(false);g->setTextColor(panelColor(0xffff));
     char label[12];snprintf(label,sizeof(label),"D%d WIFI",selectedPanelDriver);g->setCursor(11,2);g->print(label);
     const int size=setupQr.size(),offset=(64-size)/2;
-    // One LED per module, with at least four untouched white modules on each side.
-    for(int y=0;y<size;y++)for(int x=0;x<size;x++)if(setupQr.dark(x,y))g->drawPixel(offset+x,offset+y,0);
+    // Inverted QR: white modules with a black quiet zone of at least four modules.
+    for(int y=0;y<size;y++)for(int x=0;x<size;x++)if(setupQr.dark(x,y))g->drawPixel(offset+x,offset+y,panelColor(0xffff));
     g->setCursor(5,55);g->print("JOIN WIFI");showPanel();return;
   }
   g->fillScreen(0);g->drawRect(0,0,64,64,panelColor(0xffff));
@@ -323,7 +333,7 @@ static void renderTask(void*){
 #endif
     bool rotated=false;
     if(panelGraphics()->getRotation()!=snapshot.rotation){panelGraphics()->setRotation(snapshot.rotation);host.valid[0]=host.valid[1]=false;rotated=true;}
-    static int brightness=-1;if(snapshot.brightness!=brightness){brightness=snapshot.brightness;panelBrightness(brightness);host.valid[0]=host.valid[1]=false;}
+    if(snapshot.brightness!=appliedBrightness){panelBrightness(snapshot.brightness);host.valid[0]=host.valid[1]=false;}
     if(snapshot.panelTest){
       if(!testing||rotated)drawPanelTest();testing=true;
 #ifdef HUB75_S3_BOARD

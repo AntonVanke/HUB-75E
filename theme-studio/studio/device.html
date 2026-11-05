@@ -65,6 +65,7 @@
 <footer id="credits" class="footer"></footer>
 </main>
 <script type="module">
+import {createDeviceClient} from "./device-client.mjs";
 import {creditsHTML} from "./credits.mjs";
 import {setupWizard} from "./setup-wizard.mjs";
 import {releaseControls} from "./releases.mjs";
@@ -100,11 +101,7 @@ function message(text,error=false){
 }
 $('dismiss-message').onclick=()=>{++toastGeneration;clearTimeout(toastTimer);$('toast').hidden=true;};
 function enable(value){$('orientation-config').querySelector('fieldset').disabled=!value||!orientationSupported;$('discover-devices').disabled=!value||!discoverySupported||discovering;for(const f of document.querySelectorAll('fieldset'))f.disabled=!value; $('panel-config').querySelector('fieldset').disabled=!value||!panelSupported;$('panel-timing').disabled=!value||!panelTimingSupported;if(value)panelDriverFields();else $('dma-timing').disabled=true;$('orientation-config').querySelector('fieldset').disabled=!value||!orientationSupported;}
-async function request(path,options={}){
- const response=await fetch(base+'/api/'+path,{...options,credentials:'omit',signal:AbortSignal.timeout(10000)});
- const body=await response.json().catch(()=>({error:'返回内容不是 Studio API 数据'}));
- if(!response.ok)throw new Error(body.error||'HTTP '+response.status);return body;
-}
+const client=createDeviceClient(()=>base),request=client.request;
 imageClockControls($('image-clock-maker'),{device:()=>latestStatus||{},base:()=>base,upload,changed:async()=>{const list=await request('themes');themeOptions(list);status(await request('status'));await loadSchedule(list);await appManager.refresh();},message});
 $('credits').innerHTML=creditsHTML;
 const releasesUI=releaseControls($('online-updates'),{device:()=>latestStatus||{},request,upload,sha256,message,changed:async()=>{await appManager.refresh();status(await request('status'));}});
@@ -154,7 +151,9 @@ function status(data,initial=false){
 }
 async function poll(){
  if(!connected)return;
- try{status(await request('status'));failures=0;$('connection-state').textContent='已连接';}
+ clearTimeout(timer);
+ if(client.busy||document.hidden){timer=setTimeout(poll,1000);return;}
+ try{status(await request('status'));if(failures>=3)message('连接已恢复，设备状态已更新。');failures=0;$('connection-state').textContent='已连接';}
  catch(e){failures++;$('connection-state').textContent='连接中断 · 正在重试';if(failures===3)message(e.message,true);}
  timer=setTimeout(poll,5000);
 }
@@ -267,14 +266,16 @@ $('scan').onclick=async()=>{
  }catch(e){message(e.message,true);$('scan-state').textContent='扫描失败，可手动输入';}finally{$('scan').disabled=false;$('networks').disabled=$('networks').options.length<2;}
 };
 function upload(path,file,headers={}){
- return new Promise((resolve,reject)=>{
+ const origin=base;
+ return client.enqueue(()=>new Promise((resolve,reject)=>{
+  if(origin!==base)return reject(new Error('设备地址已切换，请重新操作'));
   const xhr=new XMLHttpRequest();xhr.open('POST',base+'/api/'+path);xhr.timeout=180000;
   for(const [key,value] of Object.entries(headers))xhr.setRequestHeader(key,value);
   xhr.upload.onprogress=e=>{if(e.lengthComputable&&path==='ota')$('ota-progress').value=e.loaded*100/e.total;};
-  xhr.onload=()=>{let body;try{body=JSON.parse(xhr.responseText);}catch{return reject(new Error('设备响应无效'));}xhr.status<300?resolve(body):reject(new Error(body.error||'上传失败'));};
+  xhr.onload=()=>{let body;try{body=JSON.parse(xhr.responseText);}catch{return reject(new Error('设备响应无效'));}if(xhr.status>=200&&xhr.status<300){if(path==='ota')client.hold();resolve(body);}else reject(new Error(body.error||'上传失败'));};
   xhr.onerror=()=>reject(new Error('连接中断，请重新读取设备状态'));xhr.ontimeout=()=>reject(new Error('上传超时'));
   const form=new FormData();form.append(path==='ota'?'firmware':'script',file);xhr.send(form);
- });
+ }));
 }
 const appManager=applicationControls($,()=>base,request,upload,message,{local:!onDevice,changed:async()=>{
  const list=await request('themes');themeOptions(list);const data=await request('status');status(data,true);await loadSchedule(list);

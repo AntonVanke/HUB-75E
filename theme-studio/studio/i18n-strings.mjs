@@ -1,4 +1,10 @@
 const pairs = `
+连接已恢复，设备状态已更新。|Connection restored. Device status is up to date.
+设备地址已切换，请重新操作|The device address changed. Please try again.
+请直接打开设备的 HTTP 后台；HTTPS 工坊请使用 USB 串口连接|Open the device HTTP interface directly; use USB serial in the HTTPS workshop.
+设备暂时无法连接，请确认仍在同一 Wi-Fi；页面会自动重连。|The device is temporarily unreachable. Check the Wi-Fi connection; the page will reconnect automatically.
+保存响应中断，结果尚未确认；请先重新读取设置，再决定是否重试。|The save response was interrupted. Read the settings again before deciding whether to retry.
+设备返回的数据不完整，请重新读取状态|The device response is incomplete. Please read its status again.
 参数设置|Theme parameters
 主题参数声明无效|Invalid theme parameter schema
 背景与幻灯片|Background and slideshow

@@ -70,7 +70,7 @@ private:
   File scriptFile_;
   size_t scriptBytes_=0;
   String apName_,apPassword_;
-  bool ap_=false,connecting_=false,ota_=false,locked_=false,fs_=false,scriptLocked_=false;
+  bool ap_=false,connecting_=false,wifiStartPending_=false,ota_=false,locked_=false,fs_=false,scriptLocked_=false;
   uint32_t connectAt_=0,retryAt_=0,restartAt_=0,rotateAt_=0,otaAt_=0;
   mbedtls_sha256_context hash_;
   void reply(int code,const String& body);

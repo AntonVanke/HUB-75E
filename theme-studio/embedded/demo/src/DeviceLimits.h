@@ -30,6 +30,6 @@ struct DeviceLimits {
   String json()const{
     char text[512];
     snprintf(text,sizeof(text),"{\"profile\":\"%s\",\"appBytes\":%u,\"sourceBytes\":%u,\"archiveBytes\":%u,\"archiveExpandedBytes\":%u,\"luaHeapBytes\":%u,\"luaWorkingBytes\":%u,\"instructions\":%d,\"packageCacheBytes\":%u,\"psramBytes\":%u,\"resourceFiles\":8,\"mediaSlots\":2}",profile,unsigned(appBytes),unsigned(sourceBytes),unsigned(archiveBytes),unsigned(archiveExpandedBytes),unsigned(luaHeapBytes),unsigned(luaWorkingBytes),instructions,unsigned(packageCacheBytes),unsigned(psramBytes));
-    String result(text);result.remove(result.length()-1);result+=",\"codeBytes\":98304,\"dataBytes\":262144,\"stateBytes\":"+String(ESP.getPsramSize()?196608:65536)+",\"nativeBytes\":524288,\"graphicsBytes\":"+String(graphicsBytes)+",\"runtimeApi\":4,\"targetFpsMax\":"+String(targetFpsMax)+"}";return result;
+    String result(text);result.remove(result.length()-1);result+=",\"codeBytes\":98304,\"dataBytes\":262144,\"stateBytes\":"+String(ESP.getPsramSize()?196608:65536)+",\"nativeBytes\":524288,\"graphicsBytes\":"+String(graphicsBytes)+",\"runtimeApi\":5,\"targetFpsMax\":"+String(targetFpsMax)+"}";return result;
   }
 };

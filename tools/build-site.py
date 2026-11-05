@@ -72,7 +72,7 @@ def main():
     (appdir / "catalog.json").write_text(encoded, encoding="utf-8")
     indexPath=output / "releases.json"
     index=json.loads(indexPath.read_text(encoding="utf-8")) if indexPath.exists() else {"schema":1,"releases":[]}
-    release={"version":version,"runtimeApi":5,"nativeAbi":1,"notes":"应用参数持久化；S3 专用磁流体、可调重力水、新增炫彩氛围时钟；19 款字体、Unifont、LED 预览和增强图片时钟。", "catalog":"applications/"+version+"/catalog.json","targets":{}}
+    release={"version":version,"runtimeApi":5,"nativeAbi":1,"notes":"修复网页导航脚本；黑底白码与临时低亮度；后台请求串行化、断线重试与重启等待。", "catalog":"applications/"+version+"/catalog.json","targets":{}}
     for chip in ("esp32", "esp32s3"):
         name=chip+"-v"+version
         source=ROOT / "releases" / name

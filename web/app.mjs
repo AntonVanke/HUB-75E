@@ -211,7 +211,7 @@ function renderThemes() {
   const chip = $('theme-chip').value;
   const memory = $('theme-memory').value;
   const matches = groupThemes(themes.filter((app) => {
-    if(!app)continue;
+    if(!app)return false;
     const requirements = app.requirements || {};
     const text = [app.title, app.id, app.description, app.category, metadata(app, 'title'), metadata(app, 'description'), metadata(app, 'category')].join(' ').toLocaleLowerCase();
     return (!query || text.includes(query))

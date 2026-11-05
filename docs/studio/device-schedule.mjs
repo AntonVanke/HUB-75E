@@ -136,8 +136,7 @@ export function scheduleControls($,getBase,request,message){
     themes=list.filter(theme=>Number(theme.index)>=0);registerThemes(list);for(const theme of list)titles.set(Number(theme.index),theme.title);
     $('add-rule').disabled=!themes.length;$('lunch-rule').disabled=!menu();
     if(dirty&&sameDevice&&!force){renderPool(selected);for(const box of $('schedule-rules').children){const input=inputs.get(box).theme;options(input,input.value);}update();return;}
-    const response=await fetch(base+'/api/schedule',{credentials:'omit'});if(!response.ok)throw new Error('无法读取播放安排');
-    const lines=(await response.text()).split('\n'),[mode,interval,random]=lines[0].split(',');
+    const lines=(await request('schedule',{responseType:'text'})).split('\n'),[mode,interval,random]=lines[0].split(',');
     loadedBase=base;savedPlan={mode:Number(mode),interval:Number(interval)||1,times:(lines[2]||'').split(',').filter(Boolean).map(Number),rules:lines.slice(3).filter(Boolean).map(row=>{const [start,end,theme,days]=row.split(',').map(Number);return {start,end,theme,days};})};
     $('schedule-mode').value=mode;$('schedule-interval').value=savedPlan.interval;$('schedule-order').value=random;$('schedule-times').value=savedPlan.times.map(hhmm).join(',');
     renderPool(new Set((lines[1]||'').split(',').filter(Boolean)));$('schedule-rules').replaceChildren();

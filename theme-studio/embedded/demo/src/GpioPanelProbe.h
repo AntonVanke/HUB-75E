@@ -11,6 +11,7 @@ class GpioPanelProbe {
 public:
   ~GpioPanelProbe(){free(pixels_);}
   bool ready()const{return pixels_!=nullptr;}
+  void setBrightness(uint8_t brightness){brightness_=brightness;}
 
   bool begin(const HUB75_I2S_CFG::i2s_pins& pins){
     const int outputs[]={pins.r1,pins.g1,pins.b1,pins.r2,pins.g2,pins.b2,
@@ -68,9 +69,10 @@ public:
       delayMicroseconds(2);
       GPIO.out_w1tc=latch_;
       delayMicroseconds(2);
-      GPIO.out_w1tc=blank_;
-      delayMicroseconds(80);
+      const uint32_t lit=(80u*brightness_+127u)/255u;
+      if(lit){GPIO.out_w1tc=blank_;delayMicroseconds(lit);}
       GPIO.out_w1ts=blank_;
+      if(lit<80)delayMicroseconds(80-lit);
     }
   }
 
@@ -85,6 +87,7 @@ public:
   }
 
 private:
+  uint8_t brightness_=255;
   static uint8_t colorAt(int x,int y){
     const int dx=2*x-63,dy=2*y-63,distance=dx*dx+dy*dy;
     if(x==0||x==63||y==0||y==63||(distance>=43*43&&distance<=45*45))return 7;

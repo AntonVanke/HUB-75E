@@ -8,7 +8,9 @@ Ferrofluid CPU preview: rest, shake, magnetic reassembly and changing digits, re
 
 ![Ferrofluid Clock](web/previews/ferrofluid-clock.gif)
 
-## Current release: 1.4.0
+## Current release: 1.4.1
+
+Fixes portal navigation, adds white-on-black setup QR codes capped at 24/255 brightness, and restores configured brightness afterward. Device requests are serialized; transient reads retry, writes are not replayed, and Wi-Fi/driver changes wait for reconnection.
 
 Persistent per-app parameters are available in the device app list and USB workshop. Water exposes fill, gravity, droplets, viscosity and speed; S3 ferrofluid exposes magnet, gravity, oil drag, shake response, cohesion and morph time. The new Ambient Color Clock smoothly flows through a color palette.
 
@@ -17,10 +19,10 @@ Image clocks offer RGB565-matched LED/pixel previews, 19 fonts, Unifont Unicode 
 
 Fixes unintended full erase in legacy USB updates and the first-use LittleFS null-label reboot. Adds Wi-Fi → display → preferences onboarding, BOOT controls (single: QR/pause; double: next driver), S3 trial order 9 then 7, grouped chip variants, smooth brightness, and optional device-side updates every 6 hours. Automatic updates default off and retain settings and applications.
 
-For `invalid header: 0xffffffff` or the format reboot loop, use **1.4.0 / Update firmware** over USB. Its separate boot and application images repair startup without erasing NVS or app storage. Previously erased data cannot be recovered. Both targets compile; no physical flashing was performed for this release.
+For `invalid header: 0xffffffff` or the format reboot loop, use **1.4.1 / Update firmware** over USB. Its separate boot and application images repair startup without erasing NVS or app storage. Previously erased data cannot be recovered. Both targets compile; no physical flashing was performed for this release.
 
 
-- [Release downloads](https://github.com/AntonVanke/HUB-75E/releases/tag/v1.4.0): ESP32 4 MB and ESP32-S3 8 MB Flash + 8 MB OPI PSRAM.
+- [Release downloads](https://github.com/AntonVanke/HUB-75E/releases/tag/v1.4.1): ESP32 4 MB and ESP32-S3 8 MB Flash + 8 MB OPI PSRAM.
 - Six native applications: Super Mario (32 levels), Pac-Man, Gravity Water, Ball Maze, Ferrofluid Clock (S3 only), and Ambient Color Clock. Gravity applications require a detected IMU.
 - Ferrofluid Clock v1.3.0 (S3 only): reference-video analysis, warm backing, side highlights and shadows, large drops slowly forming numerals, gravity dispersal and magnetic return.
 - Installer Next transfers the released port into USB configuration, reads device status and offers Wi-Fi scanning and panel settings.
@@ -33,7 +35,7 @@ For `invalid header: 0xffffffff` or the format reboot loop, use **1.4.0 / Update
 
 [Native SDK and Codex prompt](theme-studio/native/README.md) · [Image clock studio](https://antonvanke.github.io/HUB-75E/studio/index.html)
 
-The 0.9.x information below is retained as historical documentation. Legacy Lua/CWP2 applications do not run on the 1.4.0 native runtime.
+The 0.9.x information below is retained as historical documentation. Legacy Lua/CWP2 applications do not run on the 1.4.1 native runtime.
 
 **[Web installer, theme downloads and USB configuration](https://antonvanke.github.io/HUB-75E/)** · **[Firmware releases](https://github.com/AntonVanke/HUB-75E/releases)** · **[Flashing guide](FLASHING.en.md)**
 

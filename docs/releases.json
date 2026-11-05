@@ -2,6 +2,39 @@
   "schema": 1,
   "releases": [
     {
+      "version": "1.4.1",
+      "runtimeApi": 5,
+      "nativeAbi": 1,
+      "notes": "修复网页导航脚本；黑底白码与临时低亮度；后台请求串行化、断线重试与重启等待。",
+      "catalog": "applications/1.4.1/catalog.json",
+      "targets": {
+        "esp32": {
+          "chip": "esp32",
+          "flashBytes": 4194304,
+          "psramBytes": 0,
+          "manifest": "firmware/esp32-v1.4.1/manifest.json",
+          "updateManifest": "firmware/esp32-v1.4.1/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32-v1.4.1/app.bin",
+            "bytes": 1429424,
+            "sha256": "3c6c48ba4fe7d097655b758e16fb52f7b007376473ea9785ddcc0f6c335ab7c0"
+          }
+        },
+        "esp32s3": {
+          "chip": "esp32s3",
+          "flashBytes": 8388608,
+          "psramBytes": 8388608,
+          "manifest": "firmware/esp32s3-v1.4.1/manifest.json",
+          "updateManifest": "firmware/esp32s3-v1.4.1/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32s3-v1.4.1/app.bin",
+            "bytes": 1435952,
+            "sha256": "98b4377ee5ea8f905b8f10d58d492d6d9615989c2dd95296e60adc3f80074db4"
+          }
+        }
+      }
+    },
+    {
       "version": "1.4.0",
       "runtimeApi": 5,
       "nativeAbi": 1,
@@ -167,5 +200,5 @@
       }
     }
   ],
-  "latest": "1.4.0"
+  "latest": "1.4.1"
 }
