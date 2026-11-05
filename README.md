@@ -24,7 +24,7 @@
 此前若已出现 `invalid header: 0xffffffff` 或格式化重启循环，请用在线 USB 选择 **1.4.2 / 更新固件**；该更新包会恢复启动文件与应用，不擦除 NVS 和应用存储。已被旧操作擦除的数据无法恢复。此版本已通过双芯片编译，本次未进行实物烧录验证。
 
 
-- [下载 1.4.2](https://github.com/AntonVanke/HUB-75E/releases/tag/v1.4.2)：经典 ESP32 4 MB，以及 ESP32-S3 8 MB Flash + 8 MB OPI PSRAM。
+- 下载 1.4.2 固件包：[ESP32 4 MB](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.4.2.zip) · [ESP32-S3 8 MB Flash + 8 MB OPI PSRAM](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.4.2.zip)。
 - 六个原生应用：超级马里奥全 32 关、Pac-Man、全屏重力水、滚珠迷宫、磁流体时钟（仅 S3）、炫彩氛围时钟；重力应用需要实际存在的 IMU。
 - 磁流体时钟 v1.3.0（仅 S3）：根据用户提供的实拍逐帧分析，暖金底板、侧光投影、大液滴缓慢成字，保留重力摇散与磁性回吸。
 - 烧录完成点击“下一步”自动释放烧录串口并进入 USB 控制台，自动读取设备信息，可搜索 Wi-Fi 和配置屏幕驱动。

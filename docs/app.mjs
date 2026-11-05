@@ -150,7 +150,7 @@ function updateInstaller(){
  if(!target)return;
  const preserve=$('flash-mode').value==='update';$('installer').overrides={preserveData:preserve};$('installer').setAttribute('manifest',preserve?target.updateManifest:target.manifest);
  $('install-button').textContent=(preserve?'连接并更新 ':'连接并烧录 ')+board.label+' '+release.version;
- $('release-link').href='https://github.com/AntonVanke/HUB-75E/releases/tag/v'+release.version;
+ $('release-link').href=target.manifest.replace(/\/manifest\.json$/,'.zip');
  $('board-note').textContent=board.note+'。'+(preserve?'更新保留 Wi-Fi、设置和应用；要求原设备使用本项目兼容分区，不会执行整片擦除。':'全新安装会重置 Wi-Fi 和设置。');
 }
 for(const radio of document.querySelectorAll('input[name="board"]'))radio.onchange=updateInstaller;

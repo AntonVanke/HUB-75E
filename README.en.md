@@ -24,7 +24,7 @@ Fixes unintended full erase in legacy USB updates and the first-use LittleFS nul
 For `invalid header: 0xffffffff` or the format reboot loop, use **1.4.2 / Update firmware** over USB. Its separate boot and application images repair startup without erasing NVS or app storage. Previously erased data cannot be recovered. Both targets compile; no physical flashing was performed for this release.
 
 
-- [Release downloads](https://github.com/AntonVanke/HUB-75E/releases/tag/v1.4.2): ESP32 4 MB and ESP32-S3 8 MB Flash + 8 MB OPI PSRAM.
+- Firmware 1.4.2 downloads: [ESP32 4 MB](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.4.2.zip) · [ESP32-S3 8 MB Flash + 8 MB OPI PSRAM](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.4.2.zip).
 - Six native applications: Super Mario (32 levels), Pac-Man, Gravity Water, Ball Maze, Ferrofluid Clock (S3 only), and Ambient Color Clock. Gravity applications require a detected IMU.
 - Ferrofluid Clock v1.3.0 (S3 only): reference-video analysis, warm backing, side highlights and shadows, large drops slowly forming numerals, gravity dispersal and magnetic return.
 - Installer Next transfers the released port into USB configuration, reads device status and offers Wi-Fi scanning and panel settings.
