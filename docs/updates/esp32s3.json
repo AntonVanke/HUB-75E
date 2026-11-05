@@ -1,9 +1,9 @@
 {
-  "version": "1.4.1",
+  "version": "1.4.2",
   "chip": "esp32s3",
   "flashBytes": 8388608,
   "psramBytes": 8388608,
-  "path": "firmware/esp32s3-v1.4.1/app.bin",
-  "bytes": 1435952,
-  "sha256": "98b4377ee5ea8f905b8f10d58d492d6d9615989c2dd95296e60adc3f80074db4"
+  "path": "firmware/esp32s3-v1.4.2/app.bin",
+  "bytes": 1437216,
+  "sha256": "760f4e973ffd2dffbe073853f429805fac53ee486b4c0f555ea5b506e0ad36f2"
 }

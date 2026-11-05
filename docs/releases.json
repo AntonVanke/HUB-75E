@@ -2,6 +2,39 @@
   "schema": 1,
   "releases": [
     {
+      "version": "1.4.2",
+      "runtimeApi": 5,
+      "nativeAbi": 1,
+      "notes": "首次配网取得 IP 后自动进入主题，保留手动设置向导。",
+      "catalog": "applications/1.4.2/catalog.json",
+      "targets": {
+        "esp32": {
+          "chip": "esp32",
+          "flashBytes": 4194304,
+          "psramBytes": 0,
+          "manifest": "firmware/esp32-v1.4.2/manifest.json",
+          "updateManifest": "firmware/esp32-v1.4.2/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32-v1.4.2/app.bin",
+            "bytes": 1430672,
+            "sha256": "35e0c4ad6447cd640d524e7a8c57a336fe933f4840b14c51125c8e463193cd1b"
+          }
+        },
+        "esp32s3": {
+          "chip": "esp32s3",
+          "flashBytes": 8388608,
+          "psramBytes": 8388608,
+          "manifest": "firmware/esp32s3-v1.4.2/manifest.json",
+          "updateManifest": "firmware/esp32s3-v1.4.2/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32s3-v1.4.2/app.bin",
+            "bytes": 1437216,
+            "sha256": "760f4e973ffd2dffbe073853f429805fac53ee486b4c0f555ea5b506e0ad36f2"
+          }
+        }
+      }
+    },
+    {
       "version": "1.4.1",
       "runtimeApi": 5,
       "nativeAbi": 1,
@@ -200,5 +233,5 @@
       }
     }
   ],
-  "latest": "1.4.1"
+  "latest": "1.4.2"
 }

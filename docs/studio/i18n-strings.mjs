@@ -996,7 +996,7 @@ Object.assign(strings,{
   "1 / 3 · 连接 Wi-Fi": "1 / 3 · Connect Wi-Fi",
   "2 / 3 · 确认屏幕驱动": "2 / 3 · Confirm display driver",
   "3 / 3 · 其它设置": "3 / 3 · Other settings",
-  "连接设备热点后扫描并选择家庭 Wi-Fi。连接成功后再进入下一步。": "Connect to the device hotspot, scan and select your Wi-Fi. Continue after it connects.",
+  "连接设备热点后扫描并选择家庭 Wi-Fi。首次配网成功后会自动进入主题，也可以从维护页重新打开向导。": "Connect to the device hotspot, then scan and select your Wi-Fi. The theme starts automatically after first-time setup. You can reopen the wizard from Maintenance.",
   "观察屏幕确认图形和 R/G/B 色彩。保存驱动会重启，页面重连后继续引导。": "Check shapes and R/G/B colors on the panel. Saving the driver restarts the device; setup continues after reconnecting.",
   "保存亮度、时区并准备应用存储；方向、自动亮度和其它功能可随后在设置页调整。": "Save brightness and time zone and prepare app storage. Adjust orientation, automatic brightness and other options later in settings.",
   "完成后自动初始化空白应用存储；保留已经安装的应用。": "Finishing initializes empty app storage and preserves installed apps.",

@@ -11,7 +11,7 @@ export function setupWizard(container,{request,message,showPanel,refresh}){
   if(!active){if(layout)showPanel(location.hash.slice(1)||'overview');return;}
   document.querySelectorAll('[role="tabpanel"]').forEach(p=>p.hidden=true);
   $('label').textContent=['1 / 3 · 连接 Wi-Fi','2 / 3 · 确认屏幕驱动','3 / 3 · 其它设置'][step-1];
-  $('help').textContent=['连接设备热点后扫描并选择家庭 Wi-Fi。连接成功后再进入下一步。','观察屏幕确认图形和 R/G/B 色彩。保存驱动会重启，页面重连后继续引导。','保存亮度、时区并准备应用存储；方向、自动亮度和其它功能可随后在设置页调整。'][step-1];
+  $('help').textContent=['连接设备热点后扫描并选择家庭 Wi-Fi。首次配网成功后会自动进入主题，也可以从维护页重新打开向导。','观察屏幕确认图形和 R/G/B 色彩。保存驱动会重启，页面重连后继续引导。','保存亮度、时区并准备应用存储；方向、自动亮度和其它功能可随后在设置页调整。'][step-1];
   if(layout&&step<3){$('slot').append(cards[step-1]);cards[step-1].classList.remove('narrow');if(step===2)document.getElementById('panel-config').querySelector('fieldset').prepend(driverLabel);}
   $('misc').hidden=step!==3;$('next').hidden=step===3;$('back').hidden=step===1;
   $('next').disabled=busy||(step===1?!data.connected:!data.setup?.panelChosen);

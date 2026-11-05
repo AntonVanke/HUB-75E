@@ -468,6 +468,7 @@ void setup(){
     }
     runtime.stop();return false;
   };
+  service.panelReady=panelInitialized;
   service.begin(THEME_COUNT,THEME_TITLES);
   if(service.needsSetup())setupQr.begin(service.setupName().c_str(),service.setupPassword().c_str());
   service.lastError=panelInitError;

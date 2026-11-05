@@ -43,6 +43,7 @@ public:
   std::function<String()> hardwareStatus;
   std::function<bool(const String&,String&)> hardwareTest;
   std::function<String()> panelStatus;
+  bool panelReady=false;
   std::function<void(const PanelOrientation&)> orientationChanged;
   std::function<bool(PanelOrientation&,bool)> orientationCalibrate;
   std::function<String()> orientationStatus;
@@ -133,15 +134,17 @@ private:
   bool runApp(int index,String& error);
   bool connectWifi(const String& ssid,const String& password,String& error);
   bool saveConfig(int nextTheme,int nextBrightness,int nextRotation,const String& tz,String& error);
-  bool savePanel(const String& order,PanelTiming timing,String& error);
+  bool savePanel(const String& order,PanelTiming timing,String& error,bool reboot=true);
   bool trialAction(const String& action,String& error);
   String trialJson()const;
   bool factoryReset(const String& confirmation,String& error);
   bool factoryResetting_=false,setupRequired_=false;
+  bool manualSetup_=false,autoSetupAttempted_=false;
   bool bootRaw_=true,bootStable_=true,bootArmed_=false;
   uint32_t bootChanged_=0,bootClicked_=0;
   void pollSetupButton();
   bool setupAction(const String& action,String& error);
+  void finishSetupAfterWifi();
   String panelOrder_="RGB";
   PanelTiming panelTiming_;
   String statusJson();
