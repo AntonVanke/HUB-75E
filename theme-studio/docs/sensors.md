@@ -1,5 +1,7 @@
 # 传感器主题 API 2 / Sensor Theme API 2
 
+> 历史资料 / Historical: 本文描述旧 Lua/CWP2 固件，不适用于当前原生运行时。Current C/C++ / CWP3 docs: [SDK](../native/README.md), [current device API](device-api.md).
+
 新增八套传感器主题固定为 64×64、30 FPS，要求 `runtimeApi:2` 与 `requirements.chips:["esp32s3"]`。芯片系列不代表传感器一定存在：温湿度主题另声明 `requirements.sensors:["temperature","humidity"]`，重力主题声明 `requirements.sensors:["imu"]`。安装器检查能力，运行期间仍检查有效性。旧 API 1 固件不能据此视为兼容。
 
 The eight new themes target 64×64 at 30 FPS, require `runtimeApi:2`, and declare `requirements.chips:["esp32s3"]`. A chip family does not establish sensor presence: climate themes also declare `requirements.sensors:["temperature","humidity"]`, and gravity themes declare `requirements.sensors:["imu"]`. Installation checks capabilities; runtime code must still check validity. API 1 firmware is not assumed compatible.

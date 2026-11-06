@@ -8,7 +8,7 @@
   <title>Clockwise · HUB75 像素时钟</title>
   <link rel="stylesheet" href="style.css">
   <script type="module" src="vendor/esp-web-tools-10.1.0/install-button.js"></script>
-  <script type="module" src="app.mjs?v=1.5.0-offline"></script>
+  <script type="module" src="app.mjs?v=1.5.1-offline"></script>
 </head>
 <body>
   <header class="hero">
@@ -34,15 +34,15 @@
           <fieldset class="board-picker"><legend class="sr-only">硬件型号</legend>
             <label class="board-option"><input type="radio" name="board" value="esp32" checked><span><strong>ESP32</strong><small>4 MB Flash · 无 PSRAM</small></span></label>
             <label class="board-option"><input type="radio" name="board" value="esp32s3"><span><strong>ESP32-S3</strong><small>至少 8 MB Flash · 8 MB OPI PSRAM</small></span></label>
-          </fieldset><label>发布版本<select id="release-version"><option>1.5.0</option></select></label><label>烧录方式<select id="flash-mode"><option value="update">更新固件，保留设置和应用</option><option value="install">全新安装，重置设置</option></select></label>
+          </fieldset><label>发布版本<select id="release-version"><option>1.5.1</option></select></label><label>烧录方式<select id="flash-mode"><option value="update">更新固件，保留设置和应用</option><option value="install">全新安装，重置设置</option></select></label>
           <p id="board-note" class="note">适用于本项目经典 ESP32 接线与 4 MB Flash 分区。</p>
           <div class="install-row">
-            <esp-web-install-button id="installer" manifest="firmware/esp32-v1.5.0/update-manifest.json">
+            <esp-web-install-button id="installer" manifest="firmware/esp32-v1.5.1/update-manifest.json">
               <button id="install-button" class="primary" slot="activate" type="button">连接并烧录 ESP32</button>
               <span slot="unsupported" class="note">此浏览器不支持在线烧录，请下载离线包。</span>
               <span slot="not-allowed" class="note">请通过 HTTPS 或 localhost 打开此页。</span>
             </esp-web-install-button>
-            <a id="release-link" class="button secondary" href="firmware/esp32-v1.5.0.zip" target="_blank" rel="noopener noreferrer">下载离线包 ↗</a>
+            <a id="release-link" class="button secondary" href="firmware/esp32-v1.5.1.zip" target="_blank" rel="noopener noreferrer">下载离线包 ↗</a>
           </div>
           <p id="flash-support" class="small" role="status"></p>
         </article>
@@ -70,6 +70,7 @@
       <div class="config-grid"><article id="usb-screen-preview" class="card"></article><article id="usb-hardware-tests" class="card"></article>
         <article class="card"><h3>应用快捷管理</h3><p class="note">连接 USB 并读取应用后，可在「主题应用」中一键安装公开主题；已安装应用可在这里运行或卸载。USB 一键安装需要 v0.9.8 或更新固件。</p><label>已安装应用<select id="managed-app"><option value="">请先读取应用</option></select></label><div class="connection-actions"><button id="manage-run" type="button" class="secondary" data-connected disabled>运行选中应用</button><button id="manage-uninstall" type="button" class="secondary" data-connected disabled>卸载选中应用</button><button id="cancel-install-config" type="button" class="text-button" hidden>取消安装</button></div></article>
         <article class="card"><h3>发现局域网时钟</h3><p class="note">由已连接 USB 的时钟在自己的 Wi-Fi 子网内发现本项目设备，再通过串口返回结果；此网页不会扫描局域网 HTTP 地址。需 v0.9.8 或更新固件。</p><button id="discover-devices" type="button" class="secondary" data-connected disabled>发现同网设备（5 秒）</button><p id="discovery-state" class="small" role="status">尚未开始发现。设备需先连接局域网 Wi-Fi。</p><div id="discovered-devices"></div><small>不同子网、访客隔离或阻止广播的网络可能无法发现设备；也可从串口状态获得 IP 后直接打开设备后台。</small></article>
+        <article class="card" id="usb-time-settings"></article>
         <article class="card"><div class="card-heading"><h3>显示与播放</h3><span class="small">非密码设置</span></div><form id="settings-form"><div class="form-grid"><label>亮度 <span class="field-hint">1–255</span><input id="brightness" type="number" min="1" max="255" value="80" required></label><label>时区 <span class="field-hint">POSIX</span><input id="timezone" value="CST-8" maxlength="63" required spellcheck="false"></label><label class="full">默认主题<select id="device-theme"><option value="-1">内置基础时钟</option></select></label><label class="full">轮换间隔（分钟）<input id="rotation" type="number" min="0" max="1440" value="0" required><small>0 为固定主题；轮换主题池需在设备后台设置。</small></label></div><button class="primary" type="submit" data-connected disabled>保存显示设置</button></form><div class="file-actions"><button id="export-settings" type="button" class="text-button">↓ 导出配置</button><button id="import-settings" type="button" class="text-button">↑ 导入草稿</button><input id="settings-file" type="file" accept="application/json,.json" hidden><span>导入后需手动保存</span></div></article>
         <article class="card"><h3>Wi-Fi 配网</h3><form id="wifi-form" autocomplete="off"><div class="connection-actions"><button id="wifi-scan" type="button" class="secondary" data-connected disabled>搜索附近 Wi-Fi</button><span id="wifi-scan-state" role="status"></span></div><label>搜索结果<select id="wifi-networks"><option value="">先搜索，再选择网络</option></select></label><label>网络名称（SSID）<input id="wifi-ssid" maxlength="32" required autocomplete="off"></label><label>密码<input id="wifi-password" type="password" maxlength="63" autocomplete="new-password" placeholder="开放网络可留空"></label><p class="note">连接成功后由设备保存。密码不包含在导出文件中，发送后输入框会清空。</p><button class="primary" type="submit" data-connected disabled>连接此 Wi-Fi</button></form><div class="backend-note"><strong>在设备后台安装主题</strong><p>配网完成后读取状态，点击「打开设备后台」。此 HTTPS 页面通过 USB 串口配置设备；设备后台在本地 HTTP 新标签页打开。</p></div></article>
         <article class="card panel-card"><h3>屏幕颜色与驱动 <span class="tag">S3 v0.9.7+</span></h3><p id="panel-support" class="note">读取设备状态后，支持的 ESP32-S3 固件将开放此设置。</p><form id="panel-form"><fieldset id="panel-fields" disabled><div class="form-grid"><label>RGB 颜色顺序<select id="panel-rgb"><option>RGB</option><option>RBG</option><option>GRB</option><option>GBR</option><option>BRG</option><option>BGR</option></select></label><label>屏幕驱动<select id="panel-driver"><option value="0">SHIFTREG</option><option value="1">FM6124</option><option value="2">FM6126A</option><option value="3">ICN2038S</option><option value="4">MBI5124</option><option value="5">SM5266P</option><option value="6">DP3246 / SM5368</option><option value="7">GPIO_SCAN</option><option value="8">CLOCKWISE</option><option value="9">PROTOMATTER</option></select></label></div><button type="submit" class="secondary">保存屏幕设置并重启</button></fieldset></form></article>

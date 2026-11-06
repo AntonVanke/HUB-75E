@@ -15,6 +15,7 @@
 #include "PanelTrial.h"
 #include "AutoBrightness.h"
 #include "FirmwareUpdate.h"
+#include "TimeSync.h"
 class DeviceService {
   class UploadServer final:public WebServer {
   public:
@@ -58,6 +59,7 @@ public:
 private:
   UploadServer web_{80};
   Preferences prefs_;
+  TimeSync timeSync_;
   DNSServer dns_;
   WiFiUDP discoveryUdp_;
   struct DiscoveredDevice { IPAddress ip; char id[17]={},chip[32]={},version[16]={}; } discovered_[12];

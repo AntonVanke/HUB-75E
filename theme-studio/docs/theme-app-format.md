@@ -1,5 +1,7 @@
 # Clockwise 源码包与 CWP 应用格式
 
+> 历史资料 / Historical: 本文描述旧 Lua/CWP2 固件，不适用于当前原生运行时。Current C/C++ / CWP3 docs: [SDK](../native/README.md), [current device API](device-api.md).
+
 开发入门见 [主题应用开发手册](theme-authoring.md)。本文件面向打包器、固件和工具作者；普通主题作者优先编辑源码文件夹，不手写CWP二进制。
 
 ## 1. 三层职责

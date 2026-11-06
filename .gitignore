@@ -31,3 +31,6 @@ Thumbs.db
 /theme-studio/private/
 /theme-studio/tools/prepare-november-menu.py
 /theme-studio/embedded/demo/src/ThemeThumbs.h
+
+# Reference GIFs are kept in theme-studio/themes; Pages does not use these copies.
+/docs/themes/upstream/reference/

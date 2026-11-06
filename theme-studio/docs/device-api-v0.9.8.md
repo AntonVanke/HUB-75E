@@ -1,5 +1,7 @@
 # v0.9.8 设备管理接口
 
+> 历史资料 / Historical: 本文描述旧 Lua/CWP2 固件，不适用于当前原生运行时。Current C/C++ / CWP3 docs: [SDK](../native/README.md), [current device API](device-api.md).
+
 本版本新增功能以源码构建与本地模拟验证为依据；未通过本次操作写入或验收真实设备。默认稳定下载仍为 ESP32 v0.9.3 / ESP32-S3 v0.9.7，新增 v0.9.8 下载与烧录选项标明待实屏验证。
 
 ## 能力与应用安装

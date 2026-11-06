@@ -1,12 +1,14 @@
 # HUB-75E 原生二进制主题 SDK
 
-本目录使用 C/C++ 编写主题，编译为 Xtensa 机器码，并打包为 CWP3。固件运行时 API 为 4，原生 ABI 为 1。固件不编译源码，不运行 Lua；ESP32 与 ESP32-S3 必须使用各自的包。
+简体中文 · [English](https://github.com/AntonVanke/HUB-75E/blob/main/theme-studio/native/README.en.md)
+
+本目录使用 C/C++ 编写主题，编译为 Xtensa 机器码，并打包为 CWP3。固件运行时 API 为 5，原生 ABI 为 1。固件不编译源码，不运行 Lua；ESP32 与 ESP32-S3 必须使用各自的包。
 
 ## 普通用户
 
-进入设备后台的“应用”，直接安装、卸载五个内置应用：超级马里奥全 32 关、Pac-Man、全屏重力水、滚珠迷宫、磁流体时钟。包由固件提供，无需互联网。
+进入设备后台的“应用”，直接安装、卸载六个核心应用：超级马里奥全 32 关、Pac-Man、全屏重力水、滚珠迷宫、磁流体时钟（仅 S3）、炫彩氛围时钟。包由固件提供，无需互联网。
 
-“图片时钟制作”支持最多 32 张 PNG、JPEG、WebP 幻灯片（1–3600 秒，可淡入淡出），裁剪填满、完整显示或拉伸到 64×64；支持鼠标/触摸拖动、方向键微调、五种时钟字体、12/24 小时、秒显示、冒号闪烁和最多八层中文文字。保存 .project.json 后可重新打开继续编辑。图片在电脑/手机转换为 RGB565，随二进制时钟包一起导入，无需编译器。该模板不占五个内置主题名额。
+“图片时钟制作”支持最多 32 张 PNG、JPEG、WebP 幻灯片（1–3600 秒，可淡入淡出），裁剪填满、完整显示或拉伸到 64×64；支持鼠标/触摸拖动、方向键微调、19 款时钟字体、12/24 小时、秒显示、冒号闪烁和最多八层中文文字。保存 .project.json 后可重新打开继续编辑。图片在电脑/手机转换为 RGB565，随二进制时钟包一起导入，无需编译器。该模板不占核心主题名额。
 
 后台导出的是完整 CWP3 应用。资源和元数据均保存在包内。C/C++ 源码保存在开发工程中；机器码包不等于源码。
 
@@ -20,7 +22,7 @@ python theme-studio/native/build.py gravity-maze --chip esp32s3
 python theme-studio/native/build.py C:/my-theme --chip all
 ```
 
-输出位于 `theme-studio/native/dist/`。全部构建会同步固件的五个内置二进制包及图片时钟模板。单主题构建不会更新固件内置目录。
+输出位于 `theme-studio/native/dist/`。全部构建会同步固件的六个核心应用二进制包（经典 ESP32 为五个）及图片时钟模板。单主题构建不会更新固件内置目录。
 
 每个主题目录包含 `theme.cpp`、`theme.json` 和可选素材；`.cpp`/`.c` 文件参与编译，`resources` 指定的文件打包进应用。编译参数为 `-O2 -fPIC -mlongcalls -mtext-section-literals`，关闭异常、RTTI、线程安全静态初始化，不链接 Arduino/标准 C++ 容器库。
 
@@ -42,7 +44,7 @@ python theme-studio/native/build.py C:/my-theme --chip all
 }
 ```
 
-编译器自动填入 `runtime: native`、`nativeAbi: 1`、`runtimeApi: 4`、芯片和代码/数据段需求。`stateBytes` 应不小于 `sizeof(State)`，`graphicsBytes` 应包含 8192 字节画布及运行时图形资源。ESP32 目标最多 60 FPS，S3 最多 240 FPS；这是调度上限，不是实测性能承诺。
+编译器自动填入 `runtime: native`、`nativeAbi: 1`、`runtimeApi: 4`（使用参数时为 5）、芯片和代码/数据段需求。`stateBytes` 应不小于 `sizeof(State)`，`graphicsBytes` 应包含 8192 字节画布及运行时图形资源。ESP32 目标最多 60 FPS，S3 最多 240 FPS；这是调度上限，不是实测性能承诺。
 
 ## 生命周期与接口
 
@@ -50,7 +52,7 @@ python theme-studio/native/build.py C:/my-theme --chip all
 
 | 回调 | 用途 |
 |---|---|
-| `start(state, api)` | 初始化一次；返回 false 拒绝安装或启动 |
+| `start(state, api)` | 初始化一次；返回 false 拒绝启动；安装只进行结构校验 |
 | `update(state, api, dtMs)` | 更新物理/动画；时间单位毫秒 |
 | `draw(state, api)` | 绘制完整 64×64 RGB565 画布，固件负责提交 |
 | `button(state, api, key)` | key=0 为 A，key=1 为 B |
@@ -70,7 +72,10 @@ python theme-studio/native/build.py C:/my-theme --chip all
 
 ```text
 请为 HUB-75E 制作 C/C++ 原生二进制主题，不使用 Lua、JavaScript 字节码或 GIF 播放代替逻辑。
-先阅读 theme-studio/native/README.md、include/cw_theme.h 和相关原生主题示例。
+项目：https://github.com/AntonVanke/HUB-75E
+先克隆仓库并阅读 theme-studio/native/README.md、theme-studio/native/include/cw_theme.h 和相关原生主题示例。
+SDK 文档：https://github.com/AntonVanke/HUB-75E/blob/main/theme-studio/native/README.md
+ABI 接口：https://github.com/AntonVanke/HUB-75E/blob/main/theme-studio/native/include/cw_theme.h
 目标为 64×64 HUB75，芯片为【ESP32-S3 / ESP32】，主题效果为【描述】。
 在 native/themes/【唯一 id】创建 theme.cpp、theme.json 和资源，使用独立 packageName。
 实现 CwTheme ABI 1 生命周期，通过 CwApi 绘图/读传感器/读资源。
@@ -107,3 +112,9 @@ CWN1 从 ELF32 共享对象提取代码、数据、BSS 和重定位，删除调�
 原生主题在 `start()` 中读取 `api->data(api->context, "setting.magnet", 1.6f)`；后台应用的“参数设置”或主题工坊的 USB 参数按钮可保存。HTTP `GET /api/apps/config?packageName=...` 读取结构和当前值；POST 同一路径，表单 `values={"magnet":1.8}` 保存（未提供的项恢复默认）。串口 `{"cmd":"app.config","packageName":"org.clockwise.ferrofluid-clock","values":{"magnet":1.8}}` 同理，省略 values 为查询。值校验范围并按步进取整；保存后重新加载当前应用。数据按应用槽持久化、同包名升级保留、卸载删除；帧循环只读固定容量数值表，无 NVS 或 JSON 开销。
 
 磁流体新版本仅为 ESP32-S3 构建。`requirements.chips` 可限定构建目标；错误芯片会在编译与安装时拒绝。炫彩氛围时钟、重力水和图片时钟仍提供两种芯片包。图片时钟 1.1.0 的 v3 配置增加动态日期和秒进度，兼容已有 v1/v2 图片时钟包；19 款字体与静态元素在电脑端栅格化，Unifont 完整字体不写入设备。LED 预览仅模拟像素间隙，实际亮度、色温和光学效果取决于屏幕。
+
+## 当前设备功能
+
+固件 1.5.1 提供 NTP 选择、手动时间和每日校时；1.5.0 提供 USB 屏幕预览、诊断和后台安装。安装不执行新应用，点击运行才启动；更新当前应用保留旧资源到下次运行。详情见 [当前设备 API](https://github.com/AntonVanke/HUB-75E/blob/main/theme-studio/docs/device-api.md)。
+
+完整公开目录为 S3 59 款、经典 ESP32 5 款；53 款旧主题的原生适配作为外部应用安装，不扩大固件内置列表。

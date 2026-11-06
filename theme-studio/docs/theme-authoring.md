@@ -1,5 +1,7 @@
 # Clockwise 主题应用开发手册
 
+> 历史资料 / Historical: 本文描述旧 Lua/CWP2 固件，不适用于当前原生运行时。Current C/C++ / CWP3 docs: [SDK](../native/README.md), [current device API](device-api.md).
+
 本文对应 Lua 运行 API 1、CWP2 应用包和固件0.9.3新增的应用元数据功能。编写时先使用 `examples/hello-clock`，再逐步加入素材、分关加载和交互。包格式细节见 [主题应用格式](theme-app-format.md)。
 
 ## 1. 先区分四种文件

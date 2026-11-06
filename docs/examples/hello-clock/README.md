@@ -1,3 +1,5 @@
+> Historical Lua/CWP2 example. 当前 C/C++ / CWP3 主题请使用 [原生 SDK](https://github.com/AntonVanke/HUB-75E/blob/main/theme-studio/native/README.md)。
+
 # 星点时钟示例
 
 这是一个不依赖外部素材、64×64的低内存主题源码包。每秒随机换色，星点按经过时间缓慢移动；A键换色，B键开关星点。未校时显示`SYNC...`。

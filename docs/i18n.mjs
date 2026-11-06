@@ -1,3 +1,4 @@
+import {timeStrings} from './studio/time-settings.mjs';
 import { themeTranslations } from './theme-translations.mjs';
 
 export const languageKey = 'clockwise.language';
@@ -6,6 +7,7 @@ try { current = localStorage.getItem(languageKey) || (navigator.language?.starts
 if (!['zh-CN', 'en'].includes(current)) current = 'zh-CN';
 
 export const translations = {
+  ...timeStrings,
   "更新应用":"Update app",
   "当前固件安装会暂停主题；更新至 1.5.0 可保持当前主题运行。":"This firmware pauses the theme during installation. Update to 1.5.0 for background installation.",
   "实时屏幕":"Live screen",

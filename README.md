@@ -2,97 +2,46 @@
 
 简体中文 · [English](README.en.md)
 
-基于 ESP32 / ESP32-S3 与 HUB75 RGB LED 面板的 64×64 原生主题时钟。主题使用 C/C++ 编译为 Xtensa 机器码，打包为 CWP3；当前固件不运行 Lua。
+基于 ESP32 / ESP32-S3 和 HUB75 面板的 64×64 时钟。主题使用 C/C++ 编译为芯片对应的 Xtensa 机器码，打包为 CWP3；当前固件不运行 Lua。Runtime API 5，native ABI 1。
 
-磁流体电脑模拟：稳定 → 晃动 → 磁性回吸 → 换字；这是同一份 C++ 代码输出。
+**当前版本：1.5.1** · [在线烧录](https://antonvanke.github.io/HUB-75E/#flash) · [主题应用](https://antonvanke.github.io/HUB-75E/#themes) · [USB 配置](https://antonvanke.github.io/HUB-75E/#config) · [图片时钟工坊](https://antonvanke.github.io/HUB-75E/studio/index.html)
 
-![Ferrofluid Clock](web/previews/ferrofluid-clock.gif)
+![磁流体时钟电脑模拟](web/previews/ferrofluid-clock.gif)
 
-## 当前版本：1.4.2
+动画由主题 C++ 代码在电脑上生成，不代表实屏录像或设备帧率测量。
 
-旧版其余 53 款公开主题已适配为 ESP32-S3 原生 CWP3 应用，包含游戏影视风景、角色动画、温湿度和重力主题。连同现有应用共 59 款，主题工坊可按芯片选择。[下载旧版主题适配整包](https://antonvanke.github.io/HUB-75E/native/dist/legacy-themes-esp32s3.zip) · [适配源码与构建说明](theme-studio/native/legacy/README.md)
+## 当前功能
 
-首次配网成功并取得 IP 后自动退出引导，显示 IP 倒计时后开始播放主题。
+- **1.5.1 时间设置**：默认阿里云 NTP，可选择 Cloudflare、NTP Pool 或自定义域名/IPv4。开机和固件更新重启后联网即校时，成功后每隔 24 小时校准。失败换源、后台重试；支持关闭自动校时、手动设时和使用电脑时间。
+- **1.5.0 USB 与后台**：主题页直接连接串口，实际屏幕画面预览、硬件检测、响应式手机后台。安装不主动停止当前主题，点击运行才切换；更新运行中的应用保留旧资源供当前实例使用。
+- 磁流体时钟 v1.4.0 阴影和高光跟随 IMU 重力方向，保持倾斜时也有效。
+- 配网引导、屏幕驱动轮测、平滑自动亮度、方向校正、定时轮换和应用参数。可选固件自动更新每 6 小时检查一次，默认关闭，与每日 NTP 校时独立。
+- 图片时钟：32 张幻灯片、拖动定位、八层文字、19 款字体、Unifont Unicode、装饰元素、渐变、日期和秒进度。完整字体留在电脑，仅打包所需字形和图片。
 
-修复主题应用和设备配置导航无法点击；配网二维码改为黑底白码、亮度最高 24/255，退出后恢复设置。后台请求按顺序执行，读取短暂失败自动重试，保存不重复提交，切换 Wi-Fi 或驱动时等待重连。
+本版通过双芯片编译和校时调度模拟测试，本次发布未烧录或验收实屏。重力水、滚珠迷宫的 120 FPS 是目标，安装和网络访问期间的实际帧率仍需设备测量。
 
-新增应用参数：在设备应用列表或工坊 USB 连接后点击“参数设置”，保存后自动应用，重启保留。重力水可调水量、重力、滴数、粘度和速度；磁流体可调磁力、重力、油阻尼、摇散强度、凝聚和成字时间。新增炫彩氛围时钟。
+## 下载
 
-图片时钟采用共用 RGB565 合成的 LED / 像素预览，提供 19 款字体、Unifont 中文及 Unicode、8 类装饰元素、动态日期和秒进度条；支持无图片渐变背景。字形在电脑端生成，完整 Unicode 字库不装入 ESP。
+| 芯片 | 固件 | 应用整包 | 硬件要求 |
+| --- | --- | --- | --- |
+| ESP32 | [v1.5.1 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.5.1.zip) | [5 款应用](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | 经典 ESP32，4 MB Flash |
+| ESP32-S3 | [v1.5.1 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.5.1.zip) | [59 款应用](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | 本项目板型，至少 8 MB Flash + 8 MB OPI PSRAM |
 
+S3 N4 不适用此固件。其它板型须核对 Flash、PSRAM 和接线。
 
-修复旧版本在线更新误擦除与首次空白存储格式化断言重启。首次设置按 Wi-Fi → 屏幕驱动 → 其它设置引导，可跳过；S3 轮测先 9 后 7，BOOT 单按切换二维码并暂停、双按切换驱动。主题列表合并芯片版本，自动亮度平滑变化。维护页可开启每 6 小时一次的设备自动更新，默认关闭，校验后保留设置和应用并重启。
+六款核心主题为超级马里奥全 32 关、Pac-Man、全屏重力水、滚珠迷宫、磁流体时钟和炫彩氛围时钟。磁流体仅支持 S3，另有 53 款旧主题的 S3 原生适配；合并芯片版本后共 59 款、64 个安装包，图片时钟模板另计。传感器主题要求实际存在的传感器。
 
-此前若已出现 `invalid header: 0xffffffff` 或格式化重启循环，请用在线 USB 选择 **1.4.2 / 更新固件**；该更新包会恢复启动文件与应用，不擦除 NVS 和应用存储。已被旧操作擦除的数据无法恢复。此版本已通过双芯片编译，本次未进行实物烧录验证。
+## 使用
 
+1. 桌面 Chrome / Edge 在线烧录，选择芯片和版本。兼容的已有设备选择“更新固件，保留设置和应用”，新设备选择“全新安装”。
+2. 烧录完成点击下一步，在 USB 配置页搜索 Wi-Fi、选择驱动。首次热点 `HUB75-xxxx`，默认密码 `12345678`，后台 `http://192.168.4.1/`。
+3. 主题页直接连接 USB，安装并运行应用：**电脑下载校验 → USB 分块传输 → 设备验证保存**。USB 安装无需设备通过 Wi-Fi 访问 GitHub。
+4. 直接访问设备 IP 打开后台，设置播放、应用参数、显示和时间；维护页可测试 IMU、温湿度、蜂鸣器、屏幕、光敏和按钮。
+5. 实时预览低频读取 RGB565 画面，安装期间暂停读取；预览不测量实体面板的扫描刷新、亮度和闪烁。
 
-- 下载 1.4.2 固件包：[ESP32 4 MB](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.4.2.zip) · [ESP32-S3 8 MB Flash + 8 MB OPI PSRAM](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.4.2.zip)。
-- 六个原生应用：超级马里奥全 32 关、Pac-Man、全屏重力水、滚珠迷宫、磁流体时钟（仅 S3）、炫彩氛围时钟；重力应用需要实际存在的 IMU。
-- 磁流体时钟 v1.3.0（仅 S3）：根据用户提供的实拍逐帧分析，暖金底板、侧光投影、大液滴缓慢成字，保留重力摇散与磁性回吸。
-- 烧录完成点击“下一步”自动释放烧录串口并进入 USB 控制台，自动读取设备信息，可搜索 Wi-Fi 和配置屏幕驱动。
-- 主题工坊直接通过 USB 安装内置应用、CWP 文件与自制图片时钟；交互生成带项目/SDK/ABI 链接的完整 Codex 提示词。
-- 首次启动自动初始化全空白应用存储；已有损坏数据不会自动删除。IMU 检测 0x6A/0x6B 并重试，传感器缺失仍明确报告。
-- 图片时钟：32 张幻灯片、鼠标/触摸拖动、中文文字图层、19 种时钟字体、秒显示、12/24 小时、颜色/阴影、淡入淡出，以及编辑工程保存/恢复。
-- Pages 可选择固件版本、USB 首次烧录或兼容分区保留配置更新、安装该版本的应用。
-- 设备维护页增加版本检查和 OTA：浏览器下载、校验 SHA-256 后发送至设备，避免额外占用设备 TLS 内存。
-- 维护检测：IMU 自检及加速度/角速度、蜂鸣器、温湿度、屏幕测试图、光敏 ADC、按键计数；不支持的硬件明确报告。
-- 编译和电脑验证已完成，本版尚未烧录实屏验证。小修改递增 PATCH（1.0.2），大功能递增 MINOR（1.1.0）。
+联网后 IP 提示的 5 秒倒计时保留。手动时间模式不启动 NTP，没有电池 RTC 的设备完全断电后需再次设时。详见 [烧录与配网](FLASHING.md) 和 [当前设备接口](theme-studio/docs/device-api.md)。
 
-[原生 SDK 与 Codex 提示词](theme-studio/native/README.md) · [图片时钟工坊](https://antonvanke.github.io/HUB-75E/studio/index.html)
-
-```powershell
-python theme-studio/native/build.py
-node theme-studio/native/embed.mjs
-pio run -d theme-studio/embedded/demo -e esp32s3-hub75
-```
-
-以下 0.9.x 内容保留作历史说明；旧 Lua/CWP2 包不能在 1.4.2 原生运行时执行。
-
-**[在线烧录、主题下载与串口配置](https://antonvanke.github.io/HUB-75E/)** · **[固件下载](https://github.com/AntonVanke/HUB-75E/releases)** · **[烧录说明](FLASHING.md)**
-
-**[OSHWHUB 硬件工程](https://oshwhub.com/team_rzwlbjjl/project_tfevmhyp)**：ESP32-S3 控制板、HUB75 电平转换、AHT30 温湿度、LSM6DS3TR-C 六轴传感器、TF 卡和按键；工程已按 MIT 提交公开，等待平台审核。OSHWHUB 提供电路与 PCB，GitHub 提供固件、主题应用、在线烧录和主题工坊；两边介绍已相互链接。
-
-## 发布版本
-
-| 版本 | 硬件 | 说明 |
-| --- | --- | --- |
-| [ESP32 v0.9.3](https://github.com/AntonVanke/HUB-75E/releases/tag/esp32-v0.9.3) | 经典 ESP32，4 MB Flash，无需 PSRAM | 保留原 DMA 后端，支持 CWP2 主题应用及按设备资源检查 |
-| [ESP32-S3 v0.9.7](https://github.com/AntonVanke/HUB-75E/releases/tag/esp32s3-v0.9.7) | 当前验证的 8 MB Flash、OPI PSRAM 控制板 | 可选原 DMA 与 Protomatter；9 号 Protomatter 已在 P2.5-2121-32S-V1 面板上实屏验证 |
-| [ESP32 / S3 v0.9.8 新功能版](https://github.com/AntonVanke/HUB-75E/releases/tag/v0.9.8) | 分别提供经典 4 MB / S3 8 MB + OPI PSRAM 构建 | API 2、传感器主题、方向、USB 安装与发现；本次源码构建，尚未烧录实屏验证 |
-
-v0.9.3 / v0.9.7 下载保留已实测的历史预编译成品。当前主分支为 v1.4.2，不能把重新构建的经典 ESP32 目标当作历史 v0.9.3 原始镜像。发布脚本保留历史应用二进制，不替换其版本内容。
-
-S3 包使用 8 MB Flash 分区和 OPI PSRAM 配置，**不适用于只有 4 MB Flash 的 S3 N4 模组**。其它模组需要按实际 Flash、PSRAM 和接线重新构建。S3 与经典 ESP32 接线不同。
-
-## 功能
-
-- 57 款公开的可安装、导出、更新和卸载主题应用，支持文件夹或 ZIP 源码包、CWP2 设备包；内部午餐菜单及数据不包含在公开仓库中。
-- 新板主题：气象站、舒适花园、温湿度趋势、重力沙漏、水平仪、重力迷宫、星尘和流体。新主题要求运行时 API 2 和对应实测存在的传感器。
-- 显示方向可手动选择 0°/90°/180°/270°，S3 可按重力自动旋转，带稳定延时与传感器离线回退。
-- 设备后台和 USB 网页支持一键安装/卸载、局域网设备发现；发现依赖同网段设备运行支持该协议的新固件，路由器客户端隔离或跨 VLAN 不在广播范围内。
-- 在线 Lua 编辑、64×64 预览、素材与主题包导出，以及完整中文开发手册。
-- 定时间隔轮换、每日定点轮换、指定时段主题和参与轮换的应用选择。
-- 设备后台包含显示、网络、应用、播放计划、维护与 OTA；串口支持 JSON 配网和配置。
-- 依据芯片、PSRAM、Lua 和图形内存进行应用需求检查。声明匹配不等于对所有动画场景完成性能认证。
-- S3 v0.9.7 内置 0–6 号 DMA 芯片模式、7 号 GPIO 自检、8 号 Clockwise 参数基准和 9 号 Protomatter 正常渲染。经典 v0.9.3 没有这组新驱动菜单。
-
-## 快速使用
-
-1. 电脑使用 Chrome / Edge 打开[在线入口](https://antonvanke.github.io/HUB-75E/)，选择正确的芯片与固件，再连接 USB 烧录。
-2. 烧录完成后使用网页的串口配置页设置 Wi-Fi，或在串口工具中发送单行 JSON：
-
-   ```json
-   {"cmd":"wifi","ssid":"你的网络名称","password":"你的网络密码"}
-   ```
-
-3. 发送 `{"cmd":"status"}` 查看 IP，然后在浏览器打开设备后台。
-4. v0.9.8 可在设备后台的“主题应用”直接安装，或在在线入口连接 USB 后一键安装/卸载。也可下载 `.cwp` 手动导入；主题源码 `.zip` 可在工坊中导入编辑。
-
-网页烧录要求 HTTPS 或 localhost，以及支持 Web Serial 的桌面浏览器。GitHub Pages 的 HTTPS 页面通过 USB 串口配置设备；局域网设备的 HTTP 后台在独立页面打开，不经云端代理。
-
-离线 USB、BOOT/EN 操作、OTA 与首次分区写入的区别，见 [FLASHING.md](FLASHING.md)。OTA 使用对应芯片的 `app.bin`；在线首次烧录使用 `merged.bin`。
-
-## 本地开发
+## 开发与发布
 
 ```powershell
 cd theme-studio
@@ -100,52 +49,36 @@ npm ci
 npm run dev
 ```
 
-打开终端显示的 `http://127.0.0.1:4317/`。主题开发说明：
+本地入口 `http://127.0.0.1:4317/`。从 [C/C++ SDK](theme-studio/native/README.md) 开发主题；[迁移说明](theme-studio/native/legacy/README.md) 介绍旧主题适配。
 
-- [完整中文 Lua 主题开发手册](theme-studio/docs/theme-authoring.md)
-- [CWP2 应用格式与资源规范](theme-studio/docs/theme-app-format.md)
-- [最小可运行时钟示例](theme-studio/examples/hello-clock/README.md)
-
-构建当前源码：
+在仓库根目录构建并打包：
 
 ```powershell
-cd theme-studio
-npm run build
-pio run -d embedded/demo -e esp32s3-hub75
-```
-
-经典目标为 `esp32-64x64`。当前源码构建结果与本仓库发布的历史 ESP32 v0.9.3 成品应分别看待。
-
-发布资料和静态站构建：
-
-```powershell
-python tools/package-releases.py
+python theme-studio/native/build.py
+node theme-studio/native/embed.mjs
+pio run -d theme-studio/embedded/demo -e esp32-64x64 -e esp32s3-hub75
+python tools/package-current-release.py
 python tools/build-site.py
 ```
 
-静态站输出位于 `docs/`，GitHub Pages 从 `main` 分支的 `/docs` 发布。
+根目录 `VERSION` 是发布版本，小修改递增 PATCH，大功能递增 MINOR。Pages 从 `main:/docs` 发布；每次项目修改完成后同步相关文档并推送。`package-releases.py` 只重打包历史成品，不生成当前版本。
 
-## 目录
-
-| 路径 | 内容 |
+| 路径 | 用途 |
 | --- | --- |
-| `theme-studio/studio/` | 浏览器工坊、预览器与设备后台 |
-| `theme-studio/embedded/` | Lua 原生运行时与 ESP32/S3 工程 |
-| `theme-studio/themes/` | Lua、素材、资源和主题应用目录 |
-| `web/` | 在线烧录、主题下载与串口配置门户源码 |
-| `docs/` | GitHub Pages 静态发布文件 |
-| `releases/` | 两种芯片的可下载烧录文件、校验值与 ZIP |
-| `enet/20261101-1.enet` | 最新保存的硬件网表 |
-| `routing/*.epro2` | 2026-10-27 的 PCB 工程与布线导出 |
+| `theme-studio/native/` | C/C++ SDK、主题源码、构建与测试 |
+| `theme-studio/studio/` | 工坊、图片制作、设备后台与 USB 工具 |
+| `theme-studio/embedded/` | 当前原生固件；历史 Lua 实现不参与当前构建 |
+| `theme-studio/themes/` | 原始设计、素材、旧脚本和迁移输入，保留供再生成与追溯 |
+| `web/` / `docs/` | 门户源码 / Pages 发布副本 |
+| `releases/` | 按版本保留的固件和 SDK |
+| `enet/` / `routing/` | 带日期的网表和 PCB；不同日期不能默认是同一修订 |
 
-硬件网表与 PCB 导出的日期不同，不能默认它们已经同步到同一设计修订；制作硬件前按选用工程核对传感器、引脚与供电。
+历史 [ESP32 v0.9.3](https://github.com/AntonVanke/HUB-75E/releases/tag/esp32-v0.9.3)、[S3 v0.9.7](https://github.com/AntonVanke/HUB-75E/releases/tag/esp32s3-v0.9.7) 和其它旧版保留。Lua/CWP2 文档仅适用于历史固件，旧包不能直接在当前运行时执行。
 
-## 来源与许可
+## 硬件、来源与许可
 
-项目源于 [jnthas/clockwise](https://github.com/jnthas/clockwise) 的主题时钟思路，使用 mrcodetastic HUB75 DMA、Adafruit Protomatter / GFX / BusIO、Lua 和浏览器端相关库。感谢这些项目。
+[OSHWHUB 硬件工程](https://oshwhub.com/team_rzwlbjjl/project_tfevmhyp) 提供电路和 PCB，GitHub 提供固件、应用与工具；按所选修订核对硬件和传感器。
 
-特别感谢 **[ClockWise Plus](https://topyuan.top/clock/)** 项目及其作者 **[冯雪原 / MonsterYuan（yuan910715）](https://github.com/yuan910715)**。其表盘展示、像素设计和项目资料为本项目提供了重要参考。请访问原项目了解作者的工作，并保留素材的原始来源与权利说明。
+感谢 [jnthas/clockwise](https://github.com/jnthas/clockwise)、[ClockWise Plus](https://topyuan.top/clock/) 及作者 [冯雪原 / MonsterYuan](https://github.com/yuan910715)，以及 Espressif、HUB75 DMA、Adafruit、ESP Web Tools、LittleFS、Unifont 等项目。
 
-Special thanks to **[ClockWise Plus](https://topyuan.top/clock/)** and its author **[MonsterYuan / 冯雪原 (yuan910715)](https://github.com/yuan910715)** for the clock-face designs, pixel-art references and project documentation that inspired this project.
-
-本仓库已有的 [LICENSE](LICENSE) 保留。第三方代码、字体、游戏/影视题材像素素材保留其原有来源和权利，不能因为仓库采用 MIT 就认为所有素材也获得同一授权。详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+保留 [LICENSE](LICENSE) 和 [第三方来源与许可](THIRD_PARTY_NOTICES.md)。第三方代码、字体和游戏影视素材遵循各自权利和许可。内部午餐菜单及数据不公开。

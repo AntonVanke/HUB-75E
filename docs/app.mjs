@@ -1,3 +1,4 @@
+import {timeControls} from './studio/time-settings.mjs';
 import {screenPreview} from './studio/screen-preview.mjs';
 import {diagnosticControls} from './studio/diagnostics.mjs';
 import {groupThemes,selectVariant} from './theme-groups.mjs';
@@ -20,6 +21,7 @@ let connecting = false;
 let sending = false;
 let activeWrite = null;
 let device = null;
+let clockSettings;
 let installedApps = [];
 let themes = [];
 let appInstalling = false;
@@ -66,6 +68,7 @@ function panelAvailable() {
 
 function updateConnection() {
   const connected = Boolean(port && !closing);
+  clockSettings?.update(connected?device?.timeSync:null);
   $('connection-state').textContent = closing ? t('正在断开…') : connecting ? t('正在连接…') : connected ? t('USB 已连接') : t('未连接');
   $('connect').disabled = !supported || connected || connecting || closing;
   $('disconnect').disabled = !connected || sending;
@@ -332,6 +335,7 @@ function themeLabel(index) {
 
 function updateStatus(data) {
   device = data;
+  clockSettings.update(data.timeSync);
   $('serial-setup').hidden=!data.setup?.required||!data.setup?.wizard;
   $('finish-setup').disabled=!data.connected||!data.setup?.panelChosen;
   for (const key of ['chip', 'version', 'ip', 'brightness', 'timezone']) $('status-' + key).textContent = String(data[key] ?? '—');
@@ -639,6 +643,11 @@ $('read-status').addEventListener('click', () => action(() => send({ cmd: 'statu
 $('read-apps').addEventListener('click', () => action(() => send({ cmd: 'apps' })));
 $('clear-log').addEventListener('click', () => $('serial-log').replaceChildren());
 
+clockSettings=timeControls($('usb-time-settings'),{message,translate:t,busy:()=>serialBusy(),refresh:async()=>updateStatus(await requestSerial({cmd:'status'},d=>!!d.version)),request:async(path,options={})=>{
+ if(!port)throw Error(t('请先连接设备'));
+ const values=Object.fromEntries(options.body||[]);if('autoSync' in values)values.autoSync=values.autoSync==='true';
+ return requestSerial({cmd:'time',...values},d=>d.supported===true&&typeof d.autoSync==='boolean');
+}});
 const serialBusy=()=>sending||appInstalling||scanning||serialJobs>0||connecting||closing;
 for(const id of ['theme-screen-preview','usb-screen-preview'])screenPreview($(id),{readFrame:()=>requestSerial({cmd:'frame'},d=>d.frame===true,12000),ready:()=>!!port&&!!device?.features?.screenPreview,busy:serialBusy,message,translate:t});
 diagnosticControls($('usb-hardware-tests'),{device:()=>device,busy:serialBusy,message,translate:t,request:async(path,options={})=>{

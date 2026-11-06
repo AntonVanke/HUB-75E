@@ -2,6 +2,39 @@
   "schema": 1,
   "releases": [
     {
+      "version": "1.5.1",
+      "runtimeApi": 5,
+      "nativeAbi": 1,
+      "notes": "NTP 时间源选择、每日自动校准与手动设时；同步中英文文档，清理无引用的参考图副本。",
+      "catalog": "applications/1.5.1/catalog.json",
+      "targets": {
+        "esp32": {
+          "chip": "esp32",
+          "flashBytes": 4194304,
+          "psramBytes": 0,
+          "manifest": "firmware/esp32-v1.5.1/manifest.json",
+          "updateManifest": "firmware/esp32-v1.5.1/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32-v1.5.1/app.bin",
+            "bytes": 1454912,
+            "sha256": "20e522c70320ceec5e308f3be56940a2e279597dd59ab3536283655a3a08a2c2"
+          }
+        },
+        "esp32s3": {
+          "chip": "esp32s3",
+          "flashBytes": 8388608,
+          "psramBytes": 8388608,
+          "manifest": "firmware/esp32s3-v1.5.1/manifest.json",
+          "updateManifest": "firmware/esp32s3-v1.5.1/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32s3-v1.5.1/app.bin",
+            "bytes": 1461760,
+            "sha256": "9247fd6b2d50fc1078c3de54f11ac3154028fe26a1621dd01b5ac36ecc401c56"
+          }
+        }
+      }
+    },
+    {
       "version": "1.5.0",
       "runtimeApi": 5,
       "nativeAbi": 1,
@@ -266,5 +299,5 @@
       }
     }
   ],
-  "latest": "1.5.0"
+  "latest": "1.5.1"
 }

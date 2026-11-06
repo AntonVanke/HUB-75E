@@ -1,3 +1,4 @@
+import {timeStrings} from './time-settings.mjs';
 const pairs = `
 实时屏幕|Live screen
 当前主题画面|Current theme frame
@@ -1055,3 +1056,5 @@ Object.assign(strings,{
 });
 
 Object.assign(strings,{"手动更新由浏览器下载并校验；自动更新由设备直接从 GitHub Pages 下载，保留设置和应用。":"Manual updates download through the browser. Automatic updates download directly from GitHub Pages on the device, preserving settings and apps.","等待检查":"Waiting to check","正在检查":"Checking","正在下载":"Downloading","准备重启":"Preparing to restart","已是最新版本":"Up to date"});
+
+Object.assign(strings,timeStrings);
