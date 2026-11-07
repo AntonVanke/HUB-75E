@@ -40,6 +40,7 @@ public:
   std::function<bool(const char*,String&)> validateScript;
   std::function<void()> ioTick;
   std::function<void()> stopScript;
+  std::function<void(uint32_t,uint32_t,const char*)> updateProgress;
   std::function<bool(bool)> renderLock;
   std::function<bool(uint16_t*,uint8_t&)> copyFrame;
   std::function<String()> sensorStatus;
@@ -73,7 +74,7 @@ private:
   String discoveryIdentity()const;
   String ssid_,password_,pendingSsid_,pendingPassword_,uploadError_,expectedHash_;
   File scriptFile_;
-  size_t scriptBytes_=0;
+  size_t scriptBytes_=0,otaBytes_=0,otaTotal_=0;
   String apName_,apPassword_;
   bool ap_=false,connecting_=false,wifiStartPending_=false,ota_=false,locked_=false,fs_=false,scriptLocked_=false;
   uint32_t connectAt_=0,retryAt_=0,restartAt_=0,rotateAt_=0,otaAt_=0;
@@ -157,6 +158,7 @@ private:
   void serialCommand(const String& line);
   void pruneSchedule();
   ThemeSchedule schedule_;
+  ThemeConditions conditions_;
   int baseTheme_=0,windowTheme_=-1;int64_t lastDaily_=-1;
   bool readSchedule(const String& text,ThemeSchedule& out,bool allowMissing=false,bool migrateLegacy=false);
   String scheduleText()const;

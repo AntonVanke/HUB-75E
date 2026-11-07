@@ -1,10 +1,10 @@
-# HUB-75E · Clockwise 主题时钟
+# HUB-75E · Clockyr 主题时钟
 
 简体中文 · [English](README.en.md)
 
 基于 ESP32 / ESP32-S3 和 HUB75 面板的 64×64 时钟。主题使用 C/C++ 编译为芯片对应的 Xtensa 机器码，打包为 CWP3；当前固件不运行 Lua。Runtime API 5，native ABI 1。
 
-**当前版本：1.5.2** · [在线烧录](https://antonvanke.github.io/HUB-75E/#flash) · [主题应用](https://antonvanke.github.io/HUB-75E/#themes) · [USB 配置](https://antonvanke.github.io/HUB-75E/#config) · [图片时钟工坊](https://antonvanke.github.io/HUB-75E/studio/index.html)
+**当前版本：1.6.0** · [在线烧录](https://antonvanke.github.io/HUB-75E/#flash) · [主题应用](https://antonvanke.github.io/HUB-75E/#themes) · [USB 配置](https://antonvanke.github.io/HUB-75E/#config) · [图片时钟工坊](https://antonvanke.github.io/HUB-75E/studio/index.html)
 
 ![磁流体时钟电脑模拟](web/previews/ferrofluid-clock.gif)
 
@@ -12,6 +12,7 @@
 
 ## 当前功能
 
+- **1.6.0 条件控制与显示**：时间段或环境光高低触发主题，支持规则开关与优先级；光照条件自带 3 秒防抖和 5% 回差。OTA 在屏幕显示写入、校验和重启进度；界面品牌为 Clockyr。修复已确认光敏电阻在暗处误判掉线。
 - **1.5.2 光敏面遮挡保护**：S3 联合光敏电阻和 IMU 判断光敏面朝下遮挡，保持原亮度，解除后平滑恢复。在设备后台“自动亮度 → 光敏面遮挡保护”记录实际安装姿态；单纯关灯不触发保护。
 - **1.5.1 时间设置**：默认阿里云 NTP，可选择 Cloudflare、NTP Pool 或自定义域名/IPv4。开机和固件更新重启后联网即校时，成功后每隔 24 小时校准。失败换源、后台重试；支持关闭自动校时、手动设时和使用电脑时间。
 - **1.5.0 USB 与后台**：主题页直接连接串口，实际屏幕画面预览、硬件检测、响应式手机后台。安装不主动停止当前主题，点击运行才切换；更新运行中的应用保留旧资源供当前实例使用。
@@ -25,8 +26,8 @@
 
 | 芯片 | 固件 | 应用整包 | 硬件要求 |
 | --- | --- | --- | --- |
-| ESP32 | [v1.5.2 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.5.2.zip) | [5 款应用](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | 经典 ESP32，4 MB Flash |
-| ESP32-S3 | [v1.5.2 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.5.2.zip) | [59 款应用](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | 本项目板型，至少 8 MB Flash + 8 MB OPI PSRAM |
+| ESP32 | [v1.6.0 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.6.0.zip) | [5 款应用](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | 经典 ESP32，4 MB Flash |
+| ESP32-S3 | [v1.6.0 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.6.0.zip) | [59 款应用](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | 本项目板型，至少 8 MB Flash + 8 MB OPI PSRAM |
 
 S3 N4 不适用此固件。其它板型须核对 Flash、PSRAM 和接线。
 

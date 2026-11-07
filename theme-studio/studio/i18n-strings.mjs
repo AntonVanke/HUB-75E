@@ -179,7 +179,7 @@ IMU 自检|IMU self-test
 双缓冲：|Double buffer: 
 已开启|Enabled
 未开启|Disabled
-Clockwise · 主题工坊|Clockwise · Theme Studio
+Clockyr · 主题工坊|Clockyr · Theme Studio
 主题工坊首页|Theme Studio home
 主题工坊|Theme Studio
 设备管理 / 配网 / OTA|Device settings / Wi-Fi / OTA
@@ -302,7 +302,7 @@ PNG 不得超过 2 MiB|PNG files must not exceed 2 MiB.
 还没有精灵，可新建或导入|No sprites yet. Create one or import an image.
 调色板颜色 |Palette color 
 精灵|Sprite
-Clockwise · 设备管理|Clockwise · Device settings
+Clockyr · 设备管理|Clockyr · Device settings
 设备管理|Device settings
 返回主题工坊|Back to Theme Studio
 尚未连接|Not connected
@@ -447,7 +447,7 @@ Wi-Fi 配网|Wi-Fi setup
 开头。|.
 常用命令示例|Common commands
 优先使用 apps 返回的 packageName；数字位置仅为旧接口兼容。设备不会回显家庭 Wi-Fi 密码。|Use the packageName returned by apps. Numeric slots are retained only for legacy compatibility. Saved Wi-Fi passwords are not echoed.
-Clockwise · 64 × 64 · Lua 主题引擎|Clockwise · 64 × 64 · Lua theme engine
+Clockyr · 64 × 64 · Lua 主题引擎|Clockyr · 64 × 64 · Lua theme engine
 有未保存的修改|Unsaved changes
 显示设置已与设备同步|Display settings synchronized with the device
 返回内容不是 Studio API 数据|The response is not valid Studio API data.
@@ -686,7 +686,7 @@ Lua 运行内存|Lua runtime memory
 资源需求未完整声明，不能据此确认低内存适配。|Resource requirements are incomplete. Low-memory compatibility cannot be confirmed.
 尚未在此设备验证性能，目标帧率不是流畅度保证。|Performance has not been verified on this device. Target FPS is not a smoothness guarantee.
 主题应用开发手册|Theme app developer guide
-Clockwise · 主题开发手册|Clockwise · Theme developer guide
+Clockyr · 主题开发手册|Clockyr · Theme developer guide
 开发目录|Contents
 返回首页|Back to home
 打开开发目录|Open contents
@@ -855,10 +855,10 @@ IMU 读数离线，暂用手动方向。|IMU readings are offline. Using the man
 方向设置已保存并生效。|Orientation settings saved and applied.
 局域网设备|LAN devices
 发现同网设备|Find devices on this network
-先连接一台支持发现的设备，再查找同一局域网内的 Clockwise。|Connect a discovery-capable device first to find Clockwise devices on the same LAN.
+先连接一台支持发现的设备，再查找同一局域网内的 Clockyr。|Connect a discovery-capable device first to find Clockyr devices on the same LAN.
 发现由当前设备发送局域网广播，持续约 5 秒；VPN、访客网络或路由隔离可能阻止广播。|The connected device broadcasts discovery requests on its LAN for about 5 seconds. VPNs, guest networks, and router isolation may block these broadcasts.
 当前设备不支持局域网发现，请升级到 v0.9.8 或更新固件。|This firmware does not support LAN discovery. Update to v0.9.8 or later.
-可发现同一局域网内的 Clockwise，点击按钮开始。|Find Clockwise devices on this LAN. Click the button to start.
+可发现同一局域网内的 Clockyr，点击按钮开始。|Find Clockyr devices on this LAN. Click the button to start.
 在此管理|Manage here
 正在发现… |Discovering… 
 发现完成：|Discovery complete: 
@@ -1058,6 +1058,54 @@ Object.assign(strings,{
 Object.assign(strings,{"手动更新由浏览器下载并校验；自动更新由设备直接从 GitHub Pages 下载，保留设置和应用。":"Manual updates download through the browser. Automatic updates download directly from GitHub Pages on the device, preserving settings and apps.","等待检查":"Waiting to check","正在检查":"Checking","正在下载":"Downloading","准备重启":"Preparing to restart","已是最新版本":"Up to date"});
 
 Object.assign(strings,timeStrings);
+Object.assign(strings,{
+ "条件控制":"Conditional playback",
+ "没有条件满足时":"When no condition matches",
+ "默认主题（条件均不满足时）":"Default theme (when no condition matches)",
+ "先选择默认播放方式，再添加需要的条件。":"Choose default playback, then add conditions.",
+ "当条件满足时":"When a condition matches",
+ "选择条件和主题即可；上方规则优先，条件解除后恢复默认播放。":"Choose a condition and theme. Rules higher in the list take priority; default playback resumes when none match.",
+ "添加时间条件":"Add time condition",
+ "添加暗处条件":"Add low-light condition",
+ "环境光为校准后的相对百分比（非 lux），0% 最暗、100% 最亮。光照条件持续 3 秒才切换，恢复回差 5%；时间支持跨午夜和按星期选择。":"Ambient light is a calibrated percentage, not lux: 0% is darkest and 100% brightest. Light conditions must persist for 3 seconds, with 5 percentage points of release hysteresis. Time conditions support weekdays and overnight ranges.",
+ "当前环境光：":"Ambient light: ",
+ "正在读取环境光…":"Reading ambient light…",
+ "遮挡期间使用遮挡前读数":"Using pre-obstruction light reading",
+ "环境光读数暂不可用；时间条件仍可使用":"Ambient light unavailable; time conditions remain available",
+ "从上到下匹配条件；均不满足时：":"Rules match from top to bottom. Otherwise: ",
+ "处于指定时间段":"Within a time range",
+ "环境光低于":"Ambient light below",
+ "环境光高于":"Ambient light above",
+ "环境光阈值（%）":"Ambient light threshold (%)",
+ "环境光阈值应为 0–100%":"Ambient light threshold must be 0–100%",
+ "启用条件":"Enable condition",
+ "触发条件":"Trigger condition",
+ "播放主题":"Play theme",
+ "上移":"Move up",
+ "下移":"Move down",
+ "删除条件":"Delete condition",
+ "（已停用）":" (disabled)",
+ "条件 ":"Condition ",
+ "已命中":"matched",
+ "条件使用了已卸载的主题，请重新选择":"This condition uses an uninstalled theme; select another",
+ "当前设备未配置光敏电阻，不能使用环境光条件":"This device has no configured light sensor and cannot use light conditions",
+ "请先安装主题应用，再添加条件":"Install a theme before adding a condition",
+ "最多 12 个条件":"Up to 12 conditions",
+ "环境光条件正在等待有效传感器读数。":"Light conditions are waiting for valid sensor readings.",
+ "时间条件正在等待设备校时，环境光条件不受影响。":"Time conditions are waiting for time synchronization; light conditions are unaffected.",
+ "随环境光条件变化，无法预知切换时间":"Switches depend on ambient light; the next time cannot be predicted",
+ "查看条件控制":"View conditional playback",
+ "条件配置无效：检查时间、环境光阈值、主题及星期":"Invalid conditions: check time, light threshold, theme and weekdays",
+ "条件控制已保存":"Conditional playback saved",
+ "特定条件专用的主题不必加入日常轮换。":"Themes used only by conditions do not need to be in the normal rotation.",
+ "亮度平滑变化；已确认传感器的低读数按黑暗处理，保持最低亮度。读取中断或异常时使用固定亮度。":"Brightness changes smoothly. Low readings from a confirmed sensor are treated as darkness, using the minimum brightness. Missing or invalid samples fall back to fixed brightness.",
+ "光敏读数尚未确认，请照亮传感器后再启用；已启用过的传感器在黑暗中仍可使用":"Light readings are not confirmed yet; illuminate the sensor before enabling. Previously enabled sensors remain usable in darkness",
+ "OTA 更新时屏幕显示写入进度和校验状态；完整校验通过后显示 100% 并重启。":"During OTA the panel shows write progress and validation. It displays 100% and restarts only after successful verification.",
+ "正在上传；设备屏幕显示更新进度。":"Uploading; update progress is shown on the device panel.",
+ "固件大小无效":"Invalid firmware size",
+ "固件大小不匹配":"Firmware size mismatch",
+ "固件未传输完整":"Firmware transfer is incomplete"
+});
 Object.assign(strings,{
  "光敏面遮挡保护":"Light sensor obstruction protection",
  "结合姿态判断遮挡，临时保持亮度":"Use orientation to detect obstruction and hold brightness temporarily",

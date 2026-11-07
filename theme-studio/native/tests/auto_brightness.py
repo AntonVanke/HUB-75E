@@ -1,4 +1,4 @@
-"""Exercise the production light/IMU controller without device hardware."""
+"""Exercise light/IMU and conditional playback with deterministic host inputs."""
 import os
 import subprocess
 from pathlib import Path
@@ -8,6 +8,7 @@ out = root / 'native/build/auto-brightness'
 out.mkdir(parents=True, exist_ok=True)
 (out / 'test.cpp').write_text(r'''
 #include "AutoBrightness.h"
+#include "ThemeSchedule.h"
 #include <cassert>
 #include <cstdio>
 #include <cstring>
@@ -47,8 +48,12 @@ int main(){
   Fixture disabled;disabled.ready();disabled.c.settings.coverProtection=false;disabled.repeat(10,200,true);
   assert(disabled.state("disabled")&&disabled.c.active(disabled.now));
   Fixture lost;lost.ready();lost.repeat(10,0,true);assert(lost.state("blocked"));
-  lost.repeat(4,0,true,false);assert(!lost.c.coverHeld(lost.now)&&!lost.c.present);
-  lost.repeat(50,0,true,false);assert(abs(lost.c.actual-80)<25);
+  lost.repeat(4,0,true,false);assert(!lost.c.coverHeld(lost.now)&&lost.c.present);
+  lost.repeat(150,0,true,false);assert(lost.c.actual<=14&&lost.c.active(lost.now));
+  lost.repeat(4,-1,true,false);assert(!lost.c.present); // invalid ADC, not ordinary darkness
+  Fixture darkBoot;darkBoot.c.sensorKnown=true;darkBoot.repeat(200,0);
+  assert(darkBoot.c.present&&darkBoot.c.actual==12&&darkBoot.c.lightPercent()==0);
+  darkBoot.repeat(100,4095);assert(darkBoot.c.present&&darkBoot.c.lightPercent()==100);
   Fixture stale;stale.ready();stale.repeat(10,0,true);assert(stale.c.coverHeld(stale.now));
   assert(!stale.c.coverHeld(stale.now+700));stale.now+=1000;stale.step(0,true);
   assert(!stale.c.coverHeld(stale.now));
@@ -59,6 +64,29 @@ int main(){
   Fixture missing;missing.repeat(30,0,true);assert(!missing.c.present&&!missing.c.calibrateCover(missing.now));
   Fixture wrap;wrap.now=UINT32_MAX-10000;wrap.ready();wrap.repeat(10,0,true);assert(wrap.state("blocked"));
   wrap.repeat(9,2000);assert(!wrap.c.coverHeld(wrap.now));
+  ThemeSchedule plan;plan.windowCount=3;
+  plan.windows[0]={1320,420,1,2,0,20,true}; // Monday 22:00 through Tuesday 07:00
+  plan.windows[1]={0,0,2,127,1,20,true};
+  plan.windows[2]={0,0,3,127,2,80,true};
+  ThemeConditions rules;tm t={};t.tm_wday=1;t.tm_hour=23;
+  assert(rules.evaluate(plan,t,true,true,10,0,14)==1&&rules.active==0);
+  t.tm_wday=2;t.tm_hour=6;assert(rules.evaluate(plan,t,true,true,10,3000,14)==1);
+  t.tm_hour=7;assert(rules.evaluate(plan,t,true,true,10,3100,14)==2&&rules.active==1);
+  assert(rules.evaluate(plan,t,true,true,24,3200,14)==2); // five-point hysteresis
+  assert(rules.evaluate(plan,t,true,true,25,3300,14)==2);
+  assert(rules.evaluate(plan,t,true,true,25,6300,14)==-1);
+  assert(rules.evaluate(plan,t,false,true,90,7000,14)==-1);
+  assert(rules.evaluate(plan,t,false,true,90,10000,14)==3); // works before NTP
+  assert(rules.evaluate(plan,t,false,false,90,10100,14)==-1);
+  rules.reset();assert(rules.evaluate(plan,t,false,true,10,UINT32_MAX-1000,14)==-1);
+  assert(rules.evaluate(plan,t,false,true,10,2000,14)==2);
+  plan.windows[1].enabled=false;assert(rules.evaluate(plan,t,false,true,10,2100,14)==-1);
+  plan.windows[1].enabled=true;rules.reset();rules.evaluate(plan,t,false,true,10,3000,10);
+  assert(rules.evaluate(plan,t,false,true,10,6000,10)==-1); // removed/incompatible theme
+  t.tm_wday=1;t.tm_hour=23;assert(rules.evaluate(plan,t,true,true,50,7000,12)==-1);
+  ThemeSchedule legacy;legacy.windowCount=1;legacy.windows[0]={60,120,2,127};
+  t.tm_hour=1;assert(rules.evaluate(legacy,t,true,false,0,8000,4)==2);
+  puts("PASS: retained sensor at ADC 0/4095, dark boot, time/light conditions, overnight weekday, priority, debounce/hysteresis, missing sensors/themes and disabled rules");
   printf("PASS: calibration, normal darkness, pose-only, debounce, zero-ADC hold, smooth release, sensor loss, disabled/manual mode, stale data and millis rollover; controller %zu bytes\n",sizeof(AutoBrightnessController));
 }
 ''', encoding='utf-8')

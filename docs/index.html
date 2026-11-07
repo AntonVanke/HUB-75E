@@ -4,16 +4,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#248eb1">
-  <meta name="description" content="Clockwise HUB75 像素时钟：ESP32 / ESP32-S3 在线烧录、主题应用下载与 USB 串口配置。">
-  <title>Clockwise · HUB75 像素时钟</title>
+  <meta name="description" content="Clockyr HUB75 像素时钟：ESP32 / ESP32-S3 在线烧录、主题应用下载与 USB 串口配置。">
+  <title>Clockyr · HUB75 像素时钟</title>
   <link rel="stylesheet" href="style.css">
   <script type="module" src="vendor/esp-web-tools-10.1.0/install-button.js"></script>
-  <script type="module" src="app.mjs?v=1.5.2-offline"></script>
+  <script type="module" src="app.mjs?v=1.6.0-offline"></script>
 </head>
 <body>
   <header class="hero">
     <div class="hero-inner">
-      <a class="brand" href="./" aria-label="Clockwise 首页"><span class="brand-icon">◷</span><span>Clockwise <small>HUB75 像素时钟</small></span></a>
+      <a class="brand" href="./" aria-label="Clockyr 首页"><span class="brand-icon">◷</span><span>Clockyr <small>HUB75 像素时钟</small></span></a>
       <div class="header-actions"><label class="language-picker"><span class="sr-only">语言</span><select id="language-select" aria-label="语言"><option value="zh-CN">简体中文</option><option value="en">English</option></select></label><a class="github-link" href="https://oshwhub.com/team_rzwlbjjl/project_tfevmhyp" target="_blank" rel="noopener noreferrer">OSHWHUB ↗</a><a class="github-link" href="https://github.com/AntonVanke/HUB-75E" target="_blank" rel="noopener noreferrer">GitHub ↗</a></div>
     </div>
     <div class="hero-copy"><p class="eyebrow">64 × 64 · C/C++ 原生主题 · 开源固件</p><h1>给时钟换一种表情</h1><p>连接你的像素时钟，安装固件、挑选主题，再把一切设为你喜欢的样子。</p></div>
@@ -34,15 +34,15 @@
           <fieldset class="board-picker"><legend class="sr-only">硬件型号</legend>
             <label class="board-option"><input type="radio" name="board" value="esp32" checked><span><strong>ESP32</strong><small>4 MB Flash · 无 PSRAM</small></span></label>
             <label class="board-option"><input type="radio" name="board" value="esp32s3"><span><strong>ESP32-S3</strong><small>至少 8 MB Flash · 8 MB OPI PSRAM</small></span></label>
-          </fieldset><label>发布版本<select id="release-version"><option>1.5.2</option></select></label><label>烧录方式<select id="flash-mode"><option value="update">更新固件，保留设置和应用</option><option value="install">全新安装，重置设置</option></select></label>
+          </fieldset><label>发布版本<select id="release-version"><option>1.6.0</option></select></label><label>烧录方式<select id="flash-mode"><option value="update">更新固件，保留设置和应用</option><option value="install">全新安装，重置设置</option></select></label>
           <p id="board-note" class="note">适用于本项目经典 ESP32 接线与 4 MB Flash 分区。</p>
           <div class="install-row">
-            <esp-web-install-button id="installer" manifest="firmware/esp32-v1.5.2/update-manifest.json">
+            <esp-web-install-button id="installer" manifest="firmware/esp32-v1.6.0/update-manifest.json">
               <button id="install-button" class="primary" slot="activate" type="button">连接并烧录 ESP32</button>
               <span slot="unsupported" class="note">此浏览器不支持在线烧录，请下载离线包。</span>
               <span slot="not-allowed" class="note">请通过 HTTPS 或 localhost 打开此页。</span>
             </esp-web-install-button>
-            <a id="release-link" class="button secondary" href="firmware/esp32-v1.5.2.zip" target="_blank" rel="noopener noreferrer">下载离线包 ↗</a>
+            <a id="release-link" class="button secondary" href="firmware/esp32-v1.6.0.zip" target="_blank" rel="noopener noreferrer">下载离线包 ↗</a>
           </div>
           <p id="flash-support" class="small" role="status"></p>
         </article>
@@ -78,7 +78,7 @@
         <article class="card log-card"><div class="card-heading"><h3>串口记录</h3><button id="clear-log" class="text-button" type="button">清空</button></div><p class="small">只显示操作与必要的协议响应，省略普通设备日志内容；最多保留 200 条。</p><div id="serial-log" class="serial-log" role="log" aria-label="串口操作记录"></div></article>
       </div>
     </section>
-    <footer class="footer"><span><i></i> Clockwise · 64 × 64 像素时钟</span><div id="credits"></div><a href="https://github.com/AntonVanke/HUB-75E" target="_blank" rel="noopener noreferrer">开源项目 ↗</a></footer>
+    <footer class="footer"><span><i></i> Clockyr · 64 × 64 像素时钟</span><div id="credits"></div><a href="https://github.com/AntonVanke/HUB-75E" target="_blank" rel="noopener noreferrer">开源项目 ↗</a></footer>
   </main>
 </body>
 </html>

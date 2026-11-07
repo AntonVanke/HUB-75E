@@ -14,7 +14,7 @@ class AutoBrightnessController {
   uint32_t imuAt_=0,stillAt_=0,referenceAt_=0,coverAt_=0,releaseAt_=0;
   float ax_=0,ay_=0,az_=1,faceDot_=0,reference_=0,referenceLevel_=80,held_=80;
 public:
-  AutoBrightnessSettings settings;bool supported=false,present=false;
+  AutoBrightnessSettings settings;bool supported=false,present=false,sensorKnown=false;
   int raw=0,millivolts=0,actual=80;
   void resetCover(){referenceValid_=checking_=blocked_=releasing_=false;}
   void sampleImu(bool valid,float ax,float ay,float az,float gx,float gy,float gz,uint32_t now){
@@ -59,7 +59,7 @@ public:
         const bool released=faceDot_<.65f||(value>=32&&value<4088&&value-settings.dark>signal*.60f);
         if(!released)releasing_=false;
         else if(!releasing_){releasing_=true;releaseAt_=now;}
-        else if(uint32_t(now-releaseAt_)>=800){resetCover();if(value>=8&&value<4088){filtered_=value;initialized_=true;}}
+        else if(uint32_t(now-releaseAt_)>=800){resetCover();if(value>=0&&value<=4095){filtered_=value;initialized_=true;}}
       }else if(present&&down&&dark&&(checking_||uint32_t(now-referenceAt_)<5000)){
         if(!checking_){checking_=true;coverAt_=now;held_=referenceLevel_;}
         if(!still_)coverAt_=now;
@@ -68,13 +68,15 @@ public:
     }
     // Zero can mean an unplugged LDR or a covered LDR; only recent light plus pose evidence permits holding.
     if(coverHeld(now))return;
-    const bool valid=value>=(present?8:32)&&value<4088;
-    if(valid){bad_=0;if(good_<16)good_++;if(good_>=16)present=true;}
+    const bool valid=sensorKnown?(value>=0&&value<=4095):(value>=32&&value<4088);
+    if(valid){bad_=0;if(good_<16)good_++;if(good_>=16){present=true;sensorKnown=true;}}
     else{good_=0;if(bad_<3)bad_++;if(bad_>=3){present=false;initialized_=false;resetCover();}}
     if(valid){if(!initialized_){filtered_=value;initialized_=true;}else filtered_+=(value-filtered_)*.22f;}
     if(guard&&present&&valid&&faceDot_<.65f){reference_=filtered_;referenceLevel_=level_;referenceAt_=now;referenceValid_=true;}
   }
-  bool active(uint32_t now)const{return supported&&present&&settings.enabled&&uint32_t(now-sampled_)<700&&!coverHeld(now);}
+  bool lightValid(uint32_t now)const{return supported&&present&&uint32_t(now-sampled_)<700;}
+  int lightPercent()const{const int value=int((filtered_-settings.dark)*100.f/(settings.bright-settings.dark)+.5f);return value<0?0:value>100?100:value;}
+  bool active(uint32_t now)const{return lightValid(now)&&settings.enabled&&!coverHeld(now);}
   int tick(int manual,uint32_t now){
     if(!settings.enabled){resetCover();actual=manual;level_=manual;adjusted_=now;return actual;}
     if(uint32_t(now-adjusted_)<16)return actual;

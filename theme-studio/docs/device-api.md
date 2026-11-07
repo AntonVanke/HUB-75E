@@ -1,4 +1,4 @@
-# 当前设备管理 API（固件 1.5.2）
+# 当前设备管理 API（固件 1.6.0）
 
 Current firmware uses C/C++ / CWP3, runtime API 5 and native ABI 1. The versioned [v0.9.8 document](device-api-v0.9.8.md) is historical; installation no longer deliberately pauses the active theme.
 
@@ -38,6 +38,36 @@ HTTP 修改使用 `POST /api/time`，`application/x-www-form-urlencoded`；串�
 
 English: POST the brightness fields above to save; POST `action=calibrate-cover` to record an unobstructed, stationary sensor-face-down pose. Settings persist in NVS. Detection requires a recent light reference, matching pose and a substantial light drop. Brightness is held during obstruction and resumes smoothly after release. Status is available over HTTP and serial; configuration currently uses HTTP. It runs at 10 Hz with fixed memory. This is a conservative heuristic, not a proximity measurement; covering without a pose change or starting already covered cannot be reliably detected.
 
+## 条件控制 / Conditional playback
+
+后台原“播放计划”改为“条件控制”，最多 12 条、列表上方优先，可独立启停和上移/下移。支持时间段、环境光低于阈值、环境光高于阈值；未命中时恢复默认主题或原有间隔/每日定点轮换。跨午夜时间规则沿用开始那天的星期。光照规则不依赖 NTP，使用滤波后的环境光百分比（不是屏幕亮度），持续 3 秒后触发/解除，解除回差 5 个百分点。缺少有效光敏数据时跳过光照规则；不兼容或已卸载主题不参与匹配。遮挡保护期间采用遮挡前冻结的读数。
+
+`features.conditionControl=1` 表示支持新规则。`status.conditionControl` 包含 `activeRule`（从 1 开始，0 表示无匹配）、`lightValid`、`lightPercent`、`ruleCount`。命中时 `playbackSource="condition"`。
+
+沿用 `GET /api/schedule` 和 `POST /api/schedule` 表单字段 `schedule`，保存到 NVS。文本第一行是 `mode,interval,random`，第二行是主题池索引，第三行是每日切换分钟数。从第四行起每行一条规则：`start,end,theme,days,kind,threshold,enabled`。kind 0=时间、1=低于、2=高于，threshold=0–100，enabled=0/1；光照规则使用 `start=end=0,days=127`。时间为一天内分钟数，星期掩码 bit0=周日。旧四字段时间规则仍可读取，补成 kind=0、threshold=20、enabled=1。主题索引来自当前设备应用列表。
+
+例：环境光低于 20% 播放索引 2，否则每日 22:00–次日 07:00 播放索引 1，其它时候使用默认主题：
+
+```text
+0,1,1
+1,2
+
+0,0,2,127,1,20,1
+1320,420,1,127,0,20,1
+```
+
+English: up to 12 ordered time/below-light/above-light conditions, with enable switches. The first matching usable theme wins; otherwise normal playback resumes. Overnight windows use the starting weekday. Light conditions use ambient percentages, 3-second debounce and 5-point hysteresis, independently of NTP. Existing four-column rules are migrated. HTTP reads/writes the schedule; status reports the one-based activeRule, or zero for none.
+
+## 暗处光敏与 OTA 进度 / Dark readings and OTA progress
+
+1.6.0 在 `brightnessControl` 增加 `lightPercent`（校准后环境光 0–100%，非 lux）和 `sensorKnown`。识别过的传感器低至 ADC 0 也视为黑暗，继续平滑调到最低亮度；保存亮度设置或条件控制时记住确认状态，旧版已开启自动亮度的设备自动继承。首次启动无确认记录且始终零读数时，请先照亮传感器。模拟光敏电阻无法仅凭零读数区分完全黑暗与断线，不再用低读数判定断线；无效 ADC 或采样过期仍回退固定亮度。
+
+`POST /api/ota` multipart 保留 `X-SHA256`，网页同时发送 `X-Firmware-Size`（应用固件字节数）。使用实际写入字节显示进度，不用 multipart 总长度；缺少大小头的旧客户端显示活动条及接收 KB。写入/校验最高 99%，只有 SHA-256 和 Update 校验成功后才显示 100%/RESTART。大小不符、超时、中断或校验失败恢复原固件主题。设备自动更新同样显示进度；7 号 GPIO 诊断驱动不显示此界面。
+
+此界面由正在运行的固件绘制：从旧版第一次升级到本版时仍由旧固件处理，后续 OTA 才有新进度条。USB ROM 下载模式不运行应用，进度显示在浏览器/烧录工具中。
+
+English: previously confirmed sensors accept ADC 0 as darkness, including after reboot when brightness settings were saved. Zero alone cannot distinguish an unplugged passive LDR. OTA accepts X-Firmware-Size alongside X-SHA256 and displays actual write progress, verification and restart, including automatic updates. Unknown-length uploads show activity/KB. Only verified updates reach 100%. This requires the new firmware already running; ROM-mode USB flashing cannot draw an application screen.
+
 ## 应用与传输 / Apps and transport
 
 `GET /api/apps` / `{"cmd":"apps"}` 列出稳定包名、元数据、限制和已安装应用。包必须为对应芯片的 CWP3；检查 ABI、实际内存和传感器能力。
@@ -60,4 +90,4 @@ English: POST the brightness fields above to save; POST `action=calibrate-cover`
 - `POST /api/diagnostics`，字段 `test`；USB 同样为 `{"cmd":"diagnostics","test":"..."}`。有效测试项见 `BoardDiagnostics.h` 和后台按钮。
 - 屏幕自检：`POST /api/panel/test` 字段 `action=start|stop`；USB `{"cmd":"panel.test","action":"start"}`。自检 30 秒后恢复主题。
 
-Wi-Fi、方向、发现、播放计划、OTA 等接口以 DeviceService.cpp 和页面能力字段为准。自动固件更新每 6 小时检查，NTP 每 24 小时校时，两者独立。
+界面品牌为 Clockyr；现有包名 `org.clockwise.*`、发现协议标识和 NVS 命名保留以兼容旧设备。其它接口以 DeviceService.cpp 和页面能力字段为准。自动固件更新每 6 小时检查，NTP 每 24 小时校时，两者独立。

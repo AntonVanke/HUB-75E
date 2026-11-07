@@ -7,7 +7,7 @@ const studio=fileURLToPath(new URL('../studio/',import.meta.url));
 const guideStyle=readFileSync(new URL('../studio/theme-guide.html',import.meta.url),'utf8').match(/<style>([\s\S]*?)<\/style>/)[1];
 for(const [suffix,lang,title] of [['','zh-CN','原生主题 SDK'],['.en','en','Native theme SDK']]){
   const markdown=readFileSync(new URL('README'+suffix+'.md',import.meta.url),'utf8');
-  const page='<!doctype html><html lang="'+lang+'"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Clockwise · '+title+'</title><style>'+guideStyle+'</style><header><h1>Clockwise</h1><a href="./index.html">'+(suffix?'Theme workshop':'主题工坊')+'</a></header><main><article class="card">'+renderMarkdown(markdown,'native').html+'</article></main><script type="module" src="./i18n.mjs"></script></html>';
+  const page='<!doctype html><html lang="'+lang+'"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Clockyr · '+title+'</title><style>'+guideStyle+'</style><header><h1>Clockyr</h1><a href="./index.html">'+(suffix?'Theme workshop':'主题工坊')+'</a></header><main><article class="card">'+renderMarkdown(markdown,'native').html+'</article></main><script type="module" src="./i18n.mjs"></script></html>';
   writeFileSync(new URL('../studio/theme-guide'+suffix+'.html',import.meta.url),page);
 }
 for(const [file,header,symbol] of [['device.html','DevicePage.h','DEVICE_PAGE'],['theme-guide.html','ThemeGuide.h','THEME_GUIDE_PAGE']]){

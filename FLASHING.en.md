@@ -2,7 +2,7 @@
 
 [简体中文](FLASHING.md) · English
 
-Current **1.5.2**: [ESP32 4 MB](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.5.2.zip) · [ESP32-S3 8 MB Flash + 8 MB OPI PSRAM](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.5.2.zip). S3 N4 is unsupported. Older versions remain for historical devices and rollback.
+Current **1.6.0**: [ESP32 4 MB](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.6.0.zip) · [ESP32-S3 8 MB Flash + 8 MB OPI PSRAM](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.6.0.zip). S3 N4 is unsupported. Older versions remain for historical devices and rollback.
 
 ## Web flashing
 
@@ -46,9 +46,15 @@ Serial: 115200 baud, one newline-terminated JSON command; responses start with `
 
 Open the reported IP directly. Pages Applications connects USB itself: the computer downloads/verifies CWP3 and transfers chunks; device access to GitHub is unnecessary. Installation does not explicitly stop the active theme; click Run to switch. Firmware flashing/OTA reboots the device.
 
-## Light sensor obstruction protection (1.5.2)
+## Light sensor obstruction protection (1.6.0)
 
 On the S3 device backend, open Automatic brightness → Light sensor obstruction protection. Hold the installed light sensor face downward, unobstructed and clear of any surface, for at least one second; record the orientation, then return to normal placement. Enable automatic brightness and save. Matching orientation plus a substantial light drop holds brightness; release resumes smoothly. Protection has its own switch. Ordinary room darkness still dims normally. Starting covered or covering by hand without changing pose cannot be reliably detected. Both LDR and IMU must be valid; classic ESP32 does not enable this feature.
+
+## Conditional playback
+
+In the device backend choose Conditional playback → Add time condition or Add low-light condition, select a theme and threshold/time, then save. The trigger menu also supports light above a threshold. Higher rules win; move or disable them independently. Default playback resumes when none match. Light rules use calibrated ambient percentages, not panel brightness or lux, with a 3-second delay and 5-point release hysteresis. Time ranges support weekdays and overnight intervals.
+
+After sensor recognition and saving brightness settings, ADC 0 remains valid darkness, including after reboot. Illuminate an unconfirmed sensor before first enabling it. A passive LDR cannot distinguish darkness from disconnection using zero alone.
 
 ## NTP and manual time
 
@@ -65,6 +71,8 @@ Default server: `ntp.cloud.aliyuncs.com`. Choose Cloudflare, NTP Pool or a custo
 Local manual time uses the device POSIX timezone (`CST-8` for China). Computer-time transfer sends Unix seconds. Disable/save automatic sync first; manual dates support 2024–2037. Without a battery RTC, cold boots require setting time again; preferences/server persist. See [current API](https://github.com/AntonVanke/HUB-75E/blob/main/theme-studio/docs/device-api.md).
 
 ## OTA and startup messages
+
+After 1.6.0 is installed, subsequent OTA updates show Clockyr, write progress, verification and restart on the panel. Only a verified update reaches 100%. The first update from older firmware is still handled by that older version. USB BOOT/ROM flashing cannot run the application display; its progress remains in the browser/flashing tool.
 
 Choose a release in maintenance or upload matching `app.bin`, never a merged image, ZIP or partition file. Manual updates download/verify through the browser; optional device auto-updates check every six hours and default off.
 

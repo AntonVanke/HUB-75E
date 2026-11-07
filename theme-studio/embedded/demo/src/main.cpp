@@ -306,6 +306,23 @@ static void drawDriverGuide(){
   for(int i=0;i<3;i++)g->fillRect(2+i*20,60,19,2,panelColor(i==0?0xf800:i==1?0x07e0:0x001f));
   showPanel();
 }
+static void drawUpdateProgress(uint32_t done,uint32_t total,const char* stage){
+  if(!panelInitialized||diagnosticPanel())return;
+  static uint32_t last=0;static char previous[12]="";const uint32_t now=millis();
+  if(!strcmp(previous,stage)&&now-last<100)return;
+  last=now;snprintf(previous,sizeof(previous),"%s",stage);
+  auto* g=panelGraphics();g->setRotation(orientation.configuration().rotation);panelBrightness(80);
+  g->fillScreen(0);g->setTextSize(1);g->setTextWrap(false);g->setTextColor(panelColor(0xffff));
+  g->setCursor(11,5);g->print("Clockyr");g->setCursor((64-strlen(stage)*6)/2,20);g->print(stage);
+  const bool complete=!strcmp(stage,"RESTART");int percent=total?int(uint64_t(done)*100/total):0;
+  if(percent>99&&!complete)percent=99;if(complete)percent=100;
+  const uint16_t color=panelColor(!strcmp(stage,"FAILED")?0xf800:0x07ff);
+  g->drawRect(4,35,56,10,color);
+  if(total)g->fillRect(6,37,52*percent/100,6,color);
+  else g->fillRect(6+(now/150)%43,37,10,6,color);
+  char label[16];if(total)snprintf(label,sizeof(label),"%d%%",percent);else snprintf(label,sizeof(label),"%u KB",unsigned(done/1024));
+  g->setCursor((64-strlen(label)*6)/2,51);g->print(label);showPanel();host.valid[0]=host.valid[1]=false;
+}
 static void publishInputs();
 static void renderTask(void*){
   Metrics metrics;int current=-2;uint32_t generation=0;int64_t previous=esp_timer_get_time()/1000,reportAt=esp_timer_get_time(),nextFrameAt=0;bool healthy=false;
@@ -459,6 +476,7 @@ void setup(){
   if(!snapshotQueue||!metricsQueue||!renderGate){Serial.println("Queue allocation failed");return;}
   service.renderLock=[](bool lock){if(lock)return xSemaphoreTake(renderGate,pdMS_TO_TICKS(2000))==pdTRUE;xSemaphoreGive(renderGate);return true;};
   service.stopScript=[](){runtime.stop();host.releasePackage();};
+  service.updateProgress=drawUpdateProgress;
   service.ioTick=publishInputs;
   service.copyFrame=[](uint16_t* out,uint8_t& rotation){
     if(!renderHandle||service.panelTrial.active||service.needsSetup()||diagnosticPanel()||(service.panelTestUntil&&int32_t(service.panelTestUntil-millis())>0))return false;

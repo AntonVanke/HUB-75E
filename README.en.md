@@ -1,10 +1,10 @@
-# HUB-75E · Clockwise Theme Clock
+# HUB-75E · Clockyr Theme Clock
 
 [简体中文](README.md) · English
 
 A 64 × 64 HUB75 clock for ESP32 / ESP32-S3. Themes are C/C++ compiled to chip-specific Xtensa machine code in CWP3 packages. Current firmware does not run Lua. Runtime API 5, native ABI 1.
 
-**Current release: 1.5.2** · [Flash firmware](https://antonvanke.github.io/HUB-75E/#flash) · [Applications](https://antonvanke.github.io/HUB-75E/#themes) · [USB settings](https://antonvanke.github.io/HUB-75E/#config) · [Image clock workshop](https://antonvanke.github.io/HUB-75E/studio/index.html)
+**Current release: 1.6.0** · [Flash firmware](https://antonvanke.github.io/HUB-75E/#flash) · [Applications](https://antonvanke.github.io/HUB-75E/#themes) · [USB settings](https://antonvanke.github.io/HUB-75E/#config) · [Image clock workshop](https://antonvanke.github.io/HUB-75E/studio/index.html)
 
 ![Ferrofluid computer preview](web/previews/ferrofluid-clock.gif)
 
@@ -12,6 +12,7 @@ Rendered by the theme's C++ code on a computer, not panel footage or a device FP
 
 ## Current features
 
+- **1.6.0 conditional playback and display:** play themes by time range or ambient light, with enable switches and priority. Light rules use a 3-second delay and 5-point hysteresis. OTA displays write/verify/restart progress on the panel. The interface is branded Clockyr. Confirmed light sensors no longer appear disconnected in darkness.
 - **1.5.2 light sensor obstruction protection:** S3 combines LDR readings with IMU orientation, holds brightness when the calibrated sensor face is covered facing down, and resumes smoothly after release. Calibrate the installed orientation in the device backend under Automatic brightness. Ordinary room dimming does not trigger protection.
 - **1.5.1 time settings:** Alibaba Cloud NTP by default, with Cloudflare, NTP Pool or a custom hostname/IPv4. Synchronize after Wi-Fi connects at boot or after a firmware update, then every 24 hours after success. Background fallback/retries, automatic-time switch, manual date/time and computer-time transfer.
 - **1.5.0 USB/backend:** connect directly from Applications, preview the real framebuffer, run hardware diagnostics and use a responsive mobile backend. Installation does not explicitly stop the active theme; click Run to activate it. Updates retain old resources for the active instance.
@@ -25,8 +26,8 @@ Both chips compile and the brightness/obstruction controller passes host simulat
 
 | Chip | Firmware | Applications | Requirements |
 | --- | --- | --- | --- |
-| ESP32 | [v1.5.2 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.5.2.zip) | [5 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | Classic ESP32, 4 MB Flash |
-| ESP32-S3 | [v1.5.2 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.5.2.zip) | [59 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | Project board, at least 8 MB Flash + 8 MB OPI PSRAM |
+| ESP32 | [v1.6.0 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.6.0.zip) | [5 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | Classic ESP32, 4 MB Flash |
+| ESP32-S3 | [v1.6.0 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.6.0.zip) | [59 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | Project board, at least 8 MB Flash + 8 MB OPI PSRAM |
 
 S3 N4 is unsupported. Other boards require matching memory settings and wiring.
 

@@ -6,6 +6,7 @@
 #include <mbedtls/sha256.h>
 #include "AppManifest.h"
 #include "UpdateTrust.h"
+#include <functional>
 class FirmwareUpdate {
   uint32_t checked_=0;bool checkedOnce_=false;
   static bool field(const String& json,const char* key,String& value){bool found=false;return CwJson::field(json,key,value,found)&&found;}
@@ -15,8 +16,9 @@ public:
   bool due(uint32_t now)const{return enabled&&(!checkedOnce_?now>=60000:now-checked_>=21600000);}
   void schedule(){checkedOnce_=false;}
   static bool newer(const String& a,const String& b){unsigned x[3],y[3];int n=0;if(sscanf(a.c_str(),"%u.%u.%u%n",x,x+1,x+2,&n)!=3||n!=int(a.length())||sscanf(b.c_str(),"%u.%u.%u",y,y+1,y+2)!=3)return false;for(int i=0;i<3;i++)if(x[i]!=y[i])return x[i]>y[i];return false;}
-  bool run(const char* current){
+  bool run(const char* current,const std::function<void(uint32_t,uint32_t,const char*)>& progress){
     checked_=millis();checkedOnce_=true;state="checking";
+    if(progress)progress(0,0,"CHECKING");
 #ifdef HUB75_S3_BOARD
     const char* chip="esp32s3";const int chipCode=9;
 #else
@@ -25,7 +27,7 @@ public:
     const String base="https://antonvanke.github.io/HUB-75E/";
     WiFiClientSecure tls;tls.setCACert(UPDATE_ROOT_CA);tls.setHandshakeTimeout(12);
     HTTPClient http;http.setConnectTimeout(8000);http.setTimeout(10000);http.useHTTP10(true);
-    auto fail=[&](const char* reason){state=reason;http.end();tls.stop();return false;};
+    auto fail=[&](const char* reason){state=reason;http.end();tls.stop();if(progress)progress(0,0,!strcmp(reason,"up-to-date")?"CURRENT":"FAILED");return false;};
     if(!http.begin(tls,base+"updates/"+chip+".json"))return fail("connect-failed");
     if(http.GET()!=200||http.getSize()<1||http.getSize()>2048)return fail("manifest-download-failed");
     String json=http.getString();http.end();String version,target,path,hash;uint32_t bytes,flash,psram;
@@ -39,10 +41,11 @@ public:
     uint8_t buffer[1024];auto* stream=http.getStreamPtr();
     if(stream->readBytes(buffer,24)!=24||buffer[0]!=0xe9||(buffer[12]|(buffer[13]<<8))!=chipCode)return fail("wrong-chip-image");
     if(!Update.begin(bytes,U_FLASH))return fail("ota-begin-failed");
+    if(progress)progress(0,bytes,"UPDATING");
     mbedtls_sha256_context digest;mbedtls_sha256_init(&digest);mbedtls_sha256_starts_ret(&digest,0);
     uint32_t received=0,last=millis();size_t n=24;bool ok=true;
     while(received<bytes){
-      if(n){mbedtls_sha256_update_ret(&digest,buffer,n);if(Update.write(buffer,n)!=n){ok=false;break;}received+=n;last=millis();}
+      if(n){mbedtls_sha256_update_ret(&digest,buffer,n);if(Update.write(buffer,n)!=n){ok=false;break;}received+=n;last=millis();if(progress)progress(received,bytes,"UPDATING");}
       if(received==bytes)break;
       n=stream->readBytes(buffer,std::min(size_t(sizeof(buffer)),size_t(bytes-received)));
       if(!n&&(!http.connected()||millis()-last>15000)){ok=false;break;}delay(1);
@@ -50,7 +53,8 @@ public:
     unsigned char result[32];char hex[65];mbedtls_sha256_finish_ret(&digest,result);mbedtls_sha256_free(&digest);
     for(int i=0;i<32;i++)snprintf(hex+i*2,3,"%02x",result[i]);
     if(!ok||received!=bytes||hash!=hex){Update.abort();return fail("download-integrity-failed");}
+    if(progress)progress(received,bytes,"VERIFY");
     if(!Update.end(true)){Update.abort();return fail("ota-validation-failed");}
-    http.end();tls.stop();state="restarting";return true;
+    http.end();tls.stop();state="restarting";if(progress)progress(received,bytes,"RESTART");return true;
   }
 };
