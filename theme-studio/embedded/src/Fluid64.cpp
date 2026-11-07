@@ -6,12 +6,9 @@
 static float bound(float v,float lo,float hi){return std::max(lo,std::min(hi,v));}
 void Fluid64::reset(float fill,int rotation){
   for(int i=0;i<256;i++){const float d=std::sqrt((i+0.5f)/4.0f);weight_[i]=1-d/8.0f;inverse_[i]=1/d;const float q=1-i/256.0f;splat_[i]=int(q*q*256);}
-  count_=std::min(Capacity,int(bound(fill,0.1f,0.5625f)*256));rotation_=rotation;accumulator_=0;
+  targetCount_=std::min(Capacity,int(bound(fill,0.1f,0.70f)*256));count_=0;pourMs_=0;rotation_=rotation;accumulator_=0;
   std::memset(drops_,0,sizeof(drops_));dropCursor_=sprayDelay_=0;seed_=0x75e1234;
   activity_=0;gx_=0;gy_=1;
-  for(int i=0;i<count_;i++){
-    auto& p=p_[i];p={};p.x=1.0f+(i%16)*4.0f;p.y=62.0f-(i/16)*4.0f;
-  }
 }
 void Fluid64::step(float milliseconds,float gx,float gy,int rotation){
   if(!std::isfinite(milliseconds)||!std::isfinite(gx)||!std::isfinite(gy))return;
@@ -24,6 +21,13 @@ void Fluid64::step(float milliseconds,float gx,float gy,int rotation){
   }
   for(auto& p:drops_)if(p.life>0)for(int j=0;j<turns;j++){
     float t=p.x;p.x=p.y;p.y=63-t;t=p.vx;p.vx=p.vy;p.vy=-t;
+  }
+  pourMs_=std::min(2000.0f,pourMs_+std::max(0.0f,milliseconds));
+  const int wanted=pourMs_>=2000?targetCount_:int(targetCount_*pourMs_/2000);
+  while(count_<wanted){
+    const int i=count_++;auto& p=p_[i];p={};seed_=seed_*1664525U+1013904223U;
+    p.x=26.0f+(i%4)*3.7f+float(seed_>>24)/1024.0f;p.y=0.8f;
+    p.vx=(float((seed_>>16)&255)-127.5f)*.04f;p.vy=90.0f;
   }
   accumulator_+=bound(milliseconds,0.0f,50.0f)*speed_;
   for(int i=0;i<10&&accumulator_>=5.0f;i++){tick(gx_,gy_);accumulator_-=5.0f;}

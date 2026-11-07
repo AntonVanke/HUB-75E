@@ -2,6 +2,39 @@
   "schema": 1,
   "releases": [
     {
+      "version": "1.7.0",
+      "runtimeApi": 5,
+      "nativeAbi": 1,
+      "notes": "Clockyr：后台静默检查更新、OTA 重力旋转、16 条重要事件日志；重力水 2 秒注水，上限 70%。",
+      "catalog": "applications/1.7.0/catalog.json",
+      "targets": {
+        "esp32": {
+          "chip": "esp32",
+          "flashBytes": 4194304,
+          "psramBytes": 0,
+          "manifest": "firmware/esp32-v1.7.0/manifest.json",
+          "updateManifest": "firmware/esp32-v1.7.0/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32-v1.7.0/app.bin",
+            "bytes": 1478768,
+            "sha256": "169ed0296d52fa848ee26f5c80e3f35061ec46455c954ff7b176a25be597115a"
+          }
+        },
+        "esp32s3": {
+          "chip": "esp32s3",
+          "flashBytes": 8388608,
+          "psramBytes": 8388608,
+          "manifest": "firmware/esp32s3-v1.7.0/manifest.json",
+          "updateManifest": "firmware/esp32s3-v1.7.0/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32s3-v1.7.0/app.bin",
+            "bytes": 1486656,
+            "sha256": "e7d02ea16734c9cd0bea95a67c7e8bac503c8168844b2dccf0da99327b085030"
+          }
+        }
+      }
+    },
+    {
       "version": "1.6.1",
       "runtimeApi": 5,
       "nativeAbi": 1,
@@ -398,5 +431,5 @@
       }
     }
   ],
-  "latest": "1.6.1"
+  "latest": "1.7.0"
 }

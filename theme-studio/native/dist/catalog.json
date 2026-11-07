@@ -184,8 +184,8 @@
       "packageName": "org.clockwise.gravity-liquid",
       "id": "gravity-liquid",
       "title": "全屏重力水",
-      "appVersion": "1.1.0",
-      "description": "原生 C++ 水模拟，前景时钟，120 FPS 目标。",
+      "appVersion": "1.2.0",
+      "description": "原生 C++ 水模拟，从顶部注水 2 秒，水量最高 70%，前景时钟，S3 目标 120 FPS。",
       "author": "HUB-75E",
       "requirements": {
         "sensors": [
@@ -193,7 +193,7 @@
         ],
         "targetFps": 60,
         "stateBytes": 16,
-        "graphicsBytes": 32768,
+        "graphicsBytes": 40960,
         "chips": [
           "esp32"
         ],
@@ -204,7 +204,7 @@
         "fill": {
           "label": "水量 / Fill",
           "min": 10,
-          "max": 56,
+          "max": 70,
           "step": 1,
           "default": 46
         },
@@ -248,15 +248,15 @@
       "nativeAbi": 1,
       "runtimeApi": 5,
       "file": "gravity-liquid-esp32.cwp",
-      "bytes": 1817,
-      "sha256": "2dc2b2e3c3bd29a04fc4221e3b2b3fc3bce97a584ac3943216806f88974711c8"
+      "bytes": 1863,
+      "sha256": "7c91c555d14a24ba68be009f0cfc946dcd3c9129d00ef0adddf3f5bd4518a212"
     },
     {
       "packageName": "org.clockwise.gravity-liquid",
       "id": "gravity-liquid",
       "title": "全屏重力水",
-      "appVersion": "1.1.0",
-      "description": "原生 C++ 水模拟，前景时钟，120 FPS 目标。",
+      "appVersion": "1.2.0",
+      "description": "原生 C++ 水模拟，从顶部注水 2 秒，水量最高 70%，前景时钟，S3 目标 120 FPS。",
       "author": "HUB-75E",
       "requirements": {
         "sensors": [
@@ -264,7 +264,7 @@
         ],
         "targetFps": 120,
         "stateBytes": 16,
-        "graphicsBytes": 32768,
+        "graphicsBytes": 40960,
         "chips": [
           "esp32s3"
         ],
@@ -275,7 +275,7 @@
         "fill": {
           "label": "水量 / Fill",
           "min": 10,
-          "max": 56,
+          "max": 70,
           "step": 1,
           "default": 46
         },
@@ -319,8 +319,8 @@
       "nativeAbi": 1,
       "runtimeApi": 5,
       "file": "gravity-liquid-esp32s3.cwp",
-      "bytes": 1820,
-      "sha256": "b0557e23b274f2bb0000a6fb32a29bf57c367feb7a9f5e3a7ffaf3c2b477217f"
+      "bytes": 1866,
+      "sha256": "a25aa62e420aba3dcc6cba3d2190afead99b974243c8273b0c0145b02638a7f5"
     },
     {
       "packageName": "org.clockwise.gravity-maze",

@@ -4,12 +4,14 @@
 // Bounded 2-D double-density relaxation; one workspace, no per-frame allocation.
 class Fluid64 {
 public:
-  static constexpr int Capacity=144;
+  static constexpr int Capacity=180;
   static constexpr int DropCapacity=128;
   void configure(float gravity,float viscosity,float speed,int drops){gravity_=gravity;viscosity_=viscosity;speed_=speed;dropLimit_=drops<0?0:drops>128?128:drops;}
   void reset(float fill=0.46f,int rotation=0);
   void step(float milliseconds,float gx,float gy,int rotation);
   void draw(uint16_t* pixels);
+  int particleCount()const{return count_;}
+  bool pouring()const{return pourMs_<2000;}
 private:
   struct Particle { float x,y,vx,vy,ox,oy,pressure,nearPressure; } p_[Capacity];
   struct Drop { float x,y,vx,vy,life; } drops_[DropCapacity];
@@ -19,7 +21,8 @@ private:
   uint16_t field_[4096];
   float weight_[256],inverse_[256];
   uint16_t splat_[256];
-  int count_=0,rotation_=0;
+  int count_=0,targetCount_=0,rotation_=0;
+  float pourMs_=0;
   float gravity_=9.80665f,viscosity_=1,speed_=.88f;int dropLimit_=96;
   float accumulator_=0,gx_=0,gy_=1,activity_=0;
   void tick(float gx,float gy);

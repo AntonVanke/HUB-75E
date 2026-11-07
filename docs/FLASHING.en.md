@@ -2,7 +2,7 @@
 
 [简体中文](FLASHING.md) · English
 
-Current **1.6.1**: [ESP32 4 MB](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.6.1.zip) · [ESP32-S3 8 MB Flash + 8 MB OPI PSRAM](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.6.1.zip). S3 N4 is unsupported. Older versions remain for historical devices and rollback.
+Current **1.7.0**: [ESP32 4 MB](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.7.0.zip) · [ESP32-S3 8 MB Flash + 8 MB OPI PSRAM](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.7.0.zip). S3 N4 is unsupported. Older versions remain for historical devices and rollback.
 
 ## Web flashing
 
@@ -47,6 +47,12 @@ Serial: 115200 baud, one newline-terminated JSON command; responses start with `
 Open the reported IP directly. Pages Applications connects USB itself: the computer downloads/verifies CWP3 and transfers chunks; device access to GitHub is unnecessary. Installation does not explicitly stop the active theme; click Run to switch. Firmware flashing/OTA reboots the device.
 
 Basic clock appears in device Applications, the Pages gallery and the workshop. Run it directly or select it for rotation/conditions. It is built into firmware, consumes no application slot and has no uninstall action. Update the device backend to 1.6.1; Pages/workshop use the existing serial `app.run` with `index=-1`.
+
+## Update display and logs (1.7.0)
+
+Automatic checks run in the background after boot/network readiness and every six hours, without a progress screen or theme restart when already current. Actual OTA write/verification displays progress using the live gravity orientation; a successful firmware update still reboots normally. Maintenance → Important event log reads/exports the last 16 persistent critical events. Reset causes and known intentional restart reasons are recorded; passwords and frame telemetry are not. Events before this firmware was installed cannot be recovered.
+
+Gravity Water v1.2.0 supports up to 70% fill and pours from the top over two seconds on start/reset, independently of the simulation speed setting. Update both firmware and the water app for the new parameter range.
 
 ## Light sensor obstruction protection (1.6.0)
 

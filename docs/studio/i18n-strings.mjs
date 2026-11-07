@@ -1,5 +1,28 @@
 import {timeStrings} from './time-settings.mjs';
 const pairs = `
+重要事件日志|Important event log
+只保留最近 16 条启动、主动重启、更新和关键故障记录；重启后仍可读取。不记录 Wi-Fi 密码、逐帧数据或正常的版本检查。|Keeps the last 16 boot, intentional restart, update and critical failure events across reboots. No Wi-Fi passwords, frame telemetry or routine update checks.
+读取日志|Read log
+导出日志|Export log
+本次启动原因：|Current boot reason: 
+；日志存储不可用|; persistent log unavailable
+时间未校准|Time not synchronized
+上电|Power on
+软件重启|Software reset
+外部复位|External reset
+程序异常|Panic
+供电欠压|Brownout
+任务看门狗|Task watchdog
+中断看门狗|Interrupt watchdog
+看门狗|Watchdog
+启动|Boot
+主动重启|Intentional restart
+开始更新|Update started
+更新完成|Update completed
+更新失败|Update failed
+版本检查失败|Update check failed
+主题错误|Theme error
+屏幕错误|Panel error
 黑底白字，只显示当前时间；固件内置，无需安装，不可卸载。|White time on black. Built into firmware; no installation required and cannot be uninstalled.
 固件内置 · 不可卸载|Built into firmware · Cannot uninstall
 不占应用存储|No application storage used

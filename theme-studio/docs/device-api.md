@@ -1,8 +1,16 @@
-# 当前设备管理 API（固件 1.6.1）
+# 当前设备管理 API（固件 1.7.0）
 
 Current firmware uses C/C++ / CWP3, runtime API 5 and native ABI 1. The versioned [v0.9.8 document](device-api-v0.9.8.md) is historical; installation no longer deliberately pauses the active theme.
 
 HTTP 在设备地址的 `/api/` 下，串口 115200 baud，每条命令一行 JSON，回复以 `CWJSON:` 开头。先读 `/api/status` 或 `{"cmd":"status"}`，依据返回字段判断能力。Pages 下载应用后经 USB 传输，不从 HTTPS 网页直接请求局域网 HTTP。
+
+## 重要事件日志（1.7.0）
+
+`GET /api/logs` 或串口 `{"cmd":"logs"}` 返回 `persistent,resetReason,capacity:16,events`，事件按新到旧排列，每项包含 `boot,uptime,epoch,heap,code,detail`。未校时 epoch=0。记录启动、主动重启、固件更新开始/完成/失败、版本检查失败、主题/面板错误；正常检查不记日志，相同相邻错误一分钟内去重。NVS 环形存储覆盖最早记录；不记录密码或帧数据。日志仅从本版开始，复位原因来自 `esp_reset_reason()`，不推测历史硬件故障。
+
+自动更新检查在临时后台任务执行，完成后释放任务/TLS 内存；只有确认存在新版本且芯片/容量匹配后才停止主题、进入 OTA。实际进度回调持续采样 IMU 并使用实时旋转方向。保存未改变的自动更新设置不再触发额外检查。
+
+English: HTTP/serial logs expose the last 16 important NVS-persisted events plus the current ESP reset cause. Background manifest checks do not stop themes or draw OTA progress. Firmware installs still validate chip, capacity and SHA-256 before scheduling a labeled restart.
 
 ## 内置基础时钟（1.6.1）
 

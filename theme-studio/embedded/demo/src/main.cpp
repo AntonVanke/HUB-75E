@@ -306,12 +306,14 @@ static void drawDriverGuide(){
   for(int i=0;i<3;i++)g->fillRect(2+i*20,60,19,2,panelColor(i==0?0xf800:i==1?0x07e0:0x001f));
   showPanel();
 }
+static void publishInputs();
 static void drawUpdateProgress(uint32_t done,uint32_t total,const char* stage){
   if(!panelInitialized||diagnosticPanel())return;
+  publishInputs();
   static uint32_t last=0;static char previous[12]="";const uint32_t now=millis();
   if(!strcmp(previous,stage)&&now-last<100)return;
   last=now;snprintf(previous,sizeof(previous),"%s",stage);
-  auto* g=panelGraphics();g->setRotation(orientation.configuration().rotation);panelBrightness(80);
+  auto* g=panelGraphics();g->setRotation(orientation.rotation());panelBrightness(80);
   g->fillScreen(0);g->setTextSize(1);g->setTextWrap(false);g->setTextColor(panelColor(0xffff));
   g->setCursor(11,5);g->print("Clockyr");g->setCursor((64-strlen(stage)*6)/2,20);g->print(stage);
   const bool complete=!strcmp(stage,"RESTART");int percent=total?int(uint64_t(done)*100/total):0;
@@ -399,7 +401,7 @@ static void renderTask(void*){
   }
 }
 void setup(){
-  Serial.begin(115200);setCpuFrequencyMhz(240);
+  Serial.begin(115200);setCpuFrequencyMhz(240);service.eventLog.begin("1.7.0");
   service.panelTrial.begin();
   orientation.configure(panelOrientation());
 #ifdef HUB75_S3_BOARD
@@ -503,7 +505,7 @@ void setup(){
   service.panelReady=panelInitialized;
   service.begin(THEME_COUNT,THEME_TITLES);
   if(service.needsSetup())setupQr.begin(service.setupName().c_str(),service.setupPassword().c_str());
-  service.lastError=panelInitError;
+  service.lastError=panelInitError;if(panelInitError.length())service.eventLog.add("panel-failed",panelInitError.c_str());
   Serial.printf("64x64, 240 MHz, render core 1, service core 0; %d catalog apps. Serial: {\"cmd\":\"help\"}\n",THEME_COUNT);
 }
 static void publishInputs(){
@@ -556,6 +558,7 @@ void loop(){
   }
   Metrics m;
   if(xQueueReceive(metricsQueue,&m,0)==pdTRUE){
+    if(m.error[0]&&service.lastError!=m.error)service.eventLog.add("theme-failed",m.error);
     service.lastError=m.error;
     snprintf(service.metrics,sizeof(service.metrics),"{\"theme\":%d,\"generation\":%u,\"frames\":%u,\"presents\":%u,\"scans\":%u,\"late\":%u,\"missed\":%u,\"computeUs\":%u,\"dmaUs\":%u,\"maxUs\":%u,\"nativeBytes\":%u,\"nativeUsed\":%u,\"graphicsBytes\":%u,\"sampleMs\":%u,\"targetFps\":%d,\"level\":%d,\"area\":%d,\"deaths\":%d,\"coins\":%d}",m.theme,m.generation,m.frames,m.presents,m.scans,m.late,m.missed,m.computeUs,m.blitUs,m.maxUs,m.lua,m.luaUsed,m.graphics,m.sampleMs,m.targetFps,m.level,m.area,m.deaths,m.coins);
     Serial.printf("frames=%u late=%u missed=%u cpu_us=%u dma_us=%u max_us=%u free_internal=%u lua_peak=%u graphics=%u level=%d area=%d deaths=%d coins=%d error=%s\n",m.frames,m.late,m.missed,m.computeUs,m.blitUs,m.maxUs,m.heap,m.lua,m.graphics,m.level,m.area,m.deaths,m.coins,m.error);
