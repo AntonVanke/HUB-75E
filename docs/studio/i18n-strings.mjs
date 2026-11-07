@@ -1,5 +1,11 @@
 import {timeStrings} from './time-settings.mjs';
 const pairs = `
+黑底白字，只显示当前时间；固件内置，无需安装，不可卸载。|White time on black. Built into firmware; no installation required and cannot be uninstalled.
+固件内置 · 不可卸载|Built into firmware · Cannot uninstall
+不占应用存储|No application storage used
+基础时钟为固件内置，不可卸载|The basic clock is built into firmware and cannot be uninstalled
+基础时钟为固件内置，不可卸载或导出|The basic clock is built into firmware and cannot be uninstalled or exported
+已设为默认主题；条件控制仍优先播放|Set as default; matching playback conditions still take priority
 实时屏幕|Live screen
 当前主题画面|Current theme frame
 读取设备正在绘制的 64 × 64 画面，不在电脑重新模拟。|Read the actual 64 × 64 theme framebuffer from the device. No PC simulation.

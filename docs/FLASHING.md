@@ -2,7 +2,7 @@
 
 简体中文 · [English](FLASHING.en.md)
 
-当前版本 **1.6.0**：[ESP32 4 MB](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.6.0.zip) · [ESP32-S3 8 MB Flash + 8 MB OPI PSRAM](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.6.0.zip)。S3 N4 不适用。旧版保留用于历史设备与回退。
+当前版本 **1.6.1**：[ESP32 4 MB](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.6.1.zip) · [ESP32-S3 8 MB Flash + 8 MB OPI PSRAM](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.6.1.zip)。S3 N4 不适用。旧版保留用于历史设备与回退。
 
 ## 在线安装与更新
 
@@ -45,6 +45,8 @@ Linux/macOS：`sh ./flash.sh /dev/ttyUSB0`；macOS 端口常为 `/dev/cu.usbseri
 ```
 
 直接访问返回的 IP 打开后台。Pages 主题页可直接连接 USB：电脑下载校验 CWP3，再分块传给设备，不要求设备访问 GitHub。应用安装不主动停止当前主题，点击运行才切换；固件烧录/OTA 会重启。
+
+基础时钟显示在设备“主题应用”、Pages 主题库和工坊中，可点击“运行”，也可加入轮换及条件控制；固件内置，不占应用槽位，不提供卸载按钮。设备后台需更新至 1.6.1；Pages/工坊运行基础时钟使用已有串口 `app.run`、`index=-1`。
 
 ## 光敏面遮挡保护（1.6.0）
 

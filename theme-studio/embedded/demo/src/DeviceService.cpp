@@ -58,7 +58,7 @@ bool DeviceService::saveOrientation(int degrees,bool automatic,int gravityDegree
 }
 String DeviceService::discoveryIdentity()const{
   char id[17];snprintf(id,sizeof(id),"%012llx",ESP.getEfuseMac()&0xffffffffffffULL);
-  return "{\"product\":\"clockwise-hub75\",\"id\":"+quote(id)+",\"chip\":"+quote(ESP.getChipModel())+",\"version\":\"1.6.0\"}";
+  return "{\"product\":\"clockwise-hub75\",\"id\":"+quote(id)+",\"chip\":"+quote(ESP.getChipModel())+",\"version\":\"1.6.1\"}";
 }
 bool DeviceService::startDiscovery(String& error){
   if(WiFi.status()!=WL_CONNECTED){error="请先让设备连接局域网 Wi-Fi";return false;}
@@ -278,7 +278,7 @@ void DeviceService::begin(int count,const char* titlesJson){
   web_.on("/api/apps/install",HTTP_POST,[this](){if(serialInstall_){reply(409,"{\"error\":\"USB 应用安装进行中\"}");return;}finishInstall();},[this](){if(!serialInstall_)uploadScript();});
   web_.on("/api/apps/uninstall",HTTP_POST,[this](){String error;const int index=requestAppIndex(error);if(index<0||!uninstallApp(index,error)){reply(400,"{\"error\":"+quote(error)+"}");return;}reply(200,"{\"message\":\"应用已卸载，存储空间已释放\"}");});
   web_.on("/api/apps/export",HTTP_GET,[this](){String error;const int index=requestAppIndex(error);if(index<0){reply(404,"{\"error\":"+quote(error)+"}");return;}exportApp(index);});
-  web_.on("/api/apps/run",HTTP_POST,[this](){String error;const int index=requestAppIndex(error);if(index<0||!runApp(index,error)){reply(400,"{\"error\":"+quote(error)+"}");return;}reply(200,"{\"message\":\"已设为默认主题；指定时段仍优先播放\"}");});
+  web_.on("/api/apps/run",HTTP_POST,[this](){String error;const int index=requestAppIndex(error);if(index<-1||!runApp(index,error)){reply(400,"{\"error\":"+quote(error)+"}");return;}reply(200,"{\"message\":\"已设为默认主题；指定时段仍优先播放\"}");});
   web_.on("/api/diagnostics",HTTP_GET,[this](){reply(200,"{\"sensors\":"+(sensorStatus?sensorStatus():String("{}"))+",\"hardware\":"+(hardwareStatus?hardwareStatus():String("{\"supported\":false}"))+"}");});
   web_.on("/api/diagnostics",HTTP_POST,[this](){String error;if(!hardwareTest){reply(400,"{\"error\":\"当前板型未配置该测试硬件\"}");return;}const bool ok=hardwareTest(web_.arg("test"),error);reply(ok?200:400,ok?"{\"message\":\"测试已执行；蜂鸣器请确认实际声音，IMU 请查看自检结果\"}":"{\"error\":"+quote(error)+"}");});
   web_.on("/api/sensors",HTTP_GET,[this](){reply(200,sensorStatus?sensorStatus():"{}");});
@@ -351,7 +351,7 @@ void DeviceService::begin(int count,const char* titlesJson){
   });
   web_.begin();
   Serial.printf("Provision AP: %s  Password: %s\n",apName_.c_str(),apPassword_.c_str());
-  Serial.println("CWJSON:{\"ok\":true,\"version\":\"1.6.0\",\"message\":\"串口设置已就绪，发送 {\\\"cmd\\\":\\\"help\\\"} 查看命令\"}");
+  Serial.println("CWJSON:{\"ok\":true,\"version\":\"1.6.1\",\"message\":\"串口设置已就绪，发送 {\\\"cmd\\\":\\\"help\\\"} 查看命令\"}");
 }
 void DeviceService::uploadScript(){
   auto& u=web_.upload();
@@ -449,7 +449,7 @@ void DeviceService::poll(){
   if(updater.due(now)&&WiFi.status()==WL_CONNECTED&&time(nullptr)>1700000000&&!needsSetup()&&!panelTrial.active&&!ota_&&!scriptLocked_&&!serialInstall_&&!restartAt_){
     if(renderLock(true)){
       updater.busy=true;stopScript();
-      const bool ready=updater.run("1.6.0",updateProgress);
+      const bool ready=updater.run("1.6.1",updateProgress);
       updater.busy=false;Serial.println("[UPDATE] "+updater.state);
       if(ready){restartAt_=millis()+500;}else{generation++;renderLock(false);}
     }
@@ -460,12 +460,12 @@ bool DeviceService::readSchedule(const String& text,ThemeSchedule& out,bool allo
   if(text.length()>1200||text.isEmpty())return false;out={};int mode,interval,random,n=0;
   if(sscanf(text.c_str(),"%d,%d,%d%n",&mode,&interval,&random,&n)!=3||text[n]!='\n'||mode<0||mode>2||interval<1||interval>1440||(random!=0&&random!=1))return false;
   out.mode=mode;out.interval=interval;out.random=random;int at=n+1;
-  auto valid=[this,allowMissing](int i){return i>=0&&i<64&&(allowMissing||appInstalled(i));};
+  auto valid=[this,allowMissing](int i){return i>=-1&&i<64&&(allowMissing||appInstalled(i));};
   int line=0;
   while(at<int(text.length())){
     int end=text.indexOf('\n',at);if(end<0)end=text.length();String row=text.substring(at,end);at=end+1;
     if(line<2){int start=0;while(start<int(row.length())){int stop=row.indexOf(',',start);if(stop<0)stop=row.length();String item=row.substring(start,stop);int value,used=0;if(sscanf(item.c_str(),"%d%n",&value,&used)!=1||used!=int(item.length()))return false;
-      if(line==0){if(migrateLegacy&&value==50)value=63;if(!valid(value)||out.poolCount>=64)return false;for(int i=0;i<out.poolCount;i++)if(out.pool[i]==value)return false;out.pool[out.poolCount++]=value;}
+      if(line==0){if(migrateLegacy&&value==50)value=63;if(!valid(value)||out.poolCount>=65)return false;for(int i=0;i<out.poolCount;i++)if(out.pool[i]==value)return false;out.pool[out.poolCount++]=value;}
       else{if(value<0||value>1439||out.timeCount>=16)return false;for(int i=0;i<out.timeCount;i++)if(out.times[i]==value)return false;out.times[out.timeCount++]=value;}start=stop+1;}
     }else if(row.length()){
       int a,b,t,d,kind=0,threshold=20,enabled=1,used=0;if(out.windowCount>=12)return false;
@@ -473,7 +473,7 @@ bool DeviceService::readSchedule(const String& text,ThemeSchedule& out,bool allo
       if(fields!=7){kind=0;threshold=20;enabled=1;used=0;if(sscanf(row.c_str(),"%d,%d,%d,%d%n",&a,&b,&t,&d,&used)!=4)return false;}
       if(used!=int(row.length()))return false;if(migrateLegacy&&t==50)t=63;
       if(a<0||a>1439||b<0||b>1439||!valid(t)||d<1||d>127||kind<0||kind>2||threshold<0||threshold>100||(enabled!=0&&enabled!=1)||(!kind&&a==b)||(kind&&!ambient.supported&&!allowMissing))return false;
-      out.windows[out.windowCount++]={uint16_t(a),uint16_t(b),uint16_t(t),uint8_t(d),uint8_t(kind),uint8_t(threshold),enabled!=0};
+      out.windows[out.windowCount++]={uint16_t(a),uint16_t(b),int16_t(t),uint8_t(d),uint8_t(kind),uint8_t(threshold),enabled!=0};
     }
     line++;
   }return line>=2&&(out.mode==0||out.poolCount>0)&&(out.mode!=2||out.timeCount>0);
@@ -487,15 +487,15 @@ String DeviceService::scheduleText()const{
 void DeviceService::pollSchedule(uint32_t now){
   time_t epoch=time(nullptr);tm t;localtime_r(&epoch,&t);const bool timeValid=t.tm_year>=124;
   const int window=conditions_.evaluate(schedule_,t,timeValid,ambient.lightValid(now),ambient.lightPercent(),now,installed_&~incompatible_);
-  if(window>=0){if(window!=windowTheme_||theme!=window){theme=window;generation++;}windowTheme_=window;return;}
-  if(windowTheme_>=0){windowTheme_=-1;theme=baseTheme_;generation++;rotateAt_=now;}
+  if(window!=ThemeSchedule::None){if(window!=windowTheme_||theme!=window){theme=window;generation++;}windowTheme_=window;return;}
+  if(windowTheme_!=ThemeSchedule::None){windowTheme_=ThemeSchedule::None;theme=baseTheme_;generation++;rotateAt_=now;}
   bool rotate=schedule_.mode==1&&uint32_t(now-rotateAt_)>=uint32_t(schedule_.interval)*60000;
   if(schedule_.mode==2&&timeValid){const int64_t key=int64_t(epoch)/60;const int minute=t.tm_hour*60+t.tm_min;
     for(int i=0;i<schedule_.timeCount;i++)if(schedule_.times[i]==minute&&key!=lastDaily_){rotate=true;lastDaily_=key;break;}}
   if(rotate){
     int next=schedule_.next(baseTheme_,esp_random());
-    if(next>=0&&(incompatible_&(uint64_t(1)<<next)))for(int i=0;i<schedule_.poolCount;i++)if(!(incompatible_&(uint64_t(1)<<schedule_.pool[i]))){next=schedule_.pool[i];break;}
-    if(next>=0&&!(incompatible_&(uint64_t(1)<<next))){baseTheme_=theme=next;generation++;}rotateAt_=now;
+    if(!ThemeSchedule::allowed(next,installed_&~incompatible_))for(int i=0;i<schedule_.poolCount;i++)if(ThemeSchedule::allowed(schedule_.pool[i],installed_&~incompatible_)){next=schedule_.pool[i];break;}
+    if(ThemeSchedule::allowed(next,installed_&~incompatible_)){baseTheme_=theme=next;generation++;}rotateAt_=now;
   }
 }
 
@@ -539,7 +539,8 @@ int DeviceService::appIndex(const String& identity){
 int DeviceService::requestAppIndex(String& error){
   String identity=web_.arg("packageName");if(identity.isEmpty())identity=web_.arg("id");
   int index;if(identity.length())index=appIndex(identity);else if(!integer(web_.arg("index"),index))index=-2;
-  if(index<0||index>=64){error=index==-3?"应用 id 重复，请使用完整 packageName":"应用不存在；请提供 packageName 或 id";return -2;}return index;
+  if(index==-1){error="基础时钟为固件内置，不可卸载或导出";return -1;}
+  if(index<-1||index>=64){error=index==-3?"应用 id 重复，请使用完整 packageName":"应用不存在；请提供 packageName 或 id";return -2;}return index;
 }
 bool DeviceService::readManifest(const char* path,AppManifest& manifest,String& error){
   File file=LittleFS.open(path,"r");ThemePackage package;
@@ -620,7 +621,7 @@ void DeviceService::sendApps(bool serial){
       if(used==sizeof(output)){web_.sendContent(output,used);used=0;if(ioTick)ioTick();}
     }
   };
-  send("{\"apps\":[");bool comma=false;
+  send("{\"apps\":[{\"index\":-1,\"id\":\"basic-clock\",\"title\":\"基础时钟\",\"description\":\"黑底白字，只显示当前时间；固件内置，无需安装，不可卸载。\",\"system\":true,\"removable\":false,\"installed\":true,\"builtin\":true,\"bytes\":0,\"active\":"+String(theme==-1?"true":"false")+"}");bool comma=true;
   for(int i=0;i<64;i++)if((i<themeCount&&catalogRows_[i])||appInstalled(i)){
     if(comma)send(",");comma=true;
     const bool installed=appInstalled(i);AppManifest manifest;String error;
@@ -649,10 +650,10 @@ String DeviceService::statusJson(){
   const time_t epoch=time(nullptr);tm local;localtime_r(&epoch,&local);const bool timeValid=local.tm_year>=124;
   char localTime[20]={},remaining[16]="null";if(timeValid)strftime(localTime,sizeof(localTime),"%Y-%m-%d %H:%M:%S",&local);
   bool needsTime=schedule_.mode==2;for(int i=0;i<schedule_.windowCount;i++)if(schedule_.windows[i].enabled&&!schedule_.windows[i].kind)needsTime=true;
-  const char* source=windowTheme_>=0?"condition":schedule_.mode==1?"interval":!timeValid&&needsTime?"waiting-time":schedule_.mode==2?"daily":"fixed";
-  if(windowTheme_<0&&schedule_.mode==1){const uint32_t period=uint32_t(schedule_.interval)*60000,elapsed=uint32_t(millis()-rotateAt_);snprintf(remaining,sizeof(remaining),"%u",unsigned(elapsed>=period?0:(period-elapsed+999)/1000));}
+  const char* source=windowTheme_!=ThemeSchedule::None?"condition":schedule_.mode==1?"interval":!timeValid&&needsTime?"waiting-time":schedule_.mode==2?"daily":"fixed";
+  if(windowTheme_==ThemeSchedule::None&&schedule_.mode==1){const uint32_t period=uint32_t(schedule_.interval)*60000,elapsed=uint32_t(millis()-rotateAt_);snprintf(remaining,sizeof(remaining),"%u",unsigned(elapsed>=period?0:(period-elapsed+999)/1000));}
   String ip=(WiFi.status()==WL_CONNECTED?WiFi.localIP():WiFi.softAPIP()).toString();
-  const int length=snprintf(body,sizeof(body),"{\"version\":\"1.6.0\",\"chip\":%s,\"width\":64,\"height\":64,\"ip\":%s,\"stationIP\":%s,\"apIP\":%s,\"configUrl\":%s,\"ssid\":%s,\"connected\":%s,\"networkState\":%s,\"rssi\":%d,\"uptime\":%u,\"heap\":%u,\"largestBlock\":%u,\"theme\":%d,\"generation\":%u,\"brightness\":%d,\"rotationMinutes\":%d,\"timezone\":%s,\"otaMaxBytes\":%u,\"storage\":%s,\"hasCustom\":%s,\"appSlots\":64,\"catalogCount\":%d,\"error\":%s,\"performance\":%s,\"limits\":%s,\"baseTheme\":%d,\"timeValid\":%s,\"localTime\":\"%s\",\"clock\":{\"weekday\":%d,\"hour\":%d,\"minute\":%d,\"second\":%d},\"playbackSource\":\"%s\",\"rotationRemainingSeconds\":%s}",
+  const int length=snprintf(body,sizeof(body),"{\"version\":\"1.6.1\",\"chip\":%s,\"width\":64,\"height\":64,\"ip\":%s,\"stationIP\":%s,\"apIP\":%s,\"configUrl\":%s,\"ssid\":%s,\"connected\":%s,\"networkState\":%s,\"rssi\":%d,\"uptime\":%u,\"heap\":%u,\"largestBlock\":%u,\"theme\":%d,\"generation\":%u,\"brightness\":%d,\"rotationMinutes\":%d,\"timezone\":%s,\"otaMaxBytes\":%u,\"storage\":%s,\"hasCustom\":%s,\"appSlots\":64,\"catalogCount\":%d,\"error\":%s,\"performance\":%s,\"limits\":%s,\"baseTheme\":%d,\"timeValid\":%s,\"localTime\":\"%s\",\"clock\":{\"weekday\":%d,\"hour\":%d,\"minute\":%d,\"second\":%d},\"playbackSource\":\"%s\",\"rotationRemainingSeconds\":%s}",
     quote(ESP.getChipModel()).c_str(),quote(ip).c_str(),quote(WiFi.localIP().toString()).c_str(),quote(WiFi.softAPIP().toString()).c_str(),quote("http://"+ip+"/").c_str(),quote(WiFi.SSID()).c_str(),WiFi.status()==WL_CONNECTED?"true":"false",quote(networkState).c_str(),WiFi.RSSI(),millis()/1000,
     heap_caps_get_free_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT),heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT),theme,generation,brightness,rotationMinutes,
     quote(prefs_.getString("tz","CST-8")).c_str(),unsigned(next?next->size:0),fs_?"true":"false",hasCustom?"true":"false",themeCount,quote(lastError).c_str(),metrics,limits_.json().c_str(),
@@ -783,7 +784,7 @@ bool DeviceService::saveConfig(int nextTheme,int nextBrightness,int nextRotation
   if(!appCompatible(nextTheme,error))return false;
   if(nextBrightness<1||nextBrightness>255||nextRotation<0||nextRotation>1440||tz.length()<1||tz.length()>63||strspn(tz.c_str(),"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-,:.<>/")!=tz.length()){error="配置参数无效；亮度为1–255";return false;}
   if(nextRotation>0&&!schedule_.poolCount){error="请先选择参与轮换的已安装应用";return false;}
-  theme=baseTheme_=nextTheme;windowTheme_=-1;brightness=nextBrightness;rotationMinutes=nextRotation;rotateAt_=millis();generation++;
+  theme=baseTheme_=nextTheme;windowTheme_=ThemeSchedule::None;brightness=nextBrightness;rotationMinutes=nextRotation;rotateAt_=millis();generation++;
   schedule_.interval=nextRotation?nextRotation:1;if(schedule_.mode!=2)schedule_.mode=nextRotation?1:0;
   prefs_.putInt("theme",theme);prefs_.putBool("custom",theme==63);prefs_.putInt("bright",brightness);prefs_.putInt("rotate",rotationMinutes);prefs_.putString("tz",tz);prefs_.putString("schedule",scheduleText());setenv("TZ",tz.c_str(),1);tzset();return true;
 }
@@ -802,7 +803,7 @@ bool DeviceService::uninstallApp(int index,String& error){
   if(!renderLock(true)){error="渲染任务忙";return false;}stopScript();
   if(!LittleFS.remove(appPath(index))){generation++;renderLock(false);error="无法删除应用文件";return false;}
   installed_&=~(uint64_t(1)<<index);incompatible_&=~(uint64_t(1)<<index);appBytes_[index]=0;appTargetFps_[index]=60;hasCustom=appInstalled(63);
-  if(theme==index||baseTheme_==index||windowTheme_==index){theme=baseTheme_=-1;windowTheme_=-1;}
+  if(theme==index||baseTheme_==index||windowTheme_==index){theme=baseTheme_=-1;windowTheme_=ThemeSchedule::None;}
   for(char key:{'i','t','n','c'})prefs_.remove(appKey(index,key).c_str());
   pruneSchedule();prefs_.putInt("theme",baseTheme_);prefs_.putBool("custom",baseTheme_==63);generation++;renderLock(false);return true;
 }

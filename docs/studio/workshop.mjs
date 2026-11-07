@@ -4,6 +4,7 @@ import {imageClockControls} from './image-clock.mjs';
 import {language,t,refreshLanguage,onLanguageChange,localizeTheme} from './i18n.mjs';
 import {SerialDevice} from './serial-device.mjs';
 import {themePrompt} from './theme-prompt.mjs';
+import {BASIC_CLOCK} from './system-themes.mjs';
 const $=id=>document.getElementById(id),chip=$('chip');let apps=[],installed=[],busy=false;
 $('credits').innerHTML=creditsHTML;
 function message(text){$('usb-state').textContent=t(text);}
@@ -16,8 +17,9 @@ $('usb-connect').onclick=()=>operation(async()=>{const d=await serial.connect();
 $('usb-disconnect').onclick=()=>operation(async()=>{await serial.disconnect();message('串口已断开');});
 $('usb-file').onchange=()=>operation(async()=>{try{const f=$('usb-file').files[0];if(!f)return;if(f.size>Number(serial.device.limits?.appBytes||1048576))throw Error('应用超出设备容量');await install(new Uint8Array(await f.arrayBuffer()));}finally{$('usb-file').value='';}});
 function render(){
- $('apps').replaceChildren(...apps.filter(a=>a.requirements.chips.includes(chip.value)).map(app=>{
+ $('apps').replaceChildren(...[BASIC_CLOCK,...apps].filter(a=>a.requirements.chips.includes(chip.value)).map(app=>{
   const item=localizeTheme(app),card=document.createElement('article'),title=document.createElement('h3'),text=document.createElement('p'),info=document.createElement('p'),link=document.createElement('a'),add=document.createElement('button'),row=document.createElement('div');
+  if(app.system){title.textContent=item.title;text.textContent=item.description;info.textContent=t('固件内置 · 不可卸载');add.textContent=t('运行');add.dataset.app=app.id;add.onclick=()=>operation(async()=>{await serial.request({cmd:'app.run',index:-1});await refreshApps();message('已设为默认主题；条件控制仍优先播放');});row.className='row';row.append(add);card.append(title,text,info,row);return card;}
   title.textContent=item.title;text.textContent=item.description;info.textContent='C++ · '+(app.bytes/1024).toFixed(1)+' KiB · '+app.requirements.targetFps+' FPS';row.className='row';link.textContent=t('下载安装包');link.className='button';link.href='../native/dist/'+app.file;link.download=app.file;add.textContent=t('安装到 USB 设备');add.dataset.app=app.packageName;
   add.onclick=()=>operation(async()=>{const r=await fetch(link.href);if(!r.ok)throw Error('主题下载失败');const blob=await r.blob();if(blob.size>Number(serial.device.limits?.appBytes||1048576))throw Error('应用超出设备容量');await install(new Uint8Array(await blob.arrayBuffer()),app.sha256);});row.append(link,add);
   if(installed.some(a=>a.packageName===app.packageName)){const settings=document.createElement('button');settings.textContent=language()==='en'?'Parameters':'参数设置';settings.dataset.app=app.packageName;settings.onclick=()=>operation(()=>themeSettings(item,values=>serial.request({cmd:'app.config',packageName:app.packageName,...(values===undefined?{}:{values})},d=>!!d.parameters)));row.append(settings);for(const [cmd,label]of [['app.run','运行'],['app.uninstall','卸载']]){const b=document.createElement('button');b.textContent=t(label);b.dataset.app=app.packageName;b.onclick=()=>operation(async()=>{await serial.request({cmd,packageName:app.packageName});await refreshApps();message(label+'：'+item.title);});row.append(b);}}
@@ -29,5 +31,6 @@ chip.onchange=()=>{render();prompt();};for(const id of ['prompt-id','prompt-idea
 $('copy').onclick=async()=>{try{await navigator.clipboard.writeText($('prompt').value);$('copy-state').textContent=t('提示词已复制');}catch{$('prompt').select();$('copy-state').textContent=t('请复制已选中的提示词');}};
 onLanguageChange(()=>{render();prompt();});
 imageClockControls($('maker'),{device:()=>serial.device,serialInstall:async(bytes)=>{if(busy)throw Error('请等待当前操作完成');busy=true;controls();try{await install(bytes);}finally{busy=false;controls();}},message});
+render();
 try{const r=await fetch('../native/dist/catalog.json');if(!r.ok)throw Error('主题库尚未构建');apps=(await r.json()).apps;render();$('state').textContent=String(new Set(apps.map(a=>a.id)).size)+' '+t('个原生主题');}catch(e){$('state').textContent=e.message;}
 prompt();refreshLanguage();

@@ -159,7 +159,7 @@ private:
   void pruneSchedule();
   ThemeSchedule schedule_;
   ThemeConditions conditions_;
-  int baseTheme_=0,windowTheme_=-1;int64_t lastDaily_=-1;
+  int baseTheme_=0,windowTheme_=ThemeSchedule::None;int64_t lastDaily_=-1;
   bool readSchedule(const String& text,ThemeSchedule& out,bool allowMissing=false,bool migrateLegacy=false);
   String scheduleText()const;
   void pollSchedule(uint32_t now);

@@ -2,6 +2,7 @@ import {timeControls} from './studio/time-settings.mjs';
 import {screenPreview} from './studio/screen-preview.mjs';
 import {diagnosticControls} from './studio/diagnostics.mjs';
 import {groupThemes,selectVariant} from './theme-groups.mjs';
+import {BASIC_CLOCK} from './studio/system-themes.mjs';
 import { language, setLanguage, t, metadata, translatePage, translateText, translations } from './i18n.mjs';
 const $ = (id) => document.getElementById(id);
 const supported = 'serial' in navigator && window.isSecureContext;
@@ -77,6 +78,7 @@ function updateConnection() {
   $('theme-connection-state').textContent = $('connection-state').textContent;
   $('theme-serial-note').textContent = t(connected&&!device?.features?.backgroundInstall?'当前固件安装会暂停主题；更新至 1.5.0 可保持当前主题运行。':'桌面 Chrome / Edge · 连接后自动识别芯片并显示安装、运行与卸载按钮。');
   document.querySelectorAll('[data-connected]').forEach((button) => { button.disabled = !connected || sending || appInstalling || scanning; });
+  $('manage-uninstall').disabled ||= $('managed-app').value==='@basic-clock';
   $('panel-fields').disabled = !connected || !panelAvailable() || sending || appInstalling;
   for(const option of $('panel-driver').options)option.disabled=!!device&&!/S3/i.test(device.chip)&&['7','9'].includes(option.value);
   $('orientation-fields').disabled = !connected || !device?.features?.orientation || sending || appInstalling;
@@ -221,7 +223,7 @@ function renderThemes() {
   const query = $('theme-search').value.trim().toLocaleLowerCase();
   const chip = $('theme-chip').value;
   const memory = $('theme-memory').value;
-  const matches = groupThemes(themes.filter((app) => {
+  const matches = groupThemes([BASIC_CLOCK,...themes].filter((app) => {
     if(!app)return false;
     const requirements = app.requirements || {};
     const text = [app.title, app.id, app.description, app.category, metadata(app, 'title'), metadata(app, 'description'), metadata(app, 'category')].join(' ').toLocaleLowerCase();
@@ -236,6 +238,10 @@ function renderThemes() {
     const requirements = app.requirements || {};
     const id = /^[a-zA-Z0-9_-]+$/.test(app.id) ? app.id : '';
     const card = element('article', 'card theme-card');
+    if(app.system){
+      card.append(element('h3','',t(app.title)),element('p','theme-description',t(app.description)),element('p','theme-meta',t('固件内置 · 不可卸载')));
+      const run=element('button','button primary',t('运行'));run.type='button';run.dataset.themeAction='run';run.disabled=!port||appInstalling;run.addEventListener('click',()=>manageApplication('@basic-clock'));card.append(run);fragment.append(card);continue;
+    }
     const heading = element('div', 'card-heading');
     heading.append(element('h3', '', metadata(app, 'title')), element('span', 'version', `v${app.appVersion || '—'}`));
     card.append(heading, element('p', 'theme-description', metadata(app, 'description') || t('暂无描述')));
@@ -284,7 +290,7 @@ function renderThemes() {
   }
   const visibleCount=fragment.childElementCount;
   $('theme-list').replaceChildren(fragment);
-  $('theme-result').textContent = visibleCount ? t('显示 {0} / {1} 款主题', [visibleCount, groupThemes(themes).length]) : t('没有匹配的主题，请调整搜索或筛选条件。');
+  $('theme-result').textContent = visibleCount ? t('显示 {0} / {1} 款主题', [visibleCount, groupThemes(themes).length+1]) : t('没有匹配的主题，请调整搜索或筛选条件。');
 }
 
 async function loadThemes() {
@@ -294,8 +300,8 @@ async function loadThemes() {
     const data = await response.json();
     themes = Array.isArray(data) ? data : data.apps;
     if (!Array.isArray(themes)) throw new Error(t('目录格式无效'));
-    $('theme-count').textContent = t('{0} 款', [groupThemes(themes).length]);
-    $('theme-tab-count').textContent = groupThemes(themes).length;
+    $('theme-count').textContent = t('{0} 款', [groupThemes(themes).length+1]);
+    $('theme-tab-count').textContent = groupThemes(themes).length+1;
     renderThemes();
   } catch (error) {
     $('theme-result').textContent = t('主题目录暂时无法读取：{0}。可前往 GitHub 查看应用文件。', [error.message]);
@@ -320,8 +326,9 @@ function updateApps(apps, quiet = false) {
   for (const app of installedApps) $('device-theme').append(new Option(metadata(app, 'title'), app.index));
   selectDeviceTheme(current);
   const managed = $('managed-app').value;
-  $('managed-app').replaceChildren(new Option(t('请选择已安装应用'), ''), ...installedApps.map((app) => new Option(metadata(app, 'title'), app.packageName || '')));
-  if (installedApps.some((app) => app.packageName === managed)) $('managed-app').value = managed;
+  $('managed-app').replaceChildren(new Option(t('请选择已安装应用'), ''),new Option(t('内置基础时钟'),'@basic-clock'), ...installedApps.map((app) => new Option(metadata(app, 'title'), app.packageName || '')));
+  if (managed==='@basic-clock'||installedApps.some((app) => app.packageName === managed)) $('managed-app').value = managed;
+  updateConnection();
   if (device) $('status-theme').textContent = themeLabel(device.baseTheme ?? device.theme);
   if (!quiet) log(t('已读取应用：{0} 款已安装应用。', [installedApps.length]));
   if (themes.length) renderThemes();
@@ -548,9 +555,11 @@ function startThemeInstall(app) {
 async function manageApplication(packageName, uninstall = false) {
   return action(async () => {
     if (!packageName || appInstalling) throw new Error(t('请选择已安装应用'));
+    const system=packageName==='@basic-clock';
+    if(system&&uninstall)throw new Error(t('基础时钟为固件内置，不可卸载'));
     appInstalling = true; updateConnection();
     try {
-      await requestSerial({ cmd: uninstall ? 'app.uninstall' : 'app.run', packageName }, (data) => typeof data.ok === 'boolean' && !data.upload);
+      await requestSerial({ cmd: uninstall ? 'app.uninstall' : 'app.run', ...(system?{index:-1}:{packageName}) }, (data) => typeof data.ok === 'boolean' && !data.upload);
       await requestSerial({ cmd: 'apps' }, (data) => Array.isArray(data.apps));
       await requestSerial({ cmd: 'status' }, (data) => Boolean(data.chip && data.version));
     } finally { appInstalling = false; updateConnection(); }
@@ -573,6 +582,7 @@ function renderDiscovery(data) {
 }
 
 $('manage-run').addEventListener('click', () => manageApplication($('managed-app').value));
+$('managed-app').addEventListener('change',updateConnection);
 $('manage-uninstall').addEventListener('click', () => manageApplication($('managed-app').value, true));
 for (const id of ['cancel-install', 'cancel-install-config']) $(id).addEventListener('click', () => {
   installCancelled = true;
@@ -739,7 +749,7 @@ function refreshLanguage() {
   $('install-button').textContent = t('连接并烧录 {0}', [board.label]);
   $('board-note').textContent = translateText(board.note);
   if (themes.length) {
-    $('theme-count').textContent = t('{0} 款', [groupThemes(themes).length]);
+    $('theme-count').textContent = t('{0} 款', [groupThemes(themes).length+1]);
     renderThemes();
   }
   updateApps(installedApps, true);

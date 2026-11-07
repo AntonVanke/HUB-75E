@@ -158,7 +158,7 @@ export function scheduleControls($,getBase,request,message){
   async function loadSchedule(list,{force=false}={}){
     const base=getBase(),sameDevice=base===loadedBase,selected=new Set([...$('schedule-pool').querySelectorAll('input:checked')].map(input=>input.value));
     if(!sameDevice){dirty=false;if(statusBase!==base)lastStatus={};titles.clear();titles.set(-1,'基础时钟');}
-    themes=list.filter(theme=>Number(theme.index)>=0);registerThemes(list);for(const theme of list)titles.set(Number(theme.index),theme.title);
+    themes=list.filter(theme=>Number(theme.index)>=-1);registerThemes(list);for(const theme of list)titles.set(Number(theme.index),theme.title);
     $('add-rule').disabled=!themes.length;$('dark-rule').disabled=!themes.length||!lastStatus.features?.conditionControl||!lastStatus.brightnessControl?.supported;
     if(dirty&&sameDevice&&!force){renderPool(selected);for(const box of $('schedule-rules').children){const input=inputs.get(box).theme;options(input,input.value);}update();return;}
     const lines=(await request('schedule',{responseType:'text'})).split('\n'),[mode,interval,random]=lines[0].split(',');

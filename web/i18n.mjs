@@ -7,6 +7,13 @@ try { current = localStorage.getItem(languageKey) || (navigator.language?.starts
 if (!['zh-CN', 'en'].includes(current)) current = 'zh-CN';
 
 export const translations = {
+  "基础时钟":"Basic clock",
+  "黑底白字，只显示当前时间；固件内置，无需安装，不可卸载。":"White time on black. Built into firmware; no installation required and cannot be uninstalled.",
+  "固件内置 · 不可卸载":"Built into firmware \u00b7 Cannot uninstall",
+  "不占应用存储":"No application storage used",
+  "基础时钟为固件内置，不可卸载":"The basic clock is built into firmware and cannot be uninstalled",
+  "基础时钟为固件内置，不可卸载或导出":"The basic clock is built into firmware and cannot be uninstalled or exported",
+  "已设为默认主题；条件控制仍优先播放":"Set as default; matching playback conditions still take priority",
   ...timeStrings,
   "更新应用":"Update app",
   "当前固件安装会暂停主题；更新至 1.5.0 可保持当前主题运行。":"This firmware pauses the theme during installation. Update to 1.5.0 for background installation.",

@@ -74,18 +74,30 @@ int main(){
   t.tm_hour=7;assert(rules.evaluate(plan,t,true,true,10,3100,14)==2&&rules.active==1);
   assert(rules.evaluate(plan,t,true,true,24,3200,14)==2); // five-point hysteresis
   assert(rules.evaluate(plan,t,true,true,25,3300,14)==2);
-  assert(rules.evaluate(plan,t,true,true,25,6300,14)==-1);
-  assert(rules.evaluate(plan,t,false,true,90,7000,14)==-1);
+  assert(rules.evaluate(plan,t,true,true,25,6300,14)==ThemeSchedule::None);
+  assert(rules.evaluate(plan,t,false,true,90,7000,14)==ThemeSchedule::None);
   assert(rules.evaluate(plan,t,false,true,90,10000,14)==3); // works before NTP
-  assert(rules.evaluate(plan,t,false,false,90,10100,14)==-1);
-  rules.reset();assert(rules.evaluate(plan,t,false,true,10,UINT32_MAX-1000,14)==-1);
+  assert(rules.evaluate(plan,t,false,false,90,10100,14)==ThemeSchedule::None);
+  rules.reset();assert(rules.evaluate(plan,t,false,true,10,UINT32_MAX-1000,14)==ThemeSchedule::None);
   assert(rules.evaluate(plan,t,false,true,10,2000,14)==2);
-  plan.windows[1].enabled=false;assert(rules.evaluate(plan,t,false,true,10,2100,14)==-1);
+  plan.windows[1].enabled=false;assert(rules.evaluate(plan,t,false,true,10,2100,14)==ThemeSchedule::None);
   plan.windows[1].enabled=true;rules.reset();rules.evaluate(plan,t,false,true,10,3000,10);
-  assert(rules.evaluate(plan,t,false,true,10,6000,10)==-1); // removed/incompatible theme
-  t.tm_wday=1;t.tm_hour=23;assert(rules.evaluate(plan,t,true,true,50,7000,12)==-1);
+  assert(rules.evaluate(plan,t,false,true,10,6000,10)==ThemeSchedule::None); // removed/incompatible theme
+  t.tm_wday=1;t.tm_hour=23;assert(rules.evaluate(plan,t,true,true,50,7000,12)==ThemeSchedule::None);
   ThemeSchedule legacy;legacy.windowCount=1;legacy.windows[0]={60,120,2,127};
   t.tm_hour=1;assert(rules.evaluate(legacy,t,true,false,0,8000,4)==2);
+  ThemeSchedule basic;basic.poolCount=3;basic.pool[0]=-1;basic.pool[1]=0;basic.pool[2]=63;basic.random=false;
+  assert(basic.next(-1,0)==0&&basic.next(63,0)==-1);
+  basic.random=true;assert(basic.next(0,0)==-1);
+  assert(ThemeSchedule::allowed(-1,0)&&!ThemeSchedule::allowed(-2,UINT64_MAX)&&!ThemeSchedule::allowed(64,UINT64_MAX));
+  basic.windowCount=1;basic.windows[0]={60,120,-1,127};rules.reset();t.tm_hour=1;
+  assert(rules.evaluate(basic,t,true,false,0,0,0)==-1&&rules.active==0);
+  t.tm_hour=2;assert(rules.evaluate(basic,t,true,false,0,1,0)==ThemeSchedule::None&&rules.active==-1);
+  basic.windows[0]={0,0,-1,127,1,20,true};rules.reset();
+  assert(rules.evaluate(basic,t,false,true,10,0,0)==ThemeSchedule::None);
+  assert(rules.evaluate(basic,t,false,true,10,3000,0)==-1&&rules.active==0);
+  assert(rules.evaluate(basic,t,false,false,0,3001,0)==ThemeSchedule::None);
+  puts("PASS: basic clock selectable in sequential/random rotation and time/light rules without an installed package");
   puts("PASS: retained sensor at ADC 0/4095, dark boot, time/light conditions, overnight weekday, priority, debounce/hysteresis, missing sensors/themes and disabled rules");
   printf("PASS: calibration, normal darkness, pose-only, debounce, zero-ADC hold, smooth release, sensor loss, disabled/manual mode, stale data and millis rollover; controller %zu bytes\n",sizeof(AutoBrightnessController));
 }

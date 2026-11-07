@@ -2,19 +2,21 @@
 #include <stdint.h>
 #include <time.h>
 struct ThemeSchedule {
+  static constexpr int None=-2;
   struct Window {
-    uint16_t start,end,theme;uint8_t days,kind,threshold;bool enabled;
-    Window(uint16_t a=0,uint16_t b=0,uint16_t t=0,uint8_t d=127,uint8_t k=0,uint8_t level=20,bool on=true):start(a),end(b),theme(t),days(d),kind(k),threshold(level),enabled(on){}
+    uint16_t start,end;int16_t theme;uint8_t days,kind,threshold;bool enabled;
+    Window(uint16_t a=0,uint16_t b=0,int16_t t=0,uint8_t d=127,uint8_t k=0,uint8_t level=20,bool on=true):start(a),end(b),theme(t),days(d),kind(k),threshold(level),enabled(on){}
   } windows[12];
   uint8_t mode=0,poolCount=0,timeCount=0,windowCount=0;bool random=true;
-  uint16_t interval=1,pool[64]={},times[16]={};
+  uint16_t interval=1,times[16]={};int16_t pool[65]={};
+  static bool allowed(int theme,uint64_t mask){return theme==-1||(theme>=0&&theme<64&&(mask&(uint64_t(1)<<theme)));}
   int window(const tm& t)const{
     const int minute=t.tm_hour*60+t.tm_min;
     for(int i=0;i<windowCount;i++){const auto& w=windows[i];int day=t.tm_wday;
       const bool match=w.start<w.end?(minute>=w.start&&minute<w.end):(minute>=w.start||minute<w.end);
       if(w.start>w.end&&minute<w.end)day=(day+6)%7;
       if(w.enabled&&!w.kind&&match&&(w.days&(1<<day)))return w.theme;
-    }return -1;
+    }return None;
   }
   int next(int current,uint32_t entropy)const{
     if(!poolCount)return current;if(poolCount==1)return pool[0];
@@ -32,7 +34,7 @@ public:
     active=-1;
     for(int i=0;i<plan.windowCount;i++){
       const auto& w=plan.windows[i];const uint16_t bit=uint16_t(1)<<i;
-      if(!w.enabled||w.theme>=64||!(allowed&(uint64_t(1)<<w.theme))){matched_&=~bit;pending_&=~bit;continue;}
+      if(!w.enabled||!ThemeSchedule::allowed(w.theme,allowed)){matched_&=~bit;pending_&=~bit;continue;}
       bool match=false;
       if(!w.kind){
         const int minute=t.tm_hour*60+t.tm_min;int day=t.tm_wday;
@@ -50,6 +52,6 @@ public:
       }else{matched_&=~bit;pending_&=~bit;}
       if(match&&active<0)active=i;
     }
-    return active<0?-1:plan.windows[active].theme;
+    return active<0?ThemeSchedule::None:plan.windows[active].theme;
   }
 };

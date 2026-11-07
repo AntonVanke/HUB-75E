@@ -19,7 +19,7 @@ function download(blob,name){const url=URL.createObjectURL(blob),link=document.c
 export function applicationControls($,getBase,request,upload,message,{local=false,changed=async()=>{}}={}){
   let apps=[],catalog=[],active=-1,busy=false,limits={...DEFAULT_LIMITS},installFreeBytes=Infinity,device={},previousPerf,observedFps,catalogAt=0,appBase='';
   const selected=new Set(),catalogUrl=local?new URL('/themes/apps/catalog.json',location.href):new URL('https://antonvanke.github.io/HUB-75E/theme-catalog.json');
-  const identity=app=>app.packageName?{packageName:app.packageName}:{id:app.id};
+  const identity=app=>app.system?{index:app.index}:app.packageName?{packageName:app.packageName}:{id:app.id};
   const key=app=>app.packageName||app.id;
   function compatibility(app){
     if(app.compatibility)return app.compatibility;
@@ -39,7 +39,7 @@ export function applicationControls($,getBase,request,upload,message,{local=fals
     $('app-limits').textContent='当前设备：应用包 '+capacity(limits.appBytes)+' · 二进制代码 '+capacity(limits.nativeBytes||524288)+' · 可编辑归档 '+capacity(limits.archiveBytes)+'。同一包名更新原应用；更新需保留新旧两份文件的空间。配额匹配不代表已验证流畅度。';
   }
   function selection(){
-    const count=apps.filter(app=>app.installed&&selected.has(key(app))).length;
+    const count=apps.filter(app=>app.installed&&!app.system&&selected.has(key(app))).length;
     $('app-remove-selected').disabled=busy||!count;$('app-selection-count').textContent=count?'已选 '+count+' 个应用':'';
     const visible=[...$('app-list').querySelectorAll('input.app-select')],checked=visible.filter(input=>input.checked).length;
     $('app-select-all').checked=!!visible.length&&checked===visible.length;$('app-select-all').indeterminate=checked>0&&checked<visible.length;$('app-select-all').disabled=busy||!visible.length;
@@ -57,7 +57,7 @@ export function applicationControls($,getBase,request,upload,message,{local=fals
     const result=await upload('apps/install?'+query,file);message(result.message||'应用已安装。');
   }
   async function run(app){const result=await request('apps/run',{method:'POST',body:new URLSearchParams(identity(app))});message(result.message||'正在运行应用。');}
-  async function uninstall(app){const result=await request('apps/uninstall',{method:'POST',body:new URLSearchParams(identity(app))});selected.delete(key(app));return result;}
+  async function uninstall(app){if(app.system)throw new Error('基础时钟为固件内置，不可卸载');const result=await request('apps/uninstall',{method:'POST',body:new URLSearchParams(identity(app))});selected.delete(key(app));return result;}
   function button(label,action,reload=true){const b=document.createElement('button');b.type='button';b.className='secondary';b.textContent=label;b.onclick=()=>perform(action,reload);return b;}
   async function exportApp(app,source){
     const response=await fetch(getBase()+'/api/apps/export?'+new URLSearchParams(identity(app)),{credentials:'omit'});
@@ -72,11 +72,16 @@ export function applicationControls($,getBase,request,upload,message,{local=fals
     const visible=apps.filter(app=>(app.builtin||app.installed)&&(filter==='all'||(filter==='installed')===!!app.installed)&&(!search||(app.title+' '+app.id+' '+(app.packageName||'')+' '+(app.description||'')+' '+localizeTheme(app).title+' '+localizeTheme(app).description).toLocaleLowerCase().includes(search)));
     $('app-list').replaceChildren(...visible.map(app=>{
       const row=document.createElement('tr'),name=document.createElement('td'),state=document.createElement('td'),size=document.createElement('td'),actions=document.createElement('td'),title=document.createElement('strong'),detail=document.createElement('small'),running=document.createElement('span'),badge=document.createElement('small');
+      if(app.system){
+        title.textContent=localizeTheme(app).title;detail.textContent=localizeTheme(app).description;name.append(title,detail);
+        running.dataset.appState=app.index;running.dataset.appKey=key(app);running.textContent=Number(active)===Number(app.index)?'运行中':'已安装';badge.textContent='固件内置 · 不可卸载';state.append(running,badge);
+        size.textContent='不占应用存储';actions.className='app-actions';actions.append(button('运行',()=>run(app)));row.append(name,state,size,actions);return row;
+      }
       const check=compatibility(app),metadata=document.createElement('details'),summary=document.createElement('summary'),description=document.createElement('p'),requirements=document.createElement('p'),r=app.requirements,legacy=app.installed&&app.metadataSource!=='package';
       if(app.installed){const check=document.createElement('input');check.type='checkbox';check.className='app-select';check.checked=selected.has(key(app));check.setAttribute('aria-label','选择应用 '+localizeTheme(app).title);check.onchange=()=>{if(check.checked)selected.add(key(app));else selected.delete(key(app));selection();};name.append(check);}
       const localized=localizeTheme(app);title.textContent=localized.title+(!legacy&&app.appVersion?' · v'+app.appVersion:'');detail.textContent=app.packageName||app.id+' · 旧包未声明包名';name.append(title,detail);summary.textContent='简介与设备要求';description.textContent=(legacy?'目录参考（当前旧包版本未知）：':'')+(localized.description||'旧应用未携带描述，更新为新版应用包后可显示完整信息。');
       requirements.textContent=(app.author?'作者：'+app.author+'。':'')+(r?.chips?'设备：'+r.chips.join(' / ')+'；PSRAM '+capacity(r.psramBytes||0)+'；代码 '+capacity(r.codeBytes||0)+'；数据 / 状态 '+capacity(r.dataBytes||0)+' / '+capacity(r.stateBytes||0)+'；图形配额 '+capacity(r.graphicsBytes)+'；目标 '+r.targetFps+' FPS。'+(r.sensors?.length?' 需要传感器：'+r.sensors.join(' / ')+'。':''):'未声明内存与设备要求。')+' 尚未在本机进行完整性能认证。';const measured=document.createElement('p');measured.dataset.appMetrics=app.installed?String(app.index):'uninstalled';measured.hidden=true;metadata.append(summary,description,requirements,measured);name.append(metadata);
-      running.dataset.appState=app.index;running.textContent=app.installed?(Number(app.index)===Number(active)?'运行中':'已安装'):'未安装';badge.textContent=check.status==='incompatible'?'不适用':check.status==='compatible'?'需求匹配':'兼容性未知';badge.title=check.reason||'';badge.className='app-compat '+check.status;state.append(running,badge);if(check.status==='incompatible'){const reason=document.createElement('small');reason.textContent=check.reason;state.append(reason);}
+      running.dataset.appState=app.index;running.dataset.appKey=key(app);running.textContent=app.installed?(Number(app.index)===Number(active)?'运行中':'已安装'):'未安装';badge.textContent=check.status==='incompatible'?'不适用':check.status==='compatible'?'需求匹配':'兼容性未知';badge.title=check.reason||'';badge.className='app-compat '+check.status;state.append(running,badge);if(check.status==='incompatible'){const reason=document.createElement('small');reason.textContent=check.reason;state.append(reason);}
       size.textContent=app.installed?(app.bytes/1024).toFixed(1)+' KiB':'—';actions.className='app-actions';
       if(app.installed){const runButton=button('运行',()=>run(app));runButton.disabled=check.status==='incompatible';actions.append(button('参数设置',()=>themeSettings(app,values=>request('apps/config?'+new URLSearchParams(identity(app)),values===undefined?{}:{method:'POST',body:new URLSearchParams({values:JSON.stringify(values)})})),false),runButton,button('导出应用',()=>exportApp(app,false),false),button('卸载',async()=>{const result=await uninstall(app);message(result.message||'应用已卸载，所占空间已释放。');}));}
       else{
@@ -101,13 +106,14 @@ export function applicationControls($,getBase,request,upload,message,{local=fals
   async function refresh(){
     if(appBase!==getBase()){selected.clear();catalogAt=0;appBase=getBase();}
     const data=await request('apps');apps=data.apps||[];active=apps.find(app=>app.active)?.index??-1;setLimits(data.limits);installFreeBytes=data.installFreeBytes??data.freeBytes??Infinity;
-    $('app-storage').textContent='已安装 '+apps.filter(app=>app.installed).length+' 个应用 · 可用 '+((data.freeBytes||0)/1024).toFixed(1)+' / '+((data.totalBytes||0)/1024).toFixed(1)+' KiB';
+    $('app-storage').textContent='已安装 '+apps.filter(app=>app.installed&&!app.system).length+' 个应用 · 可用 '+((data.freeBytes||0)/1024).toFixed(1)+' / '+((data.totalBytes||0)/1024).toFixed(1)+' KiB';
     if(!catalogAt){
       try{const value=await request('apps/catalog'),items=Array.isArray(value)?value:value.apps||value.themes;if(!Array.isArray(items))throw new Error('目录格式无效');catalog=items.filter(item=>/^[a-zA-Z0-9_-]{1,32}$/.test(item.id||''));catalogAt=Date.now();$('app-catalog-state').textContent=(local?'本地主题库：':'在线主题库：')+catalog.length+' 个应用，可直接安装兼容项。';}
       catch(error){$('app-catalog-state').textContent='主题库暂时无法读取，已安装应用和手动导入仍可使用。';}
     }
     if(catalog.length){const installed=apps.filter(app=>app.installed),merged=catalog.map(item=>installed.find(app=>item.packageName?app.packageName===item.packageName:app.id===item.id)||{...item,builtin:true,installed:false,index:-1});apps=[...merged,...installed.filter(app=>!merged.includes(app))];}
-    registerThemes(apps);for(const item of [...selected])if(!apps.some(app=>app.installed&&key(app)===item))selected.delete(item);
+    apps.sort((a,b)=>Number(!!b.system)-Number(!!a.system));
+    registerThemes(apps);for(const item of [...selected])if(!apps.some(app=>app.installed&&!app.system&&key(app)===item))selected.delete(item);
     render();
   }
   onLanguageChange(()=>{setLimits(limits);render();});
@@ -116,7 +122,7 @@ export function applicationControls($,getBase,request,upload,message,{local=fals
   $('app-refresh').onclick=()=>perform(async()=>{catalogAt=0;});
   $('app-select-all').onchange=()=>{const checked=$('app-select-all').checked;for(const input of $('app-list').querySelectorAll('input.app-select')){input.checked=checked;input.onchange();}};
   $('app-remove-selected').onclick=()=>perform(async()=>{
-    const chosen=apps.filter(app=>app.installed&&selected.has(key(app)));let removed=0;
+    const chosen=apps.filter(app=>app.installed&&!app.system&&selected.has(key(app)));let removed=0;
     try{for(const app of chosen){await uninstall(app);removed++;}}
     finally{await changed();await refresh();}
     message('已卸载 '+removed+' 个应用，存储空间已释放。');
@@ -125,5 +131,5 @@ export function applicationControls($,getBase,request,upload,message,{local=fals
     const file=$('app-file').files[0];if(!file)throw new Error('请选择 CWP3 二进制应用包');const info=applicationInfo(new Uint8Array(await file.arrayBuffer()),file.name,limits);
     await install(file,info);$('app-file').value='';$('app-folder').value='';
   });
-  return {refresh,limits:setLimits,device(data){const p=data.performance;if(p&&previousPerf&&p.theme===previousPerf.theme&&p.generation===previousPerf.generation&&p.sampleMs>previousPerf.sampleMs&&p.frames>=previousPerf.frames)observedFps=(p.frames-previousPerf.frames)*1000/(p.sampleMs-previousPerf.sampleMs);else if(p&&(!previousPerf||p.theme!==previousPerf.theme||p.generation!==previousPerf.generation))observedFps=undefined;previousPerf=p;device=data;setLimits(data.limits);measurements();},current(index){active=index;for(const node of $('app-list').querySelectorAll('[data-app-state]')){const app=apps.find(app=>String(app.index)===node.dataset.appState);node.textContent=app?.installed?(Number(app.index)===Number(index)?'运行中':'已安装'):'未安装';}}};
+  return {refresh,limits:setLimits,device(data){const p=data.performance;if(p&&previousPerf&&p.theme===previousPerf.theme&&p.generation===previousPerf.generation&&p.sampleMs>previousPerf.sampleMs&&p.frames>=previousPerf.frames)observedFps=(p.frames-previousPerf.frames)*1000/(p.sampleMs-previousPerf.sampleMs);else if(p&&(!previousPerf||p.theme!==previousPerf.theme||p.generation!==previousPerf.generation))observedFps=undefined;previousPerf=p;device=data;setLimits(data.limits);measurements();},current(index){active=index;for(const node of $('app-list').querySelectorAll('[data-app-state]')){const app=apps.find(app=>key(app)===node.dataset.appKey);node.textContent=app?.installed?(Number(app.index)===Number(index)?'运行中':'已安装'):'未安装';}}};
 }

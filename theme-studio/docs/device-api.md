@@ -1,8 +1,14 @@
-# 当前设备管理 API（固件 1.6.0）
+# 当前设备管理 API（固件 1.6.1）
 
 Current firmware uses C/C++ / CWP3, runtime API 5 and native ABI 1. The versioned [v0.9.8 document](device-api-v0.9.8.md) is historical; installation no longer deliberately pauses the active theme.
 
 HTTP 在设备地址的 `/api/` 下，串口 115200 baud，每条命令一行 JSON，回复以 `CWJSON:` 开头。先读 `/api/status` 或 `{"cmd":"status"}`，依据返回字段判断能力。Pages 下载应用后经 USB 传输，不从 HTTPS 网页直接请求局域网 HTTP。
+
+## 内置基础时钟（1.6.1）
+
+`GET /api/apps` 与串口 `apps` 首项包含 `index:-1,id:"basic-clock",system:true,removable:false,installed:true`。没有 CWP 文件，不计入 64 个安装槽位。HTTP `POST /api/apps/run` 的表单 `index=-1` 或串口 `{"cmd":"app.run","index":-1}` 均可运行。卸载、导出和包参数接口拒绝该索引。主题池及条件规则中的 `theme=-1` 表示基础时钟，与“没有条件命中”区分；最多可选择 64 个安装主题加基础时钟，共 65 项。
+
+English: the firmware clock is listed as a protected system app at index -1. It uses no application slot or package storage. HTTP/serial Run and time/light conditions/rotation accept -1; uninstall/export/package-parameter operations reject it.
 
 ## 时间 / Time
 

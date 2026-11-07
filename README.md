@@ -4,7 +4,7 @@
 
 基于 ESP32 / ESP32-S3 和 HUB75 面板的 64×64 时钟。主题使用 C/C++ 编译为芯片对应的 Xtensa 机器码，打包为 CWP3；当前固件不运行 Lua。Runtime API 5，native ABI 1。
 
-**当前版本：1.6.0** · [在线烧录](https://antonvanke.github.io/HUB-75E/#flash) · [主题应用](https://antonvanke.github.io/HUB-75E/#themes) · [USB 配置](https://antonvanke.github.io/HUB-75E/#config) · [图片时钟工坊](https://antonvanke.github.io/HUB-75E/studio/index.html)
+**当前版本：1.6.1** · [在线烧录](https://antonvanke.github.io/HUB-75E/#flash) · [主题应用](https://antonvanke.github.io/HUB-75E/#themes) · [USB 配置](https://antonvanke.github.io/HUB-75E/#config) · [图片时钟工坊](https://antonvanke.github.io/HUB-75E/studio/index.html)
 
 ![磁流体时钟电脑模拟](web/previews/ferrofluid-clock.gif)
 
@@ -12,6 +12,7 @@
 
 ## 当前功能
 
+- **1.6.1 基础时钟入口**：设备主题列表、在线主题库和工坊均显示固件内置基础时钟，黑底白字只显示时间；可直接运行、设为默认、参与轮换或条件控制，无需安装，不占应用槽位，不可卸载。
 - **1.6.0 条件控制与显示**：时间段或环境光高低触发主题，支持规则开关与优先级；光照条件自带 3 秒防抖和 5% 回差。OTA 在屏幕显示写入、校验和重启进度；界面品牌为 Clockyr。修复已确认光敏电阻在暗处误判掉线。
 - **1.5.2 光敏面遮挡保护**：S3 联合光敏电阻和 IMU 判断光敏面朝下遮挡，保持原亮度，解除后平滑恢复。在设备后台“自动亮度 → 光敏面遮挡保护”记录实际安装姿态；单纯关灯不触发保护。
 - **1.5.1 时间设置**：默认阿里云 NTP，可选择 Cloudflare、NTP Pool 或自定义域名/IPv4。开机和固件更新重启后联网即校时，成功后每隔 24 小时校准。失败换源、后台重试；支持关闭自动校时、手动设时和使用电脑时间。
@@ -20,18 +21,18 @@
 - 配网引导、屏幕驱动轮测、平滑自动亮度、方向校正、定时轮换和应用参数。可选固件自动更新每 6 小时检查一次，默认关闭，与每日 NTP 校时独立。
 - 图片时钟：32 张幻灯片、拖动定位、八层文字、19 款字体、Unifont Unicode、装饰元素、渐变、日期和秒进度。完整字体留在电脑，仅打包所需字形和图片。
 
-本版通过双芯片编译和亮度/遮挡状态机模拟测试，本次发布未烧录或验收实屏。重力水、滚珠迷宫的 120 FPS 是目标，安装和网络访问期间的实际帧率仍需设备测量。
+本版通过双芯片编译和基础时钟轮换/条件控制状态机模拟测试，本次发布未烧录或验收实屏。重力水、滚珠迷宫的 120 FPS 是目标，安装和网络访问期间的实际帧率仍需设备测量。
 
 ## 下载
 
 | 芯片 | 固件 | 应用整包 | 硬件要求 |
 | --- | --- | --- | --- |
-| ESP32 | [v1.6.0 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.6.0.zip) | [5 款应用](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | 经典 ESP32，4 MB Flash |
-| ESP32-S3 | [v1.6.0 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.6.0.zip) | [59 款应用](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | 本项目板型，至少 8 MB Flash + 8 MB OPI PSRAM |
+| ESP32 | [v1.6.1 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.6.1.zip) | [5 款应用](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | 经典 ESP32，4 MB Flash |
+| ESP32-S3 | [v1.6.1 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.6.1.zip) | [59 款应用](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | 本项目板型，至少 8 MB Flash + 8 MB OPI PSRAM |
 
 S3 N4 不适用此固件。其它板型须核对 Flash、PSRAM 和接线。
 
-六款核心主题为超级马里奥全 32 关、Pac-Man、全屏重力水、滚珠迷宫、磁流体时钟和炫彩氛围时钟。磁流体仅支持 S3，另有 53 款旧主题的 S3 原生适配；合并芯片版本后共 59 款、64 个安装包，图片时钟模板另计。传感器主题要求实际存在的传感器。
+六款核心主题为超级马里奥全 32 关、Pac-Man、全屏重力水、滚珠迷宫、磁流体时钟和炫彩氛围时钟。磁流体仅支持 S3，另有 53 款旧主题的 S3 原生适配；合并芯片版本后共 59 款可安装主题、64 个安装包，另有 1 款不可卸载的内置基础时钟，图片时钟模板另计。传感器主题要求实际存在的传感器。
 
 ## 使用
 
