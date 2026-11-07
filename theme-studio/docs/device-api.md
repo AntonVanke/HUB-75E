@@ -1,4 +1,4 @@
-# 当前设备管理 API（固件 1.5.1）
+# 当前设备管理 API（固件 1.5.2）
 
 Current firmware uses C/C++ / CWP3, runtime API 5 and native ABI 1. The versioned [v0.9.8 document](device-api-v0.9.8.md) is historical; installation no longer deliberately pauses the active theme.
 
@@ -23,6 +23,20 @@ HTTP 修改使用 `POST /api/time`，`application/x-www-form-urlencoded`；串�
 `save` 保存开关/主服务器，启用后安排校时；`sync` 要求已启用自动校时。手动操作要求自动校时已关闭。`localTime` 使用设备时区，`epoch` 是绝对 Unix 秒，不传毫秒；同时存在时优先 epoch。当前手动日期支持 2024–2037 年。
 
 主机字段允许域名或 IPv4，不接受 URL/端口。默认阿里云，备用阿里云/Cloudflare 自动去重。联网后启动异步 SNTP；每源最多 8 秒，全部失败 60 秒后重试。成功后以单调时钟等待 24 小时，手动时间跳变不会改变间隔。每次开机（含固件更新重启）重新安排首次校时；离线时等联网。无电池 RTC 的硬件完全断电后无法准确延续手动时间。
+
+## 自动亮度与遮挡保护 / Automatic brightness and obstruction
+
+`status.brightnessControl` 返回现有亮度字段及 `obstruction: {enabled, calibrated, imuValid, held, state}`。用于有光敏电阻和 IMU 的 S3 板，经典 ESP32 不启用。保护默认勾选，但首次校准前不参与调光；不会猜测传感器安装方向。
+
+`POST /api/brightness` 使用表单字段 `enabled, minimum, maximum, dark, bright` 和可选 `coverProtection=true|false` 保存设置；省略 coverProtection 保留原值。`action=calibrate-cover` 独立记录姿态：传感器面朝下悬空、不遮光，静止至少 1 秒，要求两个传感器有效。设置和校准写入 NVS，恢复出厂设置时清除。当前写入接口仅 HTTP；串口 status 可以读取状态。
+
+开启自动亮度后，在朝下方向之外学习未遮挡亮度。最近 5 秒有基准、朝向与校准姿态夹角约 32° 以内、环境光相对暗处基线下降超过 65% 且 ADC 差超过 `max(128, 亮暗跨度×8%)`，才进入暂时保持；陀螺仪和加速度方向稳定 600 ms 后确认遮挡。即使读数为零也保持原亮度，避免误判传感器掉线。方向离开约 49° 或光照恢复到基准 60% 以上并持续 800 ms 后，沿用原调光平滑曲线恢复。10 Hz 复用传感器采样，不分配堆内存、不阻塞主题渲染。
+
+`state`：`disabled`、`uncalibrated`、`imu-unavailable`、`inactive`、`light-unavailable`、`waiting-reference`、`ready`、`checking`、`blocked`、`unsupported`。`held=true` 表示临时保持，`enabled` 保留用户自动亮度偏好，`active=false` 不等于关闭设置。IMU/采样过期时退出保护；正常自动亮度或原有固定亮度回退接管。
+
+这是联合证据推断，不是接近传感器：不转动设备而用手挡住、开机时已经被挡、黑暗中缺少亮度基准，不能可靠识别；传感器在朝下时脱落也无法与完全遮挡区分。普通关灯（姿态不匹配）仍会调暗。
+
+English: POST the brightness fields above to save; POST `action=calibrate-cover` to record an unobstructed, stationary sensor-face-down pose. Settings persist in NVS. Detection requires a recent light reference, matching pose and a substantial light drop. Brightness is held during obstruction and resumes smoothly after release. Status is available over HTTP and serial; configuration currently uses HTTP. It runs at 10 Hz with fixed memory. This is a conservative heuristic, not a proximity measurement; covering without a pose change or starting already covered cannot be reliably detected.
 
 ## 应用与传输 / Apps and transport
 

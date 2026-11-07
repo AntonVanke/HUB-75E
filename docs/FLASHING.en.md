@@ -2,7 +2,7 @@
 
 [简体中文](FLASHING.md) · English
 
-Current **1.5.1**: [ESP32 4 MB](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.5.1.zip) · [ESP32-S3 8 MB Flash + 8 MB OPI PSRAM](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.5.1.zip). S3 N4 is unsupported. Older versions remain for historical devices and rollback.
+Current **1.5.2**: [ESP32 4 MB](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.5.2.zip) · [ESP32-S3 8 MB Flash + 8 MB OPI PSRAM](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.5.2.zip). S3 N4 is unsupported. Older versions remain for historical devices and rollback.
 
 ## Web flashing
 
@@ -45,6 +45,10 @@ Serial: 115200 baud, one newline-terminated JSON command; responses start with `
 ```
 
 Open the reported IP directly. Pages Applications connects USB itself: the computer downloads/verifies CWP3 and transfers chunks; device access to GitHub is unnecessary. Installation does not explicitly stop the active theme; click Run to switch. Firmware flashing/OTA reboots the device.
+
+## Light sensor obstruction protection (1.5.2)
+
+On the S3 device backend, open Automatic brightness → Light sensor obstruction protection. Hold the installed light sensor face downward, unobstructed and clear of any surface, for at least one second; record the orientation, then return to normal placement. Enable automatic brightness and save. Matching orientation plus a substantial light drop holds brightness; release resumes smoothly. Protection has its own switch. Ordinary room darkness still dims normally. Starting covered or covering by hand without changing pose cannot be reliably detected. Both LDR and IMU must be valid; classic ESP32 does not enable this feature.
 
 ## NTP and manual time
 

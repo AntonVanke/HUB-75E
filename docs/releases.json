@@ -2,6 +2,39 @@
   "schema": 1,
   "releases": [
     {
+      "version": "1.5.2",
+      "runtimeApi": 5,
+      "nativeAbi": 1,
+      "notes": "光敏电阻与 IMU 联合遮挡保护：姿态校准、临时保持亮度、解除后平滑恢复。",
+      "catalog": "applications/1.5.2/catalog.json",
+      "targets": {
+        "esp32": {
+          "chip": "esp32",
+          "flashBytes": 4194304,
+          "psramBytes": 0,
+          "manifest": "firmware/esp32-v1.5.2/manifest.json",
+          "updateManifest": "firmware/esp32-v1.5.2/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32-v1.5.2/app.bin",
+            "bytes": 1459488,
+            "sha256": "cca37b2fc61fe239a077b39793b2efe764e3824f2582e44579dffb53b0799221"
+          }
+        },
+        "esp32s3": {
+          "chip": "esp32s3",
+          "flashBytes": 8388608,
+          "psramBytes": 8388608,
+          "manifest": "firmware/esp32s3-v1.5.2/manifest.json",
+          "updateManifest": "firmware/esp32s3-v1.5.2/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32s3-v1.5.2/app.bin",
+            "bytes": 1467232,
+            "sha256": "634bcd90098972ac3e93ce052e62cf9a04cabdb2f6ae3e755dc6b26a49282a4a"
+          }
+        }
+      }
+    },
+    {
       "version": "1.5.1",
       "runtimeApi": 5,
       "nativeAbi": 1,
@@ -299,5 +332,5 @@
       }
     }
   ],
-  "latest": "1.5.1"
+  "latest": "1.5.2"
 }

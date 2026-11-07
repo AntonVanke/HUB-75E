@@ -1058,3 +1058,25 @@ Object.assign(strings,{
 Object.assign(strings,{"手动更新由浏览器下载并校验；自动更新由设备直接从 GitHub Pages 下载，保留设置和应用。":"Manual updates download through the browser. Automatic updates download directly from GitHub Pages on the device, preserving settings and apps.","等待检查":"Waiting to check","正在检查":"Checking","正在下载":"Downloading","准备重启":"Preparing to restart","已是最新版本":"Up to date"});
 
 Object.assign(strings,timeStrings);
+Object.assign(strings,{
+ "光敏面遮挡保护":"Light sensor obstruction protection",
+ "结合姿态判断遮挡，临时保持亮度":"Use orientation to detect obstruction and hold brightness temporarily",
+ "先将光敏面朝下悬空，保持无遮挡并静止至少 1 秒，再记录姿态。恢复正常放置后，设备学习环境亮度。":"Hold the light sensor face downward, clear of any surface and unobstructed, for at least one second, then record its orientation. Return to normal placement to learn ambient light.",
+ "记录光敏面朝下姿态":"Record sensor face-down orientation",
+ "仅在姿态匹配且亮度明显下降时保持遮挡前亮度；解除遮挡后平滑恢复。单纯关灯仍正常调暗；手遮而姿态不变、开机时已遮挡无法可靠识别。":"Brightness is held only when orientation matches and light drops significantly, then resumes smoothly after release. Turning off room lights still dims normally. Covering by hand without a pose change, or starting already covered, cannot be reliably detected.",
+ "遮挡保护已关闭":"Obstruction protection is off",
+ "尚未记录光敏面姿态":"Sensor orientation has not been calibrated",
+ "IMU 不可用，遮挡保护暂停":"IMU unavailable; obstruction protection paused",
+ "自动亮度已关闭":"Automatic brightness is off",
+ "光敏读数不可用，遮挡保护暂停":"Light readings unavailable; obstruction protection paused",
+ "正在确认遮挡，暂时保持亮度":"Confirming obstruction; holding brightness",
+ "检测到光敏面遮挡，暂时保持亮度":"Sensor face obstructed; holding brightness",
+ "遮挡保护就绪":"Obstruction protection ready",
+ "请将光敏面转离朝下姿态，保持无遮挡以学习环境亮度":"Turn the sensor face away from the face-down orientation and leave it unobstructed to learn ambient light",
+ "当前板型不支持遮挡保护":"This board does not support obstruction protection",
+ "遮挡期间保持亮度":"Holding brightness while obstructed",
+ "请确保光敏电阻和 IMU 有效，将光敏面朝下悬空、保持无遮挡并静止至少 1 秒":"Ensure the light sensor and IMU are available, then hold the sensor face downward, unobstructed and clear of any surface, for at least one second",
+ "光敏面朝下姿态已记录，请恢复正常放置以学习环境亮度":"Sensor orientation recorded; return to normal placement to learn ambient light",
+ "未知亮度操作":"Unknown brightness action",
+ "遮挡保护参数无效":"Invalid obstruction protection setting"
+});

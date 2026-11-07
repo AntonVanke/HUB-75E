@@ -2,7 +2,7 @@
 
 简体中文 · [English](FLASHING.en.md)
 
-当前版本 **1.5.1**：[ESP32 4 MB](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.5.1.zip) · [ESP32-S3 8 MB Flash + 8 MB OPI PSRAM](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.5.1.zip)。S3 N4 不适用。旧版保留用于历史设备与回退。
+当前版本 **1.5.2**：[ESP32 4 MB](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.5.2.zip) · [ESP32-S3 8 MB Flash + 8 MB OPI PSRAM](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.5.2.zip)。S3 N4 不适用。旧版保留用于历史设备与回退。
 
 ## 在线安装与更新
 
@@ -45,6 +45,10 @@ Linux/macOS：`sh ./flash.sh /dev/ttyUSB0`；macOS 端口常为 `/dev/cu.usbseri
 ```
 
 直接访问返回的 IP 打开后台。Pages 主题页可直接连接 USB：电脑下载校验 CWP3，再分块传给设备，不要求设备访问 GitHub。应用安装不主动停止当前主题，点击运行才切换；固件烧录/OTA 会重启。
+
+## 光敏面遮挡保护（1.5.2）
+
+S3 设备后台 → 自动亮度 → 光敏面遮挡保护。将实际安装光敏电阻的一面朝下悬空、无遮挡，静止至少 1 秒后点击“记录光敏面朝下姿态”，随后恢复正常放置；开启自动亮度并保存。姿态和光照共同提示遮挡时保持原亮度，解除后平滑恢复；可以独立关闭遮挡保护。普通关灯仍调暗，开机已经遮挡或不改变姿态的手遮无法可靠识别。需要有效的光敏电阻和 IMU，经典 ESP32 不启用。
 
 ## NTP 和手动时间
 

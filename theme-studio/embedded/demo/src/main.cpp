@@ -491,7 +491,10 @@ void setup(){
 static void publishInputs(){
   static uint32_t last=0;const uint32_t now=millis();if(now-last<4)return;last=now;
 #ifdef HUB75_S3_BOARD
-  sensors.poll();if(diagnostics.poll())service.ambient.sample(diagnostics.lightRaw(),diagnostics.lightMillivolts(),now);
+  sensors.poll();if(diagnostics.poll()){
+    service.ambient.sampleImu(sensors.imuValid(),sensors.accel[0],sensors.accel[1],sensors.accel[2],sensors.gyro[0],sensors.gyro[1],sensors.gyro[2],now);
+    service.ambient.sample(diagnostics.lightRaw(),diagnostics.lightMillivolts(),now);
+  }
 #endif
   if(!snapshotQueue||service.panelTrial.active||service.needsSetup())return;
   static Snapshot next;next.a=service.buttonAUntil&&int32_t(service.buttonAUntil-millis())>0;next.b=service.buttonBUntil&&int32_t(service.buttonBUntil-millis())>0;next.theme=service.theme;next.generation=service.generation;next.brightness=service.ambient.tick(service.brightness,millis());

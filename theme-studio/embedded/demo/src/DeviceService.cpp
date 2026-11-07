@@ -58,7 +58,7 @@ bool DeviceService::saveOrientation(int degrees,bool automatic,int gravityDegree
 }
 String DeviceService::discoveryIdentity()const{
   char id[17];snprintf(id,sizeof(id),"%012llx",ESP.getEfuseMac()&0xffffffffffffULL);
-  return "{\"product\":\"clockwise-hub75\",\"id\":"+quote(id)+",\"chip\":"+quote(ESP.getChipModel())+",\"version\":\"1.5.1\"}";
+  return "{\"product\":\"clockwise-hub75\",\"id\":"+quote(id)+",\"chip\":"+quote(ESP.getChipModel())+",\"version\":\"1.5.2\"}";
 }
 bool DeviceService::startDiscovery(String& error){
   if(WiFi.status()!=WL_CONNECTED){error="请先让设备连接局域网 Wi-Fi";return false;}
@@ -199,6 +199,11 @@ void DeviceService::begin(int count,const char* titlesJson){
   panelTrial.startedAt=millis();
   theme=prefs_.getInt("theme",26);brightness=constrain(prefs_.getInt("bright",80),1,255);
   AutoBrightnessSettings light;light.enabled=prefs_.getBool("lightAuto",false);light.minimum=prefs_.getInt("lightMin",12);light.maximum=prefs_.getInt("lightMax",180);light.dark=prefs_.getInt("lightDark",100);light.bright=prefs_.getInt("lightBright",3500);ambient.settings=light.valid()?light:AutoBrightnessSettings{};
+  ambient.settings.coverProtection=prefs_.getBool("lightCover",true);
+  if(prefs_.getBool("lightFaceSet",false)){
+    const float x=prefs_.getFloat("lightFaceX",0),y=prefs_.getFloat("lightFaceY",0),z=prefs_.getFloat("lightFaceZ",0),length=x*x+y*y+z*z;
+    if(isfinite(length)&&length>.98f&&length<1.02f){ambient.settings.coverX=x;ambient.settings.coverY=y;ambient.settings.coverZ=z;ambient.settings.coverCalibrated=true;}
+  }
   rotationMinutes=prefs_.getInt("rotate",0);
   if(!prefs_.isKey("setupDone"))prefs_.putBool("setupDone",ssid_.length()&&prefs_.getBool("panelChosen",prefs_.isKey("panelDriver")));
   setupRequired_=!prefs_.getBool("setupDone",false)&&!prefs_.getBool("setupSkipped",false);
@@ -244,10 +249,18 @@ void DeviceService::begin(int count,const char* titlesJson){
     reply(ok?200:400,ok?timeSync_.json():"{\"error\":"+quote(error)+"}");
   });
   web_.on("/api/brightness",HTTP_POST,[this](){
+    const String action=web_.arg("action");
+    if(action=="calibrate-cover"){
+      if(!ambient.calibrateCover(millis())){reply(409,"{\"error\":\"请确保光敏电阻和 IMU 有效，将光敏面朝下悬空、保持无遮挡并静止至少 1 秒\"}");return;}
+      const auto& s=ambient.settings;prefs_.putFloat("lightFaceX",s.coverX);prefs_.putFloat("lightFaceY",s.coverY);prefs_.putFloat("lightFaceZ",s.coverZ);prefs_.putBool("lightFaceSet",true);
+      reply(200,"{\"message\":\"光敏面朝下姿态已记录，请恢复正常放置以学习环境亮度\"}");return;
+    }
+    if(!action.isEmpty()){reply(400,"{\"error\":\"未知亮度操作\"}");return;}
     auto value=ambient.settings;String enabled=web_.arg("enabled");
+    if(web_.hasArg("coverProtection")){const String cover=web_.arg("coverProtection");if(cover!="true"&&cover!="false"){reply(400,"{\"error\":\"遮挡保护参数无效\"}");return;}value.coverProtection=cover=="true";}
     if((enabled!="true"&&enabled!="false")||!integer(web_.arg("minimum"),value.minimum)||!integer(web_.arg("maximum"),value.maximum)||!integer(web_.arg("dark"),value.dark)||!integer(web_.arg("bright"),value.bright)||!value.valid()){reply(400,"{\"error\":\"自动亮度参数无效：亮度 1–255，亮暗 ADC 差至少 128\"}");return;}
     value.enabled=enabled=="true";if(value.enabled&&(!ambient.supported||!ambient.present)){reply(409,"{\"error\":\"未检测到有效光敏电阻，已保持固定亮度\"}");return;}
-    ambient.settings=value;prefs_.putBool("lightAuto",value.enabled);prefs_.putInt("lightMin",value.minimum);prefs_.putInt("lightMax",value.maximum);prefs_.putInt("lightDark",value.dark);prefs_.putInt("lightBright",value.bright);reply(200,"{\"message\":\"亮度设置已保存\"}");
+    ambient.settings=value;ambient.resetCover();prefs_.putBool("lightAuto",value.enabled);prefs_.putInt("lightMin",value.minimum);prefs_.putInt("lightMax",value.maximum);prefs_.putInt("lightDark",value.dark);prefs_.putInt("lightBright",value.bright);prefs_.putBool("lightCover",value.coverProtection);reply(200,"{\"message\":\"亮度设置已保存\"}");
   });
   web_.on("/api/panel/trial",HTTP_POST,[this](){String error;if(!trialAction(web_.arg("action"),error)){reply(400,"{\"error\":"+quote(error)+"}");return;}reply(200,"{\"message\":\"驱动轮测操作已执行\",\"trial\":"+trialJson()+"}");});
   web_.on("/api/updates",HTTP_POST,[this](){const String enabled=web_.arg("enabled");if(enabled!="true"&&enabled!="false"){reply(400,"{\"error\":\"enabled 必须为 true 或 false\"}");return;}updater.enabled=enabled=="true";prefs_.putBool("autoUpdate",updater.enabled);updater.schedule();reply(200,"{\"message\":\"自动更新设置已保存\"}");});
@@ -337,7 +350,7 @@ void DeviceService::begin(int count,const char* titlesJson){
   });
   web_.begin();
   Serial.printf("Provision AP: %s  Password: %s\n",apName_.c_str(),apPassword_.c_str());
-  Serial.println("CWJSON:{\"ok\":true,\"version\":\"1.5.1\",\"message\":\"串口设置已就绪，发送 {\\\"cmd\\\":\\\"help\\\"} 查看命令\"}");
+  Serial.println("CWJSON:{\"ok\":true,\"version\":\"1.5.2\",\"message\":\"串口设置已就绪，发送 {\\\"cmd\\\":\\\"help\\\"} 查看命令\"}");
 }
 void DeviceService::uploadScript(){
   auto& u=web_.upload();
@@ -428,7 +441,7 @@ void DeviceService::poll(){
   if(updater.due(now)&&WiFi.status()==WL_CONNECTED&&time(nullptr)>1700000000&&!needsSetup()&&!panelTrial.active&&!ota_&&!scriptLocked_&&!serialInstall_&&!restartAt_){
     if(renderLock(true)){
       updater.busy=true;stopScript();
-      const bool ready=updater.run("1.5.1");
+      const bool ready=updater.run("1.5.2");
       updater.busy=false;Serial.println("[UPDATE] "+updater.state);
       if(ready){restartAt_=millis()+500;}else{generation++;renderLock(false);}
     }
@@ -613,8 +626,8 @@ void DeviceService::sendApps(bool serial){
   if(serial)Serial.println();else{if(used)web_.sendContent(output,used);web_.sendContent("");}
 }
 String DeviceService::brightnessJson()const{
-  const auto& s=ambient.settings;char body[320];
-  snprintf(body,sizeof(body),"{\"supported\":%s,\"present\":%s,\"enabled\":%s,\"active\":%s,\"raw\":%d,\"millivolts\":%d,\"filtered\":%d,\"actual\":%d,\"minimum\":%d,\"maximum\":%d,\"dark\":%d,\"bright\":%d}",ambient.supported?"true":"false",ambient.present?"true":"false",s.enabled?"true":"false",ambient.active(millis())?"true":"false",ambient.raw,ambient.millivolts,ambient.filtered(),ambient.actual,s.minimum,s.maximum,s.dark,s.bright);return String(body);
+  const auto& s=ambient.settings;char body[512];const uint32_t now=millis();
+  snprintf(body,sizeof(body),"{\"supported\":%s,\"present\":%s,\"enabled\":%s,\"active\":%s,\"raw\":%d,\"millivolts\":%d,\"filtered\":%d,\"actual\":%d,\"minimum\":%d,\"maximum\":%d,\"dark\":%d,\"bright\":%d,\"obstruction\":{\"enabled\":%s,\"calibrated\":%s,\"imuValid\":%s,\"held\":%s,\"state\":\"%s\"}}",ambient.supported?"true":"false",ambient.present?"true":"false",s.enabled?"true":"false",ambient.active(now)?"true":"false",ambient.raw,ambient.millivolts,ambient.filtered(),ambient.actual,s.minimum,s.maximum,s.dark,s.bright,s.coverProtection?"true":"false",s.coverCalibrated?"true":"false",ambient.imuReady(now)?"true":"false",ambient.coverHeld(now)?"true":"false",ambient.coverState(now));return String(body);
 }
 String DeviceService::statusJson(){
   const esp_partition_t* next=esp_ota_get_next_update_partition(nullptr);char body[2560];
@@ -623,7 +636,7 @@ String DeviceService::statusJson(){
   const char* source=windowTheme_>=0?"window":schedule_.mode==1?"interval":!timeValid&&(schedule_.windowCount||schedule_.mode==2)?"waiting-time":schedule_.mode==2?"daily":"fixed";
   if(windowTheme_<0&&schedule_.mode==1){const uint32_t period=uint32_t(schedule_.interval)*60000,elapsed=uint32_t(millis()-rotateAt_);snprintf(remaining,sizeof(remaining),"%u",unsigned(elapsed>=period?0:(period-elapsed+999)/1000));}
   String ip=(WiFi.status()==WL_CONNECTED?WiFi.localIP():WiFi.softAPIP()).toString();
-  const int length=snprintf(body,sizeof(body),"{\"version\":\"1.5.1\",\"chip\":%s,\"width\":64,\"height\":64,\"ip\":%s,\"stationIP\":%s,\"apIP\":%s,\"configUrl\":%s,\"ssid\":%s,\"connected\":%s,\"networkState\":%s,\"rssi\":%d,\"uptime\":%u,\"heap\":%u,\"largestBlock\":%u,\"theme\":%d,\"generation\":%u,\"brightness\":%d,\"rotationMinutes\":%d,\"timezone\":%s,\"otaMaxBytes\":%u,\"storage\":%s,\"hasCustom\":%s,\"appSlots\":64,\"catalogCount\":%d,\"error\":%s,\"performance\":%s,\"limits\":%s,\"baseTheme\":%d,\"timeValid\":%s,\"localTime\":\"%s\",\"clock\":{\"weekday\":%d,\"hour\":%d,\"minute\":%d,\"second\":%d},\"playbackSource\":\"%s\",\"rotationRemainingSeconds\":%s}",
+  const int length=snprintf(body,sizeof(body),"{\"version\":\"1.5.2\",\"chip\":%s,\"width\":64,\"height\":64,\"ip\":%s,\"stationIP\":%s,\"apIP\":%s,\"configUrl\":%s,\"ssid\":%s,\"connected\":%s,\"networkState\":%s,\"rssi\":%d,\"uptime\":%u,\"heap\":%u,\"largestBlock\":%u,\"theme\":%d,\"generation\":%u,\"brightness\":%d,\"rotationMinutes\":%d,\"timezone\":%s,\"otaMaxBytes\":%u,\"storage\":%s,\"hasCustom\":%s,\"appSlots\":64,\"catalogCount\":%d,\"error\":%s,\"performance\":%s,\"limits\":%s,\"baseTheme\":%d,\"timeValid\":%s,\"localTime\":\"%s\",\"clock\":{\"weekday\":%d,\"hour\":%d,\"minute\":%d,\"second\":%d},\"playbackSource\":\"%s\",\"rotationRemainingSeconds\":%s}",
     quote(ESP.getChipModel()).c_str(),quote(ip).c_str(),quote(WiFi.localIP().toString()).c_str(),quote(WiFi.softAPIP().toString()).c_str(),quote("http://"+ip+"/").c_str(),quote(WiFi.SSID()).c_str(),WiFi.status()==WL_CONNECTED?"true":"false",quote(networkState).c_str(),WiFi.RSSI(),millis()/1000,
     heap_caps_get_free_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT),heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT),theme,generation,brightness,rotationMinutes,
     quote(prefs_.getString("tz","CST-8")).c_str(),unsigned(next?next->size:0),fs_?"true":"false",hasCustom?"true":"false",themeCount,quote(lastError).c_str(),metrics,limits_.json().c_str(),

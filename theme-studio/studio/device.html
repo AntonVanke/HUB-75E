@@ -119,7 +119,7 @@ const releasesUI=releaseControls($('online-updates'),{device:()=>latestStatus||{
 diagnosticControls($('hardware-tests'),{request,message,device:()=>latestStatus,busy:()=>client.busy,translate});
 screenPreview($('screen-preview'),{readFrame:()=>request('frame',{responseType:'arrayBuffer'}),ready:()=>connected&&!!latestStatus?.features?.screenPreview,busy:()=>client.busy,message,translate});
 const clockSettings=timeControls($('time-settings'),{request,message,translate,busy:()=>client.busy,refresh:async()=>status(await request('status'))});
-const autoLight=autoBrightnessControls($('auto-brightness'),{request,message,refresh:async()=>status(await request('status'))});
+const autoLight=autoBrightnessControls($('auto-brightness'),{request,message,translate,refresh:async()=>status(await request('status'))});
 const wizard=setupWizard($("setup-guide"),{request,message,showPanel,refresh:async()=>status(await request("status"))});
 function status(data,initial=false){
  clockSettings.update(data.timeSync);autoLight.update(data.brightnessControl);releasesUI.update(data);

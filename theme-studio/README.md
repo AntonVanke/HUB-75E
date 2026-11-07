@@ -1,6 +1,6 @@
 # Clockwise 主题应用与工坊
 
-当前固件 **1.5.1** 使用 C/C++ / CWP3，Runtime API 5、native ABI 1，不运行 Lua。S3 提供 59 款主题，经典 ESP32 提供 5 款；完整项目说明见 [中文首页](../README.md) / [English](../README.en.md)。
+当前固件 **1.5.2** 使用 C/C++ / CWP3，Runtime API 5、native ABI 1，不运行 Lua。S3 提供 59 款主题，经典 ESP32 提供 5 款；完整项目说明见 [中文首页](../README.md) / [English](../README.en.md)。
 
 ## 开发与使用
 

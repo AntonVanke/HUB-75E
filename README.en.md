@@ -4,7 +4,7 @@
 
 A 64 × 64 HUB75 clock for ESP32 / ESP32-S3. Themes are C/C++ compiled to chip-specific Xtensa machine code in CWP3 packages. Current firmware does not run Lua. Runtime API 5, native ABI 1.
 
-**Current release: 1.5.1** · [Flash firmware](https://antonvanke.github.io/HUB-75E/#flash) · [Applications](https://antonvanke.github.io/HUB-75E/#themes) · [USB settings](https://antonvanke.github.io/HUB-75E/#config) · [Image clock workshop](https://antonvanke.github.io/HUB-75E/studio/index.html)
+**Current release: 1.5.2** · [Flash firmware](https://antonvanke.github.io/HUB-75E/#flash) · [Applications](https://antonvanke.github.io/HUB-75E/#themes) · [USB settings](https://antonvanke.github.io/HUB-75E/#config) · [Image clock workshop](https://antonvanke.github.io/HUB-75E/studio/index.html)
 
 ![Ferrofluid computer preview](web/previews/ferrofluid-clock.gif)
 
@@ -12,20 +12,21 @@ Rendered by the theme's C++ code on a computer, not panel footage or a device FP
 
 ## Current features
 
+- **1.5.2 light sensor obstruction protection:** S3 combines LDR readings with IMU orientation, holds brightness when the calibrated sensor face is covered facing down, and resumes smoothly after release. Calibrate the installed orientation in the device backend under Automatic brightness. Ordinary room dimming does not trigger protection.
 - **1.5.1 time settings:** Alibaba Cloud NTP by default, with Cloudflare, NTP Pool or a custom hostname/IPv4. Synchronize after Wi-Fi connects at boot or after a firmware update, then every 24 hours after success. Background fallback/retries, automatic-time switch, manual date/time and computer-time transfer.
 - **1.5.0 USB/backend:** connect directly from Applications, preview the real framebuffer, run hardware diagnostics and use a responsive mobile backend. Installation does not explicitly stop the active theme; click Run to activate it. Updates retain old resources for the active instance.
 - Ferrofluid Clock v1.4.0 shadows/highlights follow IMU gravity, including stationary tilt.
 - Provisioning, driver trials, smooth brightness, orientation calibration, playback schedules and app parameters. Optional firmware auto-update checks run every six hours, default off and separate from daily NTP.
 - Image clocks: 32 slides, dragging, eight text layers, 19 fonts, Unifont Unicode, decoration, gradients, dates and seconds progress. Full fonts stay on the computer; only needed glyphs/assets are installed.
 
-Both chips compile and the time scheduler passes host simulation. This publication has not flashed or physically validated a device. Water and maze target 120 FPS; actual performance during installation/network traffic needs device measurement.
+Both chips compile and the brightness/obstruction controller passes host simulation. This publication has not flashed or physically validated a device. Water and maze target 120 FPS; actual performance during installation/network traffic needs device measurement.
 
 ## Downloads
 
 | Chip | Firmware | Applications | Requirements |
 | --- | --- | --- | --- |
-| ESP32 | [v1.5.1 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.5.1.zip) | [5 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | Classic ESP32, 4 MB Flash |
-| ESP32-S3 | [v1.5.1 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.5.1.zip) | [59 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | Project board, at least 8 MB Flash + 8 MB OPI PSRAM |
+| ESP32 | [v1.5.2 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.5.2.zip) | [5 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | Classic ESP32, 4 MB Flash |
+| ESP32-S3 | [v1.5.2 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.5.2.zip) | [59 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | Project board, at least 8 MB Flash + 8 MB OPI PSRAM |
 
 S3 N4 is unsupported. Other boards require matching memory settings and wiring.
 
