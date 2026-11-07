@@ -1,4 +1,4 @@
-# 当前设备管理 API（固件 1.7.0）
+# 当前设备管理 API（固件 1.8.0）
 
 Current firmware uses C/C++ / CWP3, runtime API 5 and native ABI 1. The versioned [v0.9.8 document](device-api-v0.9.8.md) is historical; installation no longer deliberately pauses the active theme.
 
@@ -27,16 +27,16 @@ English: the firmware clock is listed as a protected system app at index -1. It 
 HTTP 修改使用 `POST /api/time`，`application/x-www-form-urlencoded`；串口使用 `cmd: time` 和相同字段：
 
 ```json
-{"cmd":"time","action":"save","autoSync":true,"server":"ntp.cloud.aliyuncs.com"}
+{"cmd":"time","action":"save","autoSync":true,"server":"ntp.cloud.aliyuncs.com","timezone":"CST-8"}
 {"cmd":"time","action":"sync"}
 {"cmd":"time","action":"save","autoSync":false,"server":"192.168.1.1"}
 {"cmd":"time","action":"manual","localTime":"2026-11-06T12:30:00"}
 {"cmd":"time","action":"manual","epoch":1793939400}
 ```
 
-`save` 保存开关/主服务器，启用后安排校时；`sync` 要求已启用自动校时。手动操作要求自动校时已关闭。`localTime` 使用设备时区，`epoch` 是绝对 Unix 秒，不传毫秒；同时存在时优先 epoch。当前手动日期支持 2024–2037 年。
+`save` 保存开关/首选服务器及可选 `timezone`（1.8.0，POSIX 格式，最长 63 字符；省略保留现值，修改立即影响本地时间与条件计划），启用后安排校时；`sync` 要求已启用自动校时。手动操作要求自动校时已关闭。`localTime` 使用设备时区，`epoch` 是绝对 Unix 秒，不传毫秒；同时存在时优先 epoch。当前手动日期支持 2024–2037 年。
 
-主机字段允许域名或 IPv4，不接受 URL/端口。默认阿里云，备用阿里云/Cloudflare 自动去重。联网后启动异步 SNTP；每源最多 8 秒，全部失败 60 秒后重试。成功后以单调时钟等待 24 小时，手动时间跳变不会改变间隔。每次开机（含固件更新重启）重新安排首次校时；离线时等联网。无电池 RTC 的硬件完全断电后无法准确延续手动时间。
+主机字段允许域名或 IPv4，不接受 URL/端口。首选默认阿里云，同时使用腾讯、Cloudflare、NTP Pool 补齐四个不重复来源。DNS 在网络线程异步并行解析，UDP 请求在主循环非阻塞处理；没有 SNTP 随机启动延迟。每轮最多 8 秒，每个来源最多三次请求，最快的有效回复胜出；校验来源 IP/端口、模式、版本、闰秒状态、层级、请求随机标记和时间范围，加入往返延迟补偿。失败按 5 / 15 / 60 秒退避，避免持续轮询。`activeServer` 为本轮来源列表，`source` 为成功来源。成功后以单调时钟等待 24 小时，手动时间跳变不会改变间隔。每次开机（含固件更新重启）重新安排首次校时；离线时等联网。无电池 RTC 的硬件完全断电后无法准确延续手动时间。
 
 ## 自动亮度与遮挡保护 / Automatic brightness and obstruction
 

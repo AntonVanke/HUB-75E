@@ -2,12 +2,13 @@
 #include <Arduino.h>
 #include <Preferences.h>
 #include <time.h>
+#include "NtpTransport.h"
 
 class TimeSync {
 public:
   void begin(Preferences& prefs);
   void poll(bool connected);
-  bool configure(bool automatic,const String& server,String& error);
+  bool configure(bool automatic,const String& server,String& error,const String& timezone="");
   bool sync(String& error);
   bool manual(const String& local,const String& epoch,String& error);
   String json()const;
@@ -19,5 +20,6 @@ private:
   uint8_t attempt_=0;
   int64_t nextAt_=0,startedAt_=0;
   time_t lastSync_=0;
+  NtpTransport transport_;
   void stop();
 };

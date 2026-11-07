@@ -1,4 +1,4 @@
-"""Exercise the firmware time scheduler with a fake clock and SNTP transport."""
+"""Exercise the firmware time scheduler with a fake clock, DNS and UDP."""
 import os
 import subprocess
 from pathlib import Path
@@ -63,48 +63,12 @@ inline void sntp_set_sync_interval(uint32_t n){interval=n;}
 inline void esp_sntp_setoperatingmode(int){}
 inline void esp_sntp_setservername(int index,const char* value){if(!index)hostname=value;}
 ''',
-'test.cpp': r'''
-#include "Arduino.h"
-#include <cassert>
-int64_t clockUs=0;time_t epoch=1762300800;bool enabled=false;
-int syncStatus=0,starts=0;String hostname;uint32_t interval=0;
-time_t fakeTime(time_t* target){if(target)*target=epoch;return epoch;}
-#define time fakeTime
-#include "TimeSync.cpp"
-#undef time
-static bool has(TimeSync& clock,const char* text){return clock.json().find(text)!=std::string::npos;}
-int main(){
- Preferences prefs;TimeSync clock;String error;clock.begin(prefs);
- clock.poll(false);assert(starts==0&&has(clock,"waiting-network"));
- clockUs=1000000;clock.poll(true);assert(starts==1&&hostname=="ntp.cloud.aliyuncs.com"&&interval==86400000);
- syncStatus=SNTP_SYNC_STATUS_COMPLETED;clock.poll(true);assert(!enabled&&has(clock,"synced"));
- clockUs+=86400000000LL-1;clock.poll(true);assert(starts==1);
- clockUs++;clock.poll(true);assert(starts==2);
- syncStatus=SNTP_SYNC_STATUS_COMPLETED;clock.poll(true);clock.poll(false);clock.poll(true);assert(starts==2);
- assert(clock.sync(error));clock.poll(false);assert(!enabled);clock.poll(true);assert(starts==3);
- clockUs+=8000000;clock.poll(true);assert(hostname=="time.cloudflare.com"&&starts==4);
- clockUs+=8000000;clock.poll(true);assert(!enabled&&has(clock,"retry"));
- clockUs+=59999999;clock.poll(true);assert(starts==4);clockUs++;clock.poll(true);assert(starts==5);
- assert(!clock.manual("2026-11-05T12:34:56","",error));
- assert(!clock.configure(true,"https://ntp.example",error));
- assert(!clock.configure(true,"a..example",error));
- assert(clock.configure(false,"192.168.1.1",error));assert(!enabled);
- clockUs+=2*86400000000LL;clock.poll(true);assert(starts==5&&!clock.sync(error));
- assert(!clock.manual("2026-02-30T12:00:00","",error));
- assert(clock.manual("2026-11-05T12:34:56","",error));assert(has(clock,"2026-11-05 12:34:56"));
- assert(clock.manual("","1762300800",error)&&epoch==1762300800);
- assert(!clock.manual("","99999999999999999999999",error));
- TimeSync reboot;reboot.begin(prefs);reboot.poll(true);assert(!enabled&&starts==5&&has(reboot,"192.168.1.1"));
- assert(reboot.configure(true,"ntp.example",error));reboot.poll(true);assert(hostname=="ntp.example");
- clockUs+=8000000;reboot.poll(true);assert(hostname=="ntp.cloud.aliyuncs.com");
- clockUs+=8000000;reboot.poll(true);assert(hostname=="time.cloudflare.com");
- syncStatus=SNTP_SYNC_STATUS_COMPLETED;reboot.poll(true);
- TimeSync updated;updated.begin(prefs);updated.poll(true);assert(enabled&&hostname=="ntp.example");
- puts("PASS: boot/update sync, 24-hour interval, offline recovery, fallback/backoff, manual time, validation and persisted automatic switch");
+
 }
-''',
-}
+from ntp_fakes import files as transport_fixtures
+files.update(transport_fixtures)
 for name, contents in files.items():
+    (out / name).parent.mkdir(parents=True, exist_ok=True)
     (out / name).write_text(contents, encoding='utf-8')
 finder = Path(os.environ['ProgramFiles(x86)']) / 'Microsoft Visual Studio/Installer/vswhere.exe'
 vs = Path(subprocess.check_output([str(finder), '-latest', '-products', '*', '-property', 'installationPath'], text=True).strip())

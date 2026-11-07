@@ -67,6 +67,14 @@ export function applicationControls($,getBase,request,upload,message,{local=fals
     else download(new Blob([bytes]),(app.packageName||app.id)+(/^CWP[123]$/.test(decoder.decode(bytes.subarray(0,4)))?'.cwp':'.lua'));
     message(source?'已导出可编辑 ZIP，可解压修改后重新安装。':'应用包已导出，可用于离线重新安装。');
   }
+  async function installCatalog(item){
+          if(item.bytes>limits.appBytes||item.bytes>installFreeBytes)throw new Error('设备安装空间不足，请先卸载不使用的应用。');
+          const path=item.path||'themes/apps/'+item.id+'.cwp',url=path.startsWith('/api/')?getBase()+path:new URL(path,catalogUrl);
+          const response=await fetch(url,{credentials:'omit',signal:AbortSignal.timeout(30000)});if(!response.ok)throw new Error('无法读取主题应用包');
+          const bytes=new Uint8Array(await response.arrayBuffer()),info=applicationInfo(bytes,item.id+'.cwp',limits);
+          if(item.packageName&&info.packageName!==item.packageName)throw new Error('下载应用的包名与主题库不一致');
+          await install(new File([bytes],item.id+'.cwp'),info);
+  }
   function render(){
     const filter=$('app-filter').value,search=$('app-search').value.trim().toLocaleLowerCase();
     const visible=apps.filter(app=>(app.builtin||app.installed)&&(filter==='all'||(filter==='installed')===!!app.installed)&&(!search||(app.title+' '+app.id+' '+(app.packageName||'')+' '+(app.description||'')+' '+localizeTheme(app).title+' '+localizeTheme(app).description).toLocaleLowerCase().includes(search)));
@@ -84,15 +92,14 @@ export function applicationControls($,getBase,request,upload,message,{local=fals
       running.dataset.appState=app.index;running.dataset.appKey=key(app);running.textContent=app.installed?(Number(app.index)===Number(active)?'运行中':'已安装'):'未安装';badge.textContent=check.status==='incompatible'?'不适用':check.status==='compatible'?'需求匹配':'兼容性未知';badge.title=check.reason||'';badge.className='app-compat '+check.status;state.append(running,badge);if(check.status==='incompatible'){const reason=document.createElement('small');reason.textContent=check.reason;state.append(reason);}
       size.textContent=app.installed?(app.bytes/1024).toFixed(1)+' KiB':'—';actions.className='app-actions';
       if(app.installed){const runButton=button('运行',()=>run(app));runButton.disabled=check.status==='incompatible';actions.append(button('参数设置',()=>themeSettings(app,values=>request('apps/config?'+new URLSearchParams(identity(app)),values===undefined?{}:{method:'POST',body:new URLSearchParams({values:JSON.stringify(values)})})),false),runButton,button('导出应用',()=>exportApp(app,false),false),button('卸载',async()=>{const result=await uninstall(app);message(result.message||'应用已卸载，所占空间已释放。');}));}
-      else{
-        const item=catalog.find(item=>item.id===app.id);
+      const latest=catalog.find(item=>item.packageName?item.packageName===app.packageName:item.id===app.id);
+      const version=n=>String(n||'0').split('.').map(Number);
+      const newer=latest&&version(latest.appVersion).some((n,i,a)=>n>(version(app.appVersion)[i]||0)&&a.slice(0,i).every((v,j)=>v===(version(app.appVersion)[j]||0)));
+      if(app.installed&&newer){const update=button('更新应用',()=>installCatalog(latest));update.title='v'+app.appVersion+' → v'+latest.appVersion;update.disabled=compatibility(latest).status==='incompatible';actions.prepend(update);}
+      if(!app.installed){
+        const item=latest;
         if(item){const installButton=button('安装',async()=>{
-          if(item.bytes>limits.appBytes||item.bytes>installFreeBytes)throw new Error('设备安装空间不足，请先卸载不使用的应用。');
-          const path=item.path||'themes/apps/'+item.id+'.cwp',url=path.startsWith('/api/')?getBase()+path:new URL(path,catalogUrl);
-          const response=await fetch(url,{credentials:'omit',signal:AbortSignal.timeout(30000)});if(!response.ok)throw new Error('无法读取主题应用包');
-          const bytes=new Uint8Array(await response.arrayBuffer()),info=applicationInfo(bytes,item.id+'.cwp',limits);
-          if(item.packageName&&info.packageName!==item.packageName)throw new Error('下载应用的包名与主题库不一致');
-          await install(new File([bytes],item.id+'.cwp'),info);
+          await installCatalog(item);
         });installButton.disabled=check.status==='incompatible';actions.append(installButton);}
         else actions.append(button('从文件安装',async()=>{$('app-file').closest('details').open=true;$('app-file').click();message('请选择 '+app.title+' 的 CWP 或 ZIP 应用包，再点击“安装并运行”。');},false));
       }

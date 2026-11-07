@@ -34,7 +34,7 @@ void NativeRuntime::initializeApi(){
     if(op==3){if(r.fluid_){r.fluid_->~Fluid64();heap_caps_free(r.fluid_);}r.fluid_=nullptr;return true;}
     if((op==0||op==1)&&(rotation<0||rotation>270||rotation%90||!std::isfinite(n)||!std::isfinite(x)||!std::isfinite(y)))return false;
     if(!r.fluid_){if(op!=0)return false;void* storage=heap_caps_malloc(sizeof(Fluid64),MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT);if(!storage)return false;r.fluid_=new(storage) Fluid64;}
-    if(op==0){auto setting=[&](const char* key,float fallback){ThemeValue v;if(!r.host_.data(key,v))return fallback;return float(v.number);};r.fluid_->configure(setting("setting.gravity",9.8f),setting("setting.viscosity",1),setting("setting.speed",.88f),int(setting("setting.drops",96)));r.fluid_->reset(n,rotation/90);}else if(op==1)r.fluid_->step(n,x,y,rotation/90);else if(op==2)r.fluid_->draw(r.raster_.pixels);else return false;return true;
+    if(op==0){auto setting=[&](const char* key,float fallback){ThemeValue v;if(!r.host_.data(key,v))return fallback;return float(v.number);};r.fluid_->configure(setting("setting.gravity",9.8f),setting("setting.viscosity",1),setting("setting.speed",.88f),int(setting("setting.drops",96)),setting("setting.pourSeconds",2),r.host_.randomSeed());r.fluid_->reset(n,rotation/90);}else if(op==1)r.fluid_->step(n,x,y,rotation/90);else if(op==2)r.fluid_->draw(r.raster_.pixels);else return false;return true;
   };
 }
 bool NativeRuntime::fail(const char* text){snprintf(error_,sizeof(error_),"%s",text);stop();return false;}

@@ -361,6 +361,7 @@ Wi-Fi / 信号|Wi-Fi / signal
 最高帧总耗时|Peak total frame time
 累计超时帧|Total late frames
 累计调度遗漏|Total missed notifications
+更新应用|Update application
 显示设置|Display settings
 默认主题（无指定时段时）|Default theme (outside scheduled windows)
 固定播放时使用此主题；轮换或指定时段可能显示其他主题，实际画面请查看“概览”。|Fixed playback uses this theme. Rotation or time windows can select another; see Overview for the active theme.

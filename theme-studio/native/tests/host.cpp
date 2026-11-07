@@ -51,15 +51,15 @@ int main(){
 #elif defined(TEST_PACMAN)
   assert(start(&s,&a));for(int i=0;i<20000;i++){assert(update(&s,&a,16));assert(map[s.player.pos]!='#'&&s.remaining>=0);for(auto g:s.ghosts)assert(g.pos>=0&&g.pos<144&&map[g.pos]!='#');if(i%30==0)assert(draw(&s,&a));}assert(s.score>0);printf("Pac-Man: 320 seconds simulated, score=%d, level=%d, state=%zu\n",s.score,s.level,sizeof(s));
 #elif defined(TEST_WATER)
-  for(float fill:{.1f,.46f,.70f,1.f})for(float speed:{.3f,.88f,1.f}){
-    h.fluid.configure(9.8f,1,speed,96);h.fluid.reset(fill);assert(h.fluid.particleCount()==0);
+  for(float fill:{.1f,.46f,.70f,1.f})for(float speed:{.3f,.88f,1.f})for(float duration:{.5f,2.f,6.f}){
+    h.fluid.configure(9.8f,1,speed,96,duration);h.fluid.reset(fill);assert(h.fluid.particleCount()==0);
     const int target=int(std::min(.7f,fill)*256);
-    for(int ms=10;ms<=2000;ms+=10){h.fluid.step(10,0,1,0);assert(h.fluid.particleCount()==int(target*ms/2000));h.fluid.draw(h.raster.pixels);}
+    int previous=0;for(int ms=10;ms<=int(duration*1000);ms+=10){h.fluid.step(10,0,1,0);assert(h.fluid.particleCount()>=previous&&h.fluid.particleCount()<=target);previous=h.fluid.particleCount();h.fluid.draw(h.raster.pixels);if(ms<int(duration*1000))assert(h.fluid.pouring());}
     assert(!h.fluid.pouring());assert(h.fluid.particleCount()==target);h.fluid.step(10,0,1,0);assert(h.fluid.particleCount()==target);
   }
   h.fluid.reset(.70f);uint16_t guarded[4098];guarded[0]=0x1234;guarded[4097]=0xabcd;
   for(int i=0;i<2400;i++){h.fluid.step(i%7?8:100,2*std::sin(i*.03f),2*std::cos(i*.02f),(i/60)%4);h.fluid.draw(guarded+1);assert(guarded[0]==0x1234&&guarded[4097]==0xabcd);}
-  assert(start(&s,&a));for(int i=0;i<2400;i++){h.gx=std::sin(i*.02f);h.gy=std::cos(i*.03f);assert(update(&s,&a,i%3?8:9));assert(draw(&s,&a));}button(&s,&a,0);assert(!s.showTime);button(&s,&a,1);printf("Water: 2-second pour at all speeds, 70%% cap, rotation/shaking boundaries, 2400 native frames, clock toggle/reset passed\n");
+  assert(start(&s,&a));for(int i=0;i<2400;i++){h.gx=std::sin(i*.02f);h.gy=std::cos(i*.03f);assert(update(&s,&a,i%3?8:9));assert(draw(&s,&a));}button(&s,&a,0);assert(!s.showTime);button(&s,&a,1);printf("Water: irregular 0.5/2/6-second pour at all speeds, 70%% cap, rotation/shaking boundaries, 2400 native frames, clock toggle/reset passed\n");
 #elif defined(TEST_AMBIENT)
   assert(start(&s,&a));assert(sizeof(s)<=2048);uint16_t previous[4096];int biggest=0;
   for(int frame=0;frame<16000;frame++){assert(update(&s,&a,8));assert(draw(&s,&a));if(frame){for(int i=0;i<4096;i++){int delta=abs(int(a.pixels[i]>>11)-int(previous[i]>>11))+abs(int((a.pixels[i]>>5)&63)-int((previous[i]>>5)&63))+abs(int(a.pixels[i]&31)-int(previous[i]&31));biggest=std::max(biggest,delta);}}memcpy(previous,a.pixels,8192);}

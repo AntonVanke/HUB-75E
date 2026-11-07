@@ -15,15 +15,20 @@ static bool validServer(const String& value){
   }
   return label&&value[value.length()-1]!='-';
 }
-void TimeSync::stop(){if(esp_sntp_enabled())esp_sntp_stop();running_=false;sntp_set_sync_status(SNTP_SYNC_STATUS_RESET);}
+void TimeSync::stop(){if(esp_sntp_enabled())esp_sntp_stop();transport_.stop();running_=false;}
 void TimeSync::begin(Preferences& prefs){
   prefs_=&prefs;automatic_=prefs.getBool("timeAuto",true);
   if(prefs.isKey("ntpServer")){String saved=prefs.getString("ntpServer",server_);if(validServer(saved))server_=saved;}
   String tz=prefs.getString("tz","CST-8");setenv("TZ",tz.c_str(),1);tzset();
   stop();state_=automatic_?"waiting-network":"manual";nextAt_=0;
 }
-bool TimeSync::configure(bool automatic,const String& server,String& error){
+bool TimeSync::configure(bool automatic,const String& server,String& error,const String& timezone){
   if(!validServer(server)){error="请输入有效的 NTP 主机名或 IPv4 地址，不要包含 http:// 或端口";return false;}
+  if(timezone.length()>63||(timezone.length()&&strspn(timezone.c_str(),"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-,:.<>/")!=timezone.length())){error="时区格式无效";return false;}
+  if(timezone.length()){
+    if(prefs_->putString("tz",timezone)!=timezone.length()){error="时间设置保存失败";return false;}
+    setenv("TZ",timezone.c_str(),1);tzset();
+  }
   if(prefs_->putBool("timeAuto",automatic)!=1||prefs_->putString("ntpServer",server)!=server.length()){error="时间设置保存失败";return false;}
   stop();automatic_=automatic;server_=server;attempt_=0;nextAt_=0;
   state_=automatic_?"waiting-network":"manual";return true;
@@ -35,26 +40,20 @@ bool TimeSync::sync(String& error){
 void TimeSync::poll(bool connected){
   if(!automatic_)return;
   const int64_t now=esp_timer_get_time();
-  if(running_&&sntp_get_sync_status()==SNTP_SYNC_STATUS_COMPLETED){
-    lastSync_=time(nullptr);source_=activeServer_;stop();attempt_=0;nextAt_=now+dayUs;state_="synced";return;
-  }
   if(!connected){if(running_){stop();attempt_=0;nextAt_=0;}state_="waiting-network";return;}
   if(running_){
+    int64_t epochUs;String source;
+    if(transport_.poll(epochUs,source)){
+      timeval tv={time_t(epochUs/1000000),long(epochUs%1000000)};
+      if(settimeofday(&tv,nullptr)==0){lastSync_=tv.tv_sec;source_=source;stop();attempt_=0;nextAt_=now+dayUs;state_="synced";return;}
+    }
     if(now-startedAt_<8000000)return;
-    stop();attempt_++;
-    const int count=(server_=="ntp.cloud.aliyuncs.com"||server_=="time.cloudflare.com")?2:3;
-    if(attempt_>=count){attempt_=0;nextAt_=now+60000000;state_="retry";return;}
+    stop();if(attempt_<3)attempt_++;
+    nextAt_=now+(attempt_==1?5000000LL:attempt_==2?15000000LL:60000000LL);state_="retry";return;
   }
   if(now<nextAt_){if(!strcmp(state_,"waiting-network"))state_=lastSync_?"synced":"retry";return;}
-  if(attempt_==0)activeServer_=server_;
-  else if(attempt_==1)activeServer_=server_=="ntp.cloud.aliyuncs.com"?"time.cloudflare.com":"ntp.cloud.aliyuncs.com";
-  else activeServer_="time.cloudflare.com";
-  // Start only after Wi-Fi is ready; the stack handles DNS and UDP asynchronously.
-  sntp_set_sync_mode(SNTP_SYNC_MODE_IMMED);sntp_set_sync_interval(86400000);
-  sntp_set_sync_status(SNTP_SYNC_STATUS_RESET);esp_sntp_setoperatingmode(ESP_SNTP_OPMODE_POLL);
-  esp_sntp_setservername(0,activeServer_.c_str());
-  esp_sntp_setservername(1,nullptr);esp_sntp_setservername(2,nullptr);
-  startedAt_=now;running_=true;state_="syncing";esp_sntp_init();
+  if(!transport_.begin(server_)){nextAt_=now+5000000;state_="retry";return;}
+  activeServer_=transport_.servers();startedAt_=now;running_=true;state_="syncing";
 }
 bool TimeSync::manual(const String& local,const String& epoch,String& error){
   if(automatic_){error="请先关闭并保存自动校时，再手动设置时间";return false;}
