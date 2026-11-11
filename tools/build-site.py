@@ -79,7 +79,7 @@ def main():
     (appdir / "catalog.json").write_text(encoded, encoding="utf-8")
     indexPath=output / "releases.json"
     index=json.loads(indexPath.read_text(encoding="utf-8")) if indexPath.exists() else {"schema":1,"releases":[]}
-    release={"version":version,"runtimeApi":5,"nativeAbi":1,"notes":"Clockyr：四源并行 NTP、其它设置中的时区与校时；重力水 v1.3.0 不规则注水、0.5–6 秒可调、70% 水量；设备后台静默更新兼容主题，GitHub Pages、jsDelivr、GitHub Raw 三路回退。", "catalog":"applications/"+version+"/catalog.json","targets":{}}
+    release={"version":version,"runtimeApi":5,"nativeAbi":1,"notes":"Clockyr 1.9.2：修复新固件误报功能版本过低；恢复方向、硬件测试和 USB 安装能力；自动安装未安装的兼容主题并优先更新已有应用，流式解析目录、失败短周期重试，显示等待及存储不足原因。", "catalog":"applications/"+version+"/catalog.json","targets":{}}
     for chip in ("esp32", "esp32s3"):
         name=chip+"-v"+version
         source=ROOT / "releases" / name

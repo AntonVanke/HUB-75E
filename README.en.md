@@ -4,7 +4,7 @@
 
 A 64 × 64 HUB75 clock for ESP32 / ESP32-S3. Themes are C/C++ compiled to chip-specific Xtensa machine code in CWP3 packages. Current firmware does not run Lua. Runtime API 5, native ABI 1.
 
-**Current release: 1.9.1** · [Flash firmware](https://antonvanke.github.io/HUB-75E/#flash) · [Applications](https://antonvanke.github.io/HUB-75E/#themes) · [USB settings](https://antonvanke.github.io/HUB-75E/#config) · [Image clock workshop](https://antonvanke.github.io/HUB-75E/studio/index.html)
+**Current release: 1.9.2** · [Flash firmware](https://antonvanke.github.io/HUB-75E/#flash) · [Applications](https://antonvanke.github.io/HUB-75E/#themes) · [USB settings](https://antonvanke.github.io/HUB-75E/#config) · [Image clock workshop](https://antonvanke.github.io/HUB-75E/studio/index.html)
 
 ![Ferrofluid computer preview](web/previews/ferrofluid-clock.gif)
 
@@ -12,6 +12,7 @@ Rendered by the theme's C++ code on a computer, not panel footage or a device FP
 
 ## Current features
 
+- **1.9.2 capability and theme download fix:** restore orientation, diagnostics and USB feature reports; install missing compatible themes and prioritize existing app updates. Stream catalog entries with bounded memory, retry network failures after one minute, and expose waiting/failure states.
 - **1.9.1 setup recovery:** confirm the display driver, save timezone, brightness and gravity rotation, then connect Wi-Fi. Device-side progress survives refreshes and power loss. Keeping the tested driver needs no restart; changed hardware settings apply after setup. The hotspot starts immediately offline and closes after 30 seconds online.
 - **1.9.0 silent theme updates:** the device can check compatible themes in the background and download verified updates when chip, sensor, code quota and free storage allow it. Firmware and theme downloads fall back from GitHub Pages to jsDelivr and GitHub Raw for networks where Pages is unreachable.
 - **1.8.0 time and pouring:** four NTP peers resolve/query in parallel; the first validated response wins, with background retries. Timezone and synchronization controls live under Other settings, with common/DST presets and custom POSIX rules. Gravity Water v1.3.0 has an irregular stream, 0.5–6 second filling (default 2 seconds), and 10–70% fill. The device app list offers Update application. Firmware updates preserve installed themes: v1.1.0 still declares a 56% limit until the app is updated separately.
@@ -31,8 +32,8 @@ Both chips compile. Setup refresh recovery, interrupted saves, unsupported senso
 
 | Chip | Firmware | Applications | Requirements |
 | --- | --- | --- | --- |
-| ESP32 | [v1.9.1 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.9.1.zip) | [5 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | Classic ESP32, 4 MB Flash |
-| ESP32-S3 | [v1.9.1 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.9.1.zip) | [59 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | Project board, at least 8 MB Flash + 8 MB OPI PSRAM |
+| ESP32 | [v1.9.2 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.9.2.zip) | [5 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | Classic ESP32, 4 MB Flash |
+| ESP32-S3 | [v1.9.2 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.9.2.zip) | [59 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | Project board, at least 8 MB Flash + 8 MB OPI PSRAM |
 
 S3 N4 is unsupported. Other boards require matching memory settings and wiring.
 

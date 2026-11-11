@@ -1,0 +1,2349 @@
+{
+  "format": 3,
+  "apps": [
+    {
+      "packageName": "org.clockwise.ambient-clock",
+      "id": "ambient-clock",
+      "title": "炫彩氛围时钟",
+      "appVersion": "1.0.0",
+      "description": "柔和流动的色盘、连续渐变与前景基础时钟；静态空间抖动减少 RGB565 色带，无逐帧分配。",
+      "author": "HUB-75E",
+      "requirements": {
+        "targetFps": 60,
+        "stateBytes": 2048,
+        "graphicsBytes": 8192,
+        "chips": [
+          "esp32"
+        ],
+        "codeBytes": 1264,
+        "dataBytes": 124,
+        "psramBytes": 0
+      },
+      "parameters": {
+        "speed": {
+          "label": "流动速度 / Speed",
+          "min": 0.1,
+          "max": 3,
+          "step": 0.1,
+          "default": 1
+        },
+        "saturation": {
+          "label": "饱和度 / Saturation",
+          "min": 20,
+          "max": 100,
+          "step": 1,
+          "default": 80
+        },
+        "level": {
+          "label": "背景亮度 / Light",
+          "min": 10,
+          "max": 100,
+          "step": 1,
+          "default": 65
+        },
+        "clock": {
+          "label": "时钟 / Clock",
+          "min": 0,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        }
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 5,
+      "file": "ambient-clock-esp32.cwp",
+      "bytes": 2337,
+      "sha256": "b0247071d4b7df84b9dfd7a290d808c73d4e098f0c03445fa49dff08c6ba50ee",
+      "path": "applications/1.9.2/ambient-clock-esp32.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "packageName": "org.clockwise.ambient-clock",
+      "id": "ambient-clock",
+      "title": "炫彩氛围时钟",
+      "appVersion": "1.0.0",
+      "description": "柔和流动的色盘、连续渐变与前景基础时钟；静态空间抖动减少 RGB565 色带，无逐帧分配。",
+      "author": "HUB-75E",
+      "requirements": {
+        "targetFps": 120,
+        "stateBytes": 2048,
+        "graphicsBytes": 8192,
+        "chips": [
+          "esp32s3"
+        ],
+        "codeBytes": 1264,
+        "dataBytes": 124,
+        "psramBytes": 0
+      },
+      "parameters": {
+        "speed": {
+          "label": "流动速度 / Speed",
+          "min": 0.1,
+          "max": 3,
+          "step": 0.1,
+          "default": 1
+        },
+        "saturation": {
+          "label": "饱和度 / Saturation",
+          "min": 20,
+          "max": 100,
+          "step": 1,
+          "default": 80
+        },
+        "level": {
+          "label": "背景亮度 / Light",
+          "min": 10,
+          "max": 100,
+          "step": 1,
+          "default": 65
+        },
+        "clock": {
+          "label": "时钟 / Clock",
+          "min": 0,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        }
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 5,
+      "file": "ambient-clock-esp32s3.cwp",
+      "bytes": 2340,
+      "sha256": "b2cd5d07227221c8a3352d1c652f55e1c0b37b30388d4ace8696b069b4534cff",
+      "path": "applications/1.9.2/ambient-clock-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "packageName": "org.clockwise.ferrofluid-clock",
+      "id": "ferrofluid-clock",
+      "title": "磁流体时钟",
+      "appVersion": "1.4.0",
+      "description": "S3 专用：黑色油性液滴聚合成字，磁场约束、惯性摇散、重力回落与光泽液面；参数可调。",
+      "author": "HUB-75E",
+      "requirements": {
+        "sensors": [
+          "imu"
+        ],
+        "targetFps": 120,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "chips": [
+          "esp32s3"
+        ],
+        "codeBytes": 13896,
+        "dataBytes": 500,
+        "psramBytes": 0
+      },
+      "parameters": {
+        "magnet": {
+          "label": "磁力 / Magnet",
+          "min": 0.3,
+          "max": 3,
+          "step": 0.1,
+          "default": 1.6
+        },
+        "gravity": {
+          "label": "重力 / Gravity",
+          "min": 0,
+          "max": 2,
+          "step": 0.1,
+          "default": 0.6
+        },
+        "viscosity": {
+          "label": "油阻尼 / Oil drag",
+          "min": 0.3,
+          "max": 2,
+          "step": 0.1,
+          "default": 1
+        },
+        "shake": {
+          "label": "摇散力度 / Shake",
+          "min": 0.3,
+          "max": 2,
+          "step": 0.1,
+          "default": 1
+        },
+        "cohesion": {
+          "label": "凝聚 / Cohesion",
+          "min": 0.5,
+          "max": 2,
+          "step": 0.1,
+          "default": 1.2
+        },
+        "morph": {
+          "label": "成字时间 / Morph (s)",
+          "min": 0.5,
+          "max": 6,
+          "step": 0.1,
+          "default": 2.4
+        }
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 5,
+      "file": "ferrofluid-clock-esp32s3.cwp",
+      "bytes": 15643,
+      "sha256": "27179338b140b7dc056a301707469abb0d0a0fa164267a2af2ac4141543d2866",
+      "path": "applications/1.9.2/ferrofluid-clock-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "packageName": "org.clockwise.gravity-liquid",
+      "id": "gravity-liquid",
+      "title": "全屏重力水",
+      "appVersion": "1.3.0",
+      "description": "原生 C++ 水模拟：不规则流束从顶部注水，注水时长可调，水量 10–70%，S3 目标 120 FPS。",
+      "author": "HUB-75E",
+      "requirements": {
+        "sensors": [
+          "imu"
+        ],
+        "targetFps": 60,
+        "stateBytes": 16,
+        "graphicsBytes": 40960,
+        "chips": [
+          "esp32"
+        ],
+        "codeBytes": 644,
+        "dataBytes": 132,
+        "psramBytes": 0
+      },
+      "parameters": {
+        "fill": {
+          "label": "水量 / Fill",
+          "min": 10,
+          "max": 70,
+          "step": 1,
+          "default": 46
+        },
+        "gravity": {
+          "label": "重力 / Gravity",
+          "min": 1,
+          "max": 15,
+          "step": 0.1,
+          "default": 9.8
+        },
+        "drops": {
+          "label": "水滴上限 / Droplets",
+          "min": 0,
+          "max": 128,
+          "step": 1,
+          "default": 96
+        },
+        "viscosity": {
+          "label": "粘度 / Viscosity",
+          "min": 0.1,
+          "max": 3,
+          "step": 0.1,
+          "default": 1
+        },
+        "speed": {
+          "label": "速度 / Speed",
+          "min": 0.3,
+          "max": 1,
+          "step": 0.05,
+          "default": 0.88
+        },
+        "clock": {
+          "label": "时钟 / Clock",
+          "min": 0,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "pourSeconds": {
+          "label": "注水时长（秒，越小越快） / Pour duration (s)",
+          "min": 0.5,
+          "max": 6,
+          "step": 0.1,
+          "default": 2
+        }
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 5,
+      "file": "gravity-liquid-esp32.cwp",
+      "bytes": 2001,
+      "sha256": "8212bbc2957f40130021e339664b4534572178f0ba3dbee7fa3011670f1dc959",
+      "path": "applications/1.9.2/gravity-liquid-esp32.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "packageName": "org.clockwise.gravity-liquid",
+      "id": "gravity-liquid",
+      "title": "全屏重力水",
+      "appVersion": "1.3.0",
+      "description": "原生 C++ 水模拟：不规则流束从顶部注水，注水时长可调，水量 10–70%，S3 目标 120 FPS。",
+      "author": "HUB-75E",
+      "requirements": {
+        "sensors": [
+          "imu"
+        ],
+        "targetFps": 120,
+        "stateBytes": 16,
+        "graphicsBytes": 40960,
+        "chips": [
+          "esp32s3"
+        ],
+        "codeBytes": 644,
+        "dataBytes": 132,
+        "psramBytes": 0
+      },
+      "parameters": {
+        "fill": {
+          "label": "水量 / Fill",
+          "min": 10,
+          "max": 70,
+          "step": 1,
+          "default": 46
+        },
+        "gravity": {
+          "label": "重力 / Gravity",
+          "min": 1,
+          "max": 15,
+          "step": 0.1,
+          "default": 9.8
+        },
+        "drops": {
+          "label": "水滴上限 / Droplets",
+          "min": 0,
+          "max": 128,
+          "step": 1,
+          "default": 96
+        },
+        "viscosity": {
+          "label": "粘度 / Viscosity",
+          "min": 0.1,
+          "max": 3,
+          "step": 0.1,
+          "default": 1
+        },
+        "speed": {
+          "label": "速度 / Speed",
+          "min": 0.3,
+          "max": 1,
+          "step": 0.05,
+          "default": 0.88
+        },
+        "clock": {
+          "label": "时钟 / Clock",
+          "min": 0,
+          "max": 1,
+          "step": 1,
+          "default": 1
+        },
+        "pourSeconds": {
+          "label": "注水时长（秒，越小越快） / Pour duration (s)",
+          "min": 0.5,
+          "max": 6,
+          "step": 0.1,
+          "default": 2
+        }
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 5,
+      "file": "gravity-liquid-esp32s3.cwp",
+      "bytes": 2004,
+      "sha256": "94823354eaa8c1caf5c052b10e51078c22d3ef447a61548a7decd8a1bc0c8146",
+      "path": "applications/1.9.2/gravity-liquid-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "packageName": "org.clockwise.gravity-maze",
+      "id": "gravity-maze",
+      "title": "滚珠迷宫",
+      "appVersion": "1.0.1",
+      "description": "C++ 随机唯一通路迷宫，240 Hz 碰撞与亚像素滚动。",
+      "author": "HUB-75E",
+      "requirements": {
+        "sensors": [
+          "imu"
+        ],
+        "targetFps": 60,
+        "stateBytes": 12288,
+        "graphicsBytes": 8192,
+        "chips": [
+          "esp32"
+        ],
+        "codeBytes": 4300,
+        "dataBytes": 124,
+        "psramBytes": 0
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "gravity-maze-esp32.cwp",
+      "bytes": 5030,
+      "sha256": "1982ebbbdab1ff0251dd6b557630b2caefc733a7740b4b4a167af7b8ead3d430",
+      "path": "applications/1.9.2/gravity-maze-esp32.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "packageName": "org.clockwise.gravity-maze",
+      "id": "gravity-maze",
+      "title": "滚珠迷宫",
+      "appVersion": "1.0.1",
+      "description": "C++ 随机唯一通路迷宫，240 Hz 碰撞与亚像素滚动。",
+      "author": "HUB-75E",
+      "requirements": {
+        "sensors": [
+          "imu"
+        ],
+        "targetFps": 120,
+        "stateBytes": 12288,
+        "graphicsBytes": 8192,
+        "chips": [
+          "esp32s3"
+        ],
+        "codeBytes": 4300,
+        "dataBytes": 124,
+        "psramBytes": 0
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "gravity-maze-esp32s3.cwp",
+      "bytes": 5033,
+      "sha256": "6d39d7304b7008f1f7d305560bdac7ffd9a73d37992e721ca0d68d1b3e464944",
+      "path": "applications/1.9.2/gravity-maze-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "packageName": "org.clockwise.mario-1-1",
+      "id": "mario-1-1",
+      "title": "超级马里奥 · 全 32 关",
+      "appVersion": "1.0.1",
+      "description": "C++ 64 Hz 自动通关物理，32 关 44 区域按区加载，完整视野。",
+      "author": "HUB-75E",
+      "requirements": {
+        "targetFps": 60,
+        "stateBytes": 8192,
+        "graphicsBytes": 12288,
+        "chips": [
+          "esp32"
+        ],
+        "codeBytes": 11132,
+        "dataBytes": 1464,
+        "psramBytes": 0
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "mario-1-1-esp32.cwp",
+      "bytes": 40246,
+      "sha256": "fa432fd21aa51439eae641c7f41bb61cdcb2d51f711e45b9fc1be08b81ac10fb",
+      "path": "applications/1.9.2/mario-1-1-esp32.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "packageName": "org.clockwise.mario-1-1",
+      "id": "mario-1-1",
+      "title": "超级马里奥 · 全 32 关",
+      "appVersion": "1.0.1",
+      "description": "C++ 64 Hz 自动通关物理，32 关 44 区域按区加载，完整视野。",
+      "author": "HUB-75E",
+      "requirements": {
+        "targetFps": 60,
+        "stateBytes": 8192,
+        "graphicsBytes": 12288,
+        "chips": [
+          "esp32s3"
+        ],
+        "codeBytes": 11132,
+        "dataBytes": 1464,
+        "psramBytes": 0
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "mario-1-1-esp32s3.cwp",
+      "bytes": 40248,
+      "sha256": "373339f0d3157e4f6ecf8c0500046696ed56182f196c3362c9fe385ce1245c3f",
+      "path": "applications/1.9.2/mario-1-1-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "packageName": "org.clockwise.pacman",
+      "id": "pacman",
+      "title": "Pac-Man",
+      "appVersion": "1.0.1",
+      "description": "C++ 风险路径规划、追逐、彩色能量豆、胜负提示。",
+      "author": "HUB-75E",
+      "requirements": {
+        "targetFps": 60,
+        "stateBytes": 8192,
+        "graphicsBytes": 12288,
+        "chips": [
+          "esp32"
+        ],
+        "codeBytes": 4828,
+        "dataBytes": 4548,
+        "psramBytes": 0
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "pacman-esp32.cwp",
+      "bytes": 10134,
+      "sha256": "40d9c7b54d790fef6503234578ad80e985985aa927949f85d86fa6e9820d43d8",
+      "path": "applications/1.9.2/pacman-esp32.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "packageName": "org.clockwise.pacman",
+      "id": "pacman",
+      "title": "Pac-Man",
+      "appVersion": "1.0.1",
+      "description": "C++ 风险路径规划、追逐、彩色能量豆、胜负提示。",
+      "author": "HUB-75E",
+      "requirements": {
+        "targetFps": 60,
+        "stateBytes": 8192,
+        "graphicsBytes": 12288,
+        "chips": [
+          "esp32s3"
+        ],
+        "codeBytes": 4828,
+        "dataBytes": 4548,
+        "psramBytes": 0
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "pacman-esp32s3.cwp",
+      "bytes": 10136,
+      "sha256": "1af6466c507349962a0599e6e21a25239f28941437fb554e92552fea8b0f06ed",
+      "path": "applications/1.9.2/pacman-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "particle-time",
+      "packageName": "org.clockwise.particle-time",
+      "title": "Particle Time",
+      "appVersion": "1.0.0",
+      "description": "流动星尘与大字时钟",
+      "author": "Clockwise Theme Studio",
+      "category": "粒子",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 6456,
+        "dataBytes": 176
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "particle-time-esp32s3.cwp",
+      "bytes": 60637,
+      "sha256": "46a623ed4e4b71fb31d6c3f4d070c413503d51c78bffc6253b67832e7bb6e0bd",
+      "path": "applications/1.9.2/particle-time-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "zelda-sunrise",
+      "packageName": "org.clockwise.zelda-sunrise",
+      "title": "Zelda-Sunrise",
+      "appVersion": "1.0.0",
+      "description": "原版风景 · 缓慢分层流云 · 独立滑翔与振翅",
+      "author": "Clockwise Theme Studio",
+      "category": "风景",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 8108,
+        "dataBytes": 1128
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "zelda-sunrise-esp32s3.cwp",
+      "bytes": 13860,
+      "sha256": "09853ebec69553f81f0c69775034b29b2e6e42c029291bda379348032b412c07",
+      "path": "applications/1.9.2/zelda-sunrise-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "gta-vi",
+      "packageName": "org.clockwise.gta-vi",
+      "title": "GTA · 罪城海岸",
+      "appVersion": "1.0.0",
+      "description": "罪城海岸 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "category": "游戏风景",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 8040,
+        "dataBytes": 120
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "gta-vi-esp32s3.cwp",
+      "bytes": 12680,
+      "sha256": "549b229cc815ae899760e8809f054535ea0a107b8d023d504fee615319136c6a",
+      "path": "applications/1.9.2/gta-vi-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "rainy-window",
+      "packageName": "org.clockwise.rainy-window",
+      "title": "Rainy Window",
+      "appVersion": "1.0.0",
+      "description": "窗外落雨、摇曳烛火与数字时钟",
+      "author": "Clockwise Theme Studio",
+      "category": "粒子",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 6936,
+        "dataBytes": 104
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "rainy-window-esp32s3.cwp",
+      "bytes": 15218,
+      "sha256": "59236cdd519c28c275ba6d97df6679701a425b074c89786405826c6f00f47d4d",
+      "path": "applications/1.9.2/rainy-window-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "codex",
+      "packageName": "org.clockwise.codex",
+      "title": "Codex",
+      "appVersion": "1.0.0",
+      "description": "终端打字、闪烁光标与状态数据",
+      "author": "Clockwise Theme Studio",
+      "category": "文字",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 6936,
+        "dataBytes": 104
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "codex-esp32s3.cwp",
+      "bytes": 17362,
+      "sha256": "ac8397e08de63caf338295707c446cd7c73e0f760eb9a3d50cfe0989303e0687",
+      "path": "applications/1.9.2/codex-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "minecraft-village",
+      "packageName": "org.clockwise.minecraft-village",
+      "title": "Minecraft · 山谷村庄",
+      "appVersion": "1.0.0",
+      "description": "山谷村庄 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "category": "游戏风景",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 8016,
+        "dataBytes": 120
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "minecraft-village-esp32s3.cwp",
+      "bytes": 12898,
+      "sha256": "9fbd05a4e4e15d8f2004dcbb39ebfc2a31350025df4eff826da02e2b7764b557",
+      "path": "applications/1.9.2/minecraft-village-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "zootopia",
+      "packageName": "org.clockwise.zootopia",
+      "title": "Zootopia",
+      "appVersion": "1.0.0",
+      "description": "原版像素肖像 · C++ 心跳、独立眨眼、分钟互动",
+      "author": "Clockwise Theme Studio",
+      "category": "角色",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 1712,
+        "dataBytes": 5728
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "zootopia-esp32s3.cwp",
+      "bytes": 8133,
+      "sha256": "f2d2a1b3d130a015340cca9af839fd43ecc6802a9b9ecc1c5513bbed17c5f632",
+      "path": "applications/1.9.2/zootopia-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "twinkle-twinkle",
+      "packageName": "org.clockwise.twinkle-twinkle",
+      "title": "Twinkle Twinkle",
+      "appVersion": "1.0.0",
+      "description": "小星星、浮动角色与时间",
+      "author": "Clockwise Theme Studio",
+      "category": "粒子",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 6952,
+        "dataBytes": 112
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "twinkle-twinkle-esp32s3.cwp",
+      "bytes": 13134,
+      "sha256": "086db761ad0ee01c06de704ae006c0ebdf7ed5aa7b4e60c937b1594bd2aa7556",
+      "path": "applications/1.9.2/twinkle-twinkle-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "hello-kitty",
+      "packageName": "org.clockwise.hello-kitty",
+      "title": "Hello Kitty",
+      "appVersion": "1.0.0",
+      "description": "猫咪眨眼与粉色日期",
+      "author": "Clockwise Theme Studio",
+      "category": "角色",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 6956,
+        "dataBytes": 112
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "hello-kitty-esp32s3.cwp",
+      "bytes": 17414,
+      "sha256": "50b1f4ebd7c1fbcf62f60ba34f29fb8e156d54ec6441ec6d9ecc47a49e86daac",
+      "path": "applications/1.9.2/hello-kitty-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "labubu-zimomo",
+      "packageName": "org.clockwise.labubu-zimomo",
+      "title": "Labubu-Zimomo",
+      "appVersion": "1.0.0",
+      "description": "长耳角色与呼吸动画",
+      "author": "Clockwise Theme Studio",
+      "category": "角色",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 6952,
+        "dataBytes": 112
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "labubu-zimomo-esp32s3.cwp",
+      "bytes": 14330,
+      "sha256": "9b9f276f4b0fbbc1ddd844ee111f690504711fa1543fbdfcaf6b6cd4682f9393",
+      "path": "applications/1.9.2/labubu-zimomo-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "kirby",
+      "packageName": "org.clockwise.kirby",
+      "title": "Kirby",
+      "appVersion": "1.0.0",
+      "description": "粉色圆球角色与弹跳",
+      "author": "Clockwise Theme Studio",
+      "category": "角色",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 6972,
+        "dataBytes": 112
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "kirby-esp32s3.cwp",
+      "bytes": 41103,
+      "sha256": "d03013fc179a307ed92618a119c2f6d5051a50d5ef0bcf2668ecf6f7d4e2d4e9",
+      "path": "applications/1.9.2/kirby-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "girl",
+      "packageName": "org.clockwise.girl",
+      "title": "Girl",
+      "appVersion": "1.0.0",
+      "description": "C++ 一秒一拍，保留原版动作像素",
+      "author": "Clockwise Theme Studio",
+      "category": "角色",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 7068,
+        "dataBytes": 112
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "girl-esp32s3.cwp",
+      "bytes": 24763,
+      "sha256": "a83bf7f28edd8e56cf9649dc4a6464405247a59f95a0e598ffa483e6cea36b46",
+      "path": "applications/1.9.2/girl-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "shar-pei-dog",
+      "packageName": "org.clockwise.shar-pei-dog",
+      "title": "Shar Pei Dog",
+      "appVersion": "1.0.0",
+      "description": "小狗眨眼与轻微起伏",
+      "author": "Clockwise Theme Studio",
+      "category": "角色",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 6952,
+        "dataBytes": 112
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "shar-pei-dog-esp32s3.cwp",
+      "bytes": 18857,
+      "sha256": "1c0498fe04f8dbb012da5bd71b7ca5a0c40a6ce5ed7d9d14d19826ff5143cbef",
+      "path": "applications/1.9.2/shar-pei-dog-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "pikachu",
+      "packageName": "org.clockwise.pikachu",
+      "title": "Pikachu",
+      "appVersion": "1.0.0",
+      "description": "C++ 一秒一拍，保留原版动作像素",
+      "author": "Clockwise Theme Studio",
+      "category": "角色",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 7012,
+        "dataBytes": 112
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "pikachu-esp32s3.cwp",
+      "bytes": 40242,
+      "sha256": "1a4bb0a5df8e81cc4de1d9b2a0d591cbd14737459e181738a9ce27d63d949b70",
+      "path": "applications/1.9.2/pikachu-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "pepsi",
+      "packageName": "org.clockwise.pepsi",
+      "title": "Pepsi",
+      "appVersion": "1.0.0",
+      "description": "双色徽章、气泡与秒钟",
+      "author": "Clockwise Theme Studio",
+      "category": "生活",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 6956,
+        "dataBytes": 112
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "pepsi-esp32s3.cwp",
+      "bytes": 14375,
+      "sha256": "fa5849bdc7b2ea162590a7453e3e1177f0a90af1ef360fe178aca6f1c8a59056",
+      "path": "applications/1.9.2/pepsi-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "coffee",
+      "packageName": "org.clockwise.coffee",
+      "title": "Coffee",
+      "appVersion": "1.0.0",
+      "description": "咖啡杯、蒸汽与温度数据",
+      "author": "Clockwise Theme Studio",
+      "category": "生活",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 6956,
+        "dataBytes": 112
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "coffee-esp32s3.cwp",
+      "bytes": 12611,
+      "sha256": "f9513f0b356570388d2ed65f7eda400252577f15a5425d5dce5b65486de154dd",
+      "path": "applications/1.9.2/coffee-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "minecraft-torch",
+      "packageName": "org.clockwise.minecraft-torch",
+      "title": "Minecraft-Torch",
+      "appVersion": "1.0.0",
+      "description": "砖墙缓存与火焰粒子",
+      "author": "Clockwise Theme Studio",
+      "category": "粒子",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 6952,
+        "dataBytes": 112
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "minecraft-torch-esp32s3.cwp",
+      "bytes": 37002,
+      "sha256": "9708e38ecdfecf523984b5f8f3570128d45ea487a3434303d2584c19763a9e89",
+      "path": "applications/1.9.2/minecraft-torch-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "transformer",
+      "packageName": "org.clockwise.transformer",
+      "title": "Transformer",
+      "appVersion": "1.0.0",
+      "description": "卡车与机器人定时变形",
+      "author": "Clockwise Theme Studio",
+      "category": "角色",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 7020,
+        "dataBytes": 112
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "transformer-esp32s3.cwp",
+      "bytes": 80593,
+      "sha256": "8390fcb3f875c7bf78a9d1ad29961c4ecf9330795c4cdd4400864c459df137d2",
+      "path": "applications/1.9.2/transformer-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "nyan-cat",
+      "packageName": "org.clockwise.nyan-cat",
+      "title": "Nyan Cat",
+      "appVersion": "1.0.0",
+      "description": "彩虹拖尾、星空与滚动文字",
+      "author": "Clockwise Theme Studio",
+      "category": "角色",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 7008,
+        "dataBytes": 128
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "nyan-cat-esp32s3.cwp",
+      "bytes": 20958,
+      "sha256": "427635071a87513612bec77a4478a052b25025dce889298f65137b47c976b613",
+      "path": "applications/1.9.2/nyan-cat-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "snoopy",
+      "packageName": "org.clockwise.snoopy",
+      "title": "Snoopy",
+      "appVersion": "1.0.0",
+      "description": "屋顶小狗与飘动睡眠符号",
+      "author": "Clockwise Theme Studio",
+      "category": "角色",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 6924,
+        "dataBytes": 104
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "snoopy-esp32s3.cwp",
+      "bytes": 9538,
+      "sha256": "e8c1b062ad58b0f88305d1731000b53ca0a5bfd81fe42754d137b46f00018123",
+      "path": "applications/1.9.2/snoopy-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "retro-computer",
+      "packageName": "org.clockwise.retro-computer",
+      "title": "Retro Computer",
+      "appVersion": "1.0.0",
+      "description": "CRT 显示器与扫描线",
+      "author": "Clockwise Theme Studio",
+      "category": "文字",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 6936,
+        "dataBytes": 104
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "retro-computer-esp32s3.cwp",
+      "bytes": 11555,
+      "sha256": "c537336a7715d54d12916bb86bc15ba591794d3abacd75a59ff3cd60342f92bb",
+      "path": "applications/1.9.2/retro-computer-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "pokedex",
+      "packageName": "org.clockwise.pokedex",
+      "title": "Pokedex",
+      "appVersion": "1.0.0",
+      "description": "双屏图鉴、指示灯与交互按钮",
+      "author": "Clockwise Theme Studio",
+      "category": "角色",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 6980,
+        "dataBytes": 112
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "pokedex-esp32s3.cwp",
+      "bytes": 19495,
+      "sha256": "da00ef1f4949a8cfc434d203916ed8cdf0ea47346c79d29e860c8418a609690a",
+      "path": "applications/1.9.2/pokedex-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "clock-tower",
+      "packageName": "org.clockwise.clock-tower",
+      "title": "Clock Tower",
+      "appVersion": "1.0.0",
+      "description": "模拟表盘与连续秒针",
+      "author": "Clockwise Theme Studio",
+      "category": "时钟",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 10,
+        "sensors": [],
+        "codeBytes": 6436,
+        "dataBytes": 52
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "clock-tower-esp32s3.cwp",
+      "bytes": 9866,
+      "sha256": "e923180654a600b6c9b4f5a0c4ac67f3bcf28745e387263ea7bb7e2b546dc919",
+      "path": "applications/1.9.2/clock-tower-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "time-in-words",
+      "packageName": "org.clockwise.time-in-words",
+      "title": "Time In Words",
+      "appVersion": "1.0.0",
+      "description": "时间映射、单词排版与日期",
+      "author": "Clockwise Theme Studio",
+      "category": "文字",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 1,
+        "sensors": [],
+        "codeBytes": 6284,
+        "dataBytes": 320
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "time-in-words-esp32s3.cwp",
+      "bytes": 7512,
+      "sha256": "5b273997c3f4537258f9079a066cdafe88c328afdcc0f05bc531466c00c1874b",
+      "path": "applications/1.9.2/time-in-words-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "world-map",
+      "packageName": "org.clockwise.world-map",
+      "title": "World Map",
+      "appVersion": "1.0.0",
+      "description": "UTC 太阳赤纬与均时差 · 真实晨昏线及民用曙暮光",
+      "author": "Clockwise Theme Studio",
+      "category": "风景",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 1,
+        "sensors": [],
+        "codeBytes": 7688,
+        "dataBytes": 172
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "parameters": {
+        "utcOffset": {
+          "label": "时区 UTC 偏移 / UTC offset",
+          "min": -12,
+          "max": 14,
+          "step": 0.25,
+          "default": 8
+        }
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 5,
+      "file": "world-map-esp32s3.cwp",
+      "bytes": 9660,
+      "sha256": "21ecec3acc874f811584dd816a6becd3562a5da644557364a33afe9b09446364",
+      "path": "applications/1.9.2/world-map-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "super-mario",
+      "packageName": "org.clockwise.super-mario",
+      "title": "Super Mario",
+      "appVersion": "1.0.0",
+      "description": "持续奔跑与独立视差图层；仅在小时或分钟变化时跳起顶对应时间方块",
+      "author": "Clockwise Theme Studio",
+      "category": "游戏",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 2848,
+        "dataBytes": 3532
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "super-mario-esp32s3.cwp",
+      "bytes": 7177,
+      "sha256": "0209fe8de1a8e84548c7e7fc0b101f7711ab6c3422d6cef908edc42e456a277a",
+      "path": "applications/1.9.2/super-mario-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "cyberpunk-night-city",
+      "packageName": "org.clockwise.cyberpunk-night-city",
+      "title": "赛博朋克 · 夜之城",
+      "appVersion": "1.0.0",
+      "description": "夜之城 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "category": "游戏风景",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 8008,
+        "dataBytes": 120
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "cyberpunk-night-city-esp32s3.cwp",
+      "bytes": 13154,
+      "sha256": "35b613bac9f785990ba58484a11a63519637f054a1e1f84aa5dcb0904effc075",
+      "path": "applications/1.9.2/cyberpunk-night-city-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "elden-ring",
+      "packageName": "org.clockwise.elden-ring",
+      "title": "艾尔登法环 · 黄金树",
+      "appVersion": "1.0.0",
+      "description": "黄金树 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "category": "游戏风景",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 8144,
+        "dataBytes": 120
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "elden-ring-esp32s3.cwp",
+      "bytes": 13085,
+      "sha256": "53544e3a5f4615825e9ee8ddf583044e83f07903deaf131175e5e12d6611db77",
+      "path": "applications/1.9.2/elden-ring-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "hollow-knight-silksong",
+      "packageName": "org.clockwise.hollow-knight-silksong",
+      "title": "空洞骑士 · 丝之歌",
+      "appVersion": "1.0.0",
+      "description": "丝之歌 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "category": "游戏风景",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 8232,
+        "dataBytes": 120
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "hollow-knight-silksong-esp32s3.cwp",
+      "bytes": 13468,
+      "sha256": "bc244eb046f1adc69e7b4a2365cfd9b929b7b1768e9bfbd0b80df9be67499fd9",
+      "path": "applications/1.9.2/hollow-knight-silksong-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "stardew-valley",
+      "packageName": "org.clockwise.stardew-valley",
+      "title": "星露谷 · 秋日农场",
+      "appVersion": "1.0.0",
+      "description": "秋日农场 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "category": "游戏风景",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 7984,
+        "dataBytes": 120
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "stardew-valley-esp32s3.cwp",
+      "bytes": 12878,
+      "sha256": "1f5c0e85469adf995b83c929d4b1bc7f6d7f271efdf496565ad842162983aeed",
+      "path": "applications/1.9.2/stardew-valley-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "terraria",
+      "packageName": "org.clockwise.terraria",
+      "title": "泰拉瑞亚 · 空岛",
+      "appVersion": "1.0.0",
+      "description": "空岛 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "category": "游戏风景",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 8236,
+        "dataBytes": 120
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "terraria-esp32s3.cwp",
+      "bytes": 12903,
+      "sha256": "5fdfcec1912accb2afb933d60d6803b8ef0a56350ac57bee6ac472d8e8213443",
+      "path": "applications/1.9.2/terraria-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "genshin-impact",
+      "packageName": "org.clockwise.genshin-impact",
+      "title": "原神 · 蒙德城",
+      "appVersion": "1.0.0",
+      "description": "蒙德城 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "category": "游戏风景",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 8132,
+        "dataBytes": 120
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "genshin-impact-esp32s3.cwp",
+      "bytes": 13006,
+      "sha256": "a98ad78ecd00a1925f55020cb23e911733aa653848a56c45f46f4bf9af690de9",
+      "path": "applications/1.9.2/genshin-impact-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "final-fantasy-vii",
+      "packageName": "org.clockwise.final-fantasy-vii",
+      "title": "最终幻想 VII · 米德加",
+      "appVersion": "1.0.0",
+      "description": "米德加 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "category": "游戏风景",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 8308,
+        "dataBytes": 120
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "final-fantasy-vii-esp32s3.cwp",
+      "bytes": 13255,
+      "sha256": "42f22e8d4712931066f1e6061a8f81c0cca93fec4846aa33eccbf050878bc009",
+      "path": "applications/1.9.2/final-fantasy-vii-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "black-myth-wukong",
+      "packageName": "org.clockwise.black-myth-wukong",
+      "title": "黑神话悟空 · 山寺",
+      "appVersion": "1.0.0",
+      "description": "山寺 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "category": "游戏风景",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 7928,
+        "dataBytes": 120
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "black-myth-wukong-esp32s3.cwp",
+      "bytes": 12900,
+      "sha256": "fb4d1d2843ac92fff8babb334369c061cf7fd429bf71c297bf97816af8f59cde",
+      "path": "applications/1.9.2/black-myth-wukong-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "monster-hunter",
+      "packageName": "org.clockwise.monster-hunter",
+      "title": "怪物猎人 · 古代森林",
+      "appVersion": "1.0.0",
+      "description": "古代森林 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "category": "游戏风景",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 8112,
+        "dataBytes": 120
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "monster-hunter-esp32s3.cwp",
+      "bytes": 13114,
+      "sha256": "fd40146098ae9b9a60d73af44901dcb88b42c9ba1b9172118cec7ba6fec107f3",
+      "path": "applications/1.9.2/monster-hunter-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "death-stranding",
+      "packageName": "org.clockwise.death-stranding",
+      "title": "死亡搁浅 · 寂静山谷",
+      "appVersion": "1.0.0",
+      "description": "寂静山谷 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "category": "游戏风景",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 8196,
+        "dataBytes": 120
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "death-stranding-esp32s3.cwp",
+      "bytes": 13423,
+      "sha256": "a875525c79047a4f69054e7f07f9697e847476788df08d625ccdb09a5860a32b",
+      "path": "applications/1.9.2/death-stranding-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "star-wars",
+      "packageName": "org.clockwise.star-wars",
+      "title": "星球大战 · 双日落",
+      "appVersion": "1.0.0",
+      "description": "双日落 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "category": "影视风景",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 8056,
+        "dataBytes": 120
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "star-wars-esp32s3.cwp",
+      "bytes": 12082,
+      "sha256": "00b09cfcbd8cae4122198fcabe5a5be95498e646820150a6bd8b49e66a81de14",
+      "path": "applications/1.9.2/star-wars-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "blade-runner",
+      "packageName": "org.clockwise.blade-runner",
+      "title": "银翼杀手 · 雨夜城市",
+      "appVersion": "1.0.0",
+      "description": "雨夜城市 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "category": "影视风景",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 8084,
+        "dataBytes": 120
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "blade-runner-esp32s3.cwp",
+      "bytes": 13375,
+      "sha256": "1bedc732f44db0c6ead6d0844133edd1714a6267f03596756fab3214036206e5",
+      "path": "applications/1.9.2/blade-runner-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "dune",
+      "packageName": "org.clockwise.dune",
+      "title": "沙丘 · 厄拉科斯",
+      "appVersion": "1.0.0",
+      "description": "厄拉科斯 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "category": "影视风景",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 8112,
+        "dataBytes": 120
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "dune-esp32s3.cwp",
+      "bytes": 12365,
+      "sha256": "f810e6b8939413dbb4f78957d5f73b4121386b16ffd0e93183b54de7ab059d79",
+      "path": "applications/1.9.2/dune-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "lord-of-the-rings",
+      "packageName": "org.clockwise.lord-of-the-rings",
+      "title": "指环王 · 瑞文戴尔",
+      "appVersion": "1.0.0",
+      "description": "瑞文戴尔 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "category": "影视风景",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 8284,
+        "dataBytes": 120
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "lord-of-the-rings-esp32s3.cwp",
+      "bytes": 13343,
+      "sha256": "f06447b1b58acc52fad7cf9ea96fc59a6ba8bb19ecd690667883727825f0c52e",
+      "path": "applications/1.9.2/lord-of-the-rings-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "avatar-pandora",
+      "packageName": "org.clockwise.avatar-pandora",
+      "title": "阿凡达 · 潘多拉",
+      "appVersion": "1.0.0",
+      "description": "潘多拉 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "category": "影视风景",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 8180,
+        "dataBytes": 120
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "avatar-pandora-esp32s3.cwp",
+      "bytes": 13299,
+      "sha256": "43b5c89a5ba381281cb484d61604854e6157485eecbc4219af60b5982c339428",
+      "path": "applications/1.9.2/avatar-pandora-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "stranger-things",
+      "packageName": "org.clockwise.stranger-things",
+      "title": "怪奇物语 · 颠倒世界",
+      "appVersion": "1.0.0",
+      "description": "颠倒世界 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "category": "影视风景",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 8064,
+        "dataBytes": 120
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "stranger-things-esp32s3.cwp",
+      "bytes": 12936,
+      "sha256": "fc521d09a5e6f657517a91db193b994ff33ad369f5fc669df88626b1ab18bae5",
+      "path": "applications/1.9.2/stranger-things-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "wednesday",
+      "packageName": "org.clockwise.wednesday",
+      "title": "星期三 · 永封学院",
+      "appVersion": "1.0.0",
+      "description": "永封学院 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "category": "影视风景",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 8088,
+        "dataBytes": 120
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "wednesday-esp32s3.cwp",
+      "bytes": 13011,
+      "sha256": "f115a601c8d8fef5ab6c70c5b12d94eee85e77abfc463f597a3b7ef339c70e28",
+      "path": "applications/1.9.2/wednesday-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "arcane",
+      "packageName": "org.clockwise.arcane",
+      "title": "双城之战 · 皮城与祖安",
+      "appVersion": "1.0.0",
+      "description": "皮城与祖安 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "category": "影视风景",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 8188,
+        "dataBytes": 120
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "arcane-esp32s3.cwp",
+      "bytes": 13310,
+      "sha256": "0d1e3255e36906974147451d2fb225c7c2c55567729db4ff6ed6709956501766",
+      "path": "applications/1.9.2/arcane-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "one-piece",
+      "packageName": "org.clockwise.one-piece",
+      "title": "海贼王 · 千阳号",
+      "appVersion": "1.0.0",
+      "description": "千阳号 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "category": "影视风景",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 8220,
+        "dataBytes": 120
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "one-piece-esp32s3.cwp",
+      "bytes": 12868,
+      "sha256": "6cd20b069dfff0705d188fa796254a7faf3d9b8111fd81e9f80a6d99282a768b",
+      "path": "applications/1.9.2/one-piece-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "harry-potter",
+      "packageName": "org.clockwise.harry-potter",
+      "title": "哈利波特 · 霍格沃茨",
+      "appVersion": "1.0.0",
+      "description": "霍格沃茨 · 局部水波、场景动效与随机相位",
+      "author": "Clockwise Theme Studio",
+      "category": "影视风景",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 8172,
+        "dataBytes": 120
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "harry-potter-esp32s3.cwp",
+      "bytes": 12927,
+      "sha256": "b312085495a736fb1b826d8eecdc7eb2078c3d5b500d491831a0489900d6a05d",
+      "path": "applications/1.9.2/harry-potter-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "spider-man-2",
+      "packageName": "org.clockwise.spider-man-2",
+      "title": "漫威蜘蛛侠 2 · 纽约守望",
+      "appVersion": "1.0.0",
+      "description": "纽约屋顶 · 十二个独立人体姿势 · 蓄力、起跳、射丝、摆荡、松手、三点落地",
+      "author": "Clockwise Theme Studio",
+      "category": "游戏",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [],
+        "codeBytes": 8584,
+        "dataBytes": 15524
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "spider-man-2-esp32s3.cwp",
+      "bytes": 32337,
+      "sha256": "823cbc059c4f74674a4dc4d78dcb4bfadf6862bbd4d5e43163f6eced4dbf1202",
+      "path": "applications/1.9.2/spider-man-2-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "sensor-weather-station",
+      "packageName": "org.clockwise.sensor-weather-station",
+      "title": "微气象站",
+      "appVersion": "1.0.0",
+      "description": "独立温度计、湿度条与室内状态，使用真实温湿度；缺失时显示占位。",
+      "author": "AntonVanke / HUB-75E",
+      "category": "传感器",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 30,
+        "sensors": [
+          "temperature",
+          "humidity"
+        ],
+        "codeBytes": 2120,
+        "dataBytes": 228
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "sensor-weather-station-esp32s3.cwp",
+      "bytes": 3216,
+      "sha256": "d28d23777c55ed9b351204af99d8543173d482a91b6eb6a6261b2fe3fd79e676",
+      "path": "applications/1.9.2/sensor-weather-station-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "sensor-comfort-garden",
+      "packageName": "org.clockwise.sensor-comfort-garden",
+      "title": "舒适度花园",
+      "appVersion": "1.0.0",
+      "description": "温湿度驱动花朵舒展与雨滴，展示装饰性舒适度提示，不作天气预报。",
+      "author": "AntonVanke / HUB-75E",
+      "category": "传感器",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 30,
+        "sensors": [
+          "temperature",
+          "humidity"
+        ],
+        "codeBytes": 3776,
+        "dataBytes": 248
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "sensor-comfort-garden-esp32s3.cwp",
+      "bytes": 4933,
+      "sha256": "ed60b79df45a4f3c783a23f24910e008e72919fdcba6953b440c376bcca96a1b",
+      "path": "applications/1.9.2/sensor-comfort-garden-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "sensor-climate-trend",
+      "packageName": "org.clockwise.sensor-climate-trend",
+      "title": "温湿度趋势",
+      "appVersion": "1.0.0",
+      "description": "双曲线记录真实观测，每5秒取样、固定28点；无数据留空，不补造历史。",
+      "author": "AntonVanke / HUB-75E",
+      "category": "传感器",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 30,
+        "sensors": [
+          "temperature",
+          "humidity"
+        ],
+        "codeBytes": 2328,
+        "dataBytes": 204
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "sensor-climate-trend-esp32s3.cwp",
+      "bytes": 3370,
+      "sha256": "25403d14853b43e2fe835bebb4c21d786880c3800fe572c4dc926f633de26a7a",
+      "path": "applications/1.9.2/sensor-climate-trend-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "gravity-hourglass",
+      "packageName": "org.clockwise.gravity-hourglass",
+      "title": "重力沙漏",
+      "appVersion": "1.0.0",
+      "description": "28粒金砂随屏幕重力滑动，A键复位；固定预算的视觉玩具，不是校准计时器。",
+      "author": "AntonVanke / HUB-75E",
+      "category": "重力互动",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [
+          "imu"
+        ],
+        "codeBytes": 2324,
+        "dataBytes": 156
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "gravity-hourglass-esp32s3.cwp",
+      "bytes": 3243,
+      "sha256": "4f2b71fd1cdac1c7082e0ccf2418254609b7c94817e3adb2d1639456d168f2a4",
+      "path": "applications/1.9.2/gravity-hourglass-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "gravity-level",
+      "packageName": "org.clockwise.gravity-level",
+      "title": "重力水平仪",
+      "appVersion": "1.0.0",
+      "description": "同心刻度与弹性气泡，显示平面重力大小；缺失IMU暂停，不替代校准仪器。",
+      "author": "AntonVanke / HUB-75E",
+      "category": "重力互动",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [
+          "imu"
+        ],
+        "codeBytes": 2016,
+        "dataBytes": 108
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "gravity-level-esp32s3.cwp",
+      "bytes": 2855,
+      "sha256": "545e515303411e92c30e981630d9a89b498bed3f8316fbf28fefba79624565c5",
+      "path": "applications/1.9.2/gravity-level-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    },
+    {
+      "id": "gravity-stardust",
+      "packageName": "org.clockwise.gravity-stardust",
+      "title": "引力星尘",
+      "appVersion": "1.0.0",
+      "description": "32颗流光响应重力与Z轴角速度，叠加实时数字钟；缺失IMU停动提示。",
+      "author": "AntonVanke / HUB-75E",
+      "category": "重力互动",
+      "width": 64,
+      "height": 64,
+      "requirements": {
+        "chips": [
+          "esp32s3"
+        ],
+        "psramBytes": 0,
+        "stateBytes": 49152,
+        "graphicsBytes": 8192,
+        "targetFps": 60,
+        "sensors": [
+          "imu"
+        ],
+        "codeBytes": 2140,
+        "dataBytes": 172
+      },
+      "verification": {
+        "status": "unverified"
+      },
+      "runtime": "native",
+      "nativeAbi": 1,
+      "runtimeApi": 4,
+      "file": "gravity-stardust-esp32s3.cwp",
+      "bytes": 3085,
+      "sha256": "38b7586579ba74a7bbc63ca14037f458029868265402cbba44aaf44cea481a18",
+      "path": "applications/1.9.2/gravity-stardust-esp32s3.cwp",
+      "firmwareVersion": "1.9.2"
+    }
+  ]
+}

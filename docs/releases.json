@@ -2,6 +2,39 @@
   "schema": 1,
   "releases": [
     {
+      "version": "1.9.2",
+      "runtimeApi": 5,
+      "nativeAbi": 1,
+      "notes": "Clockyr 1.9.2：修复新固件误报功能版本过低；恢复方向、硬件测试和 USB 安装能力；自动安装未安装的兼容主题并优先更新已有应用，流式解析目录、失败短周期重试，显示等待及存储不足原因。",
+      "catalog": "applications/1.9.2/catalog.json",
+      "targets": {
+        "esp32": {
+          "chip": "esp32",
+          "flashBytes": 4194304,
+          "psramBytes": 0,
+          "manifest": "firmware/esp32-v1.9.2/manifest.json",
+          "updateManifest": "firmware/esp32-v1.9.2/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32-v1.9.2/app.bin",
+            "bytes": 1499184,
+            "sha256": "ee9a86dc81ca6a9aeb9a891108ca56f0b8d6d641b35bd63e2f55fb0ad55c1bf3"
+          }
+        },
+        "esp32s3": {
+          "chip": "esp32s3",
+          "flashBytes": 8388608,
+          "psramBytes": 8388608,
+          "manifest": "firmware/esp32s3-v1.9.2/manifest.json",
+          "updateManifest": "firmware/esp32s3-v1.9.2/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32s3-v1.9.2/app.bin",
+            "bytes": 1505952,
+            "sha256": "ebce859d512afbae81a0166617e74287b3672a5d6f5daed71b19a84c58df1888"
+          }
+        }
+      }
+    },
+    {
       "version": "1.9.1",
       "runtimeApi": 5,
       "nativeAbi": 1,
@@ -530,5 +563,5 @@
       }
     }
   ],
-  "latest": "1.9.1"
+  "latest": "1.9.2"
 }

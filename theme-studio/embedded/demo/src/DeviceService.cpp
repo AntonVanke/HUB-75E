@@ -6,6 +6,7 @@
 #include "ThemeGuide.h"
 #include "ThemePackage.h"
 #include "AppManifest.h"
+#include "ThemeUpdateCatalog.h"
 #include "PanelSettings.h"
 #include <WiFi.h>
 #include <LittleFS.h>
@@ -60,7 +61,7 @@ bool DeviceService::saveOrientation(int degrees,bool automatic,int gravityDegree
 }
 String DeviceService::discoveryIdentity()const{
   char id[17];snprintf(id,sizeof(id),"%012llx",ESP.getEfuseMac()&0xffffffffffffULL);
-  return "{\"product\":\"clockwise-hub75\",\"id\":"+quote(id)+",\"chip\":"+quote(ESP.getChipModel())+",\"version\":\"1.9.1\"}";
+  return "{\"product\":\"clockwise-hub75\",\"id\":"+quote(id)+",\"chip\":"+quote(ESP.getChipModel())+",\"version\":\"1.9.2\"}";
 }
 bool DeviceService::startDiscovery(String& error){
   if(WiFi.status()!=WL_CONNECTED){error="请先让设备连接局域网 Wi-Fi";return false;}
@@ -270,7 +271,7 @@ void DeviceService::begin(int count,const char* titlesJson){
   web_.on("/api/panel/trial",HTTP_POST,[this](){String error;if(!trialAction(web_.arg("action"),error)){reply(400,"{\"error\":"+quote(error)+"}");return;}reply(200,"{\"message\":\"驱动轮测操作已执行\",\"trial\":"+trialJson()+"}");});
   web_.on("/api/updates",HTTP_POST,[this](){const String enabled=web_.arg("enabled");if(enabled!="true"&&enabled!="false"){reply(400,"{\"error\":\"enabled 必须为 true 或 false\"}");return;}const bool changed=updater.enabled!=(enabled=="true");updater.enabled=enabled=="true";prefs_.putBool("autoUpdate",updater.enabled);if(changed&&updater.enabled)updater.schedule();reply(200,"{\"message\":\"自动更新设置已保存\"}");});
   web_.on("/api/theme-updates",HTTP_ANY,[this](){
-    if(web_.method()==HTTP_GET){reply(200,String("{\"enabled\":")+(autoThemeUpdate_?"true":"false")+",\"state\":\""+themeUpdateState_+"\"}");return;}
+    if(web_.method()==HTTP_GET){reply(200,themeUpdateJson());return;}
     if(web_.method()!=HTTP_POST){reply(405,"{}");return;}
     const String enabled=web_.arg("enabled");if(enabled!="true"&&enabled!="false"){reply(400,"{\"error\":\"enabled 必须为 true 或 false\"}");return;}
     autoThemeUpdate_=enabled=="true";prefs_.putBool("autoThemeUpdate",autoThemeUpdate_);if(autoThemeUpdate_)themeUpdateChecked_=0;
@@ -287,7 +288,7 @@ void DeviceService::begin(int count,const char* titlesJson){
   web_.on("/api/apps/config",HTTP_ANY,[this](){String error;int index=requestAppIndex(error),code=400;if(index<0){reply(code,"{\"error\":"+quote(error)+"}");return;}String values=web_.arg("values");String body=appConfig(index,web_.method()==HTTP_POST?&values:nullptr,code);reply(code,body);});
   web_.on("/api/apps/catalog",HTTP_GET,[this](){access();sendFlash("application/json; charset=utf-8",titlesJson_,strlen(titlesJson_));});
   web_.on("/api/apps/builtin",HTTP_GET,[this](){access();for(const auto& b:NATIVE_BINS)if(web_.arg("id")==b.id){sendFlash("application/octet-stream",(const char*)b.bytes,b.size);return;}reply(404,"{}");});
-  web_.on("/api/apps/install",HTTP_POST,[this](){if(serialInstall_){reply(409,"{\"error\":\"USB 应用安装进行中\"}");return;}finishInstall();},[this](){if(!serialInstall_)uploadScript();});
+  web_.on("/api/apps/install",HTTP_POST,[this](){if(serialInstall_||themeUpdateBusy_){reply(409,"{\"error\":\"应用安装进行中，请稍后重试\"}");return;}finishInstall();},[this](){if(!serialInstall_&&!themeUpdateBusy_)uploadScript();});
   web_.on("/api/apps/uninstall",HTTP_POST,[this](){String error;const int index=requestAppIndex(error);if(index<0||!uninstallApp(index,error)){reply(400,"{\"error\":"+quote(error)+"}");return;}reply(200,"{\"message\":\"应用已卸载，存储空间已释放\"}");});
   web_.on("/api/apps/export",HTTP_GET,[this](){String error;const int index=requestAppIndex(error);if(index<0){reply(404,"{\"error\":"+quote(error)+"}");return;}exportApp(index);});
   web_.on("/api/apps/run",HTTP_POST,[this](){String error;const int index=requestAppIndex(error);if(index<-1||!runApp(index,error)){reply(400,"{\"error\":"+quote(error)+"}");return;}reply(200,"{\"message\":\"已设为默认主题；指定时段仍优先播放\"}");});
@@ -342,9 +343,9 @@ void DeviceService::begin(int count,const char* titlesJson){
   });
   web_.on("/api/script",HTTP_GET,[this](){exportApp(63,false,true);});
   web_.on("/api/package",HTTP_GET,[this](){exportApp(63,true);});
-  web_.on("/api/script",HTTP_POST,[this](){if(serialInstall_){reply(409,"{\"error\":\"USB 应用安装进行中\"}");return;}finishInstall();},[this](){if(!serialInstall_)uploadScript();});
+  web_.on("/api/script",HTTP_POST,[this](){if(serialInstall_||themeUpdateBusy_){reply(409,"{\"error\":\"应用安装进行中，请稍后重试\"}");return;}finishInstall();},[this](){if(!serialInstall_&&!themeUpdateBusy_)uploadScript();});
   web_.on("/api/ota",HTTP_POST,[this](){
-    if(serialInstall_){reply(409,"{\"error\":\"USB 应用安装进行中\"}");return;}
+    if(serialInstall_||themeUpdateBusy_){reply(409,"{\"error\":\"应用安装进行中，请稍后重试\"}");return;}
     if(uploadError_.length()){reply(400,"{\"error\":"+quote(uploadError_)+"}");return;}
     if(!restartAt_){reply(400,"{\"error\":\"未收到完整固件\"}");return;}
     reply(200,"{\"message\":\"SHA-256 与固件格式验证通过，即将重启\"}");
@@ -363,7 +364,7 @@ void DeviceService::begin(int count,const char* titlesJson){
   });
   web_.begin();
   Serial.printf("Provision AP: %s  Password: %s\n",apName_.c_str(),apPassword_.c_str());
-  Serial.println("CWJSON:{\"ok\":true,\"version\":\"1.9.1\",\"message\":\"串口设置已就绪，发送 {\\\"cmd\\\":\\\"help\\\"} 查看命令\"}");
+  Serial.println("CWJSON:{\"ok\":true,\"version\":\"1.9.2\",\"message\":\"串口设置已就绪，发送 {\\\"cmd\\\":\\\"help\\\"} 查看命令\"}");
 }
 void DeviceService::uploadScript(){
   auto& u=web_.upload();
@@ -401,7 +402,7 @@ void DeviceService::finishOTA(){
   if(locked_){eventLog.add("update-failed",uploadError_.c_str());if(updateProgress)updateProgress(otaBytes_,otaTotal_,"FAILED");generation++;renderLock(false);locked_=false;}
 }
 void DeviceService::uploadOTA(){
-  if(serialInstall_)return;
+  if(serialInstall_||themeUpdateBusy_)return;
   auto& u=web_.upload();
   if(u.status==UPLOAD_FILE_START){
     finishOTA();uploadError_="";restartAt_=0;otaBytes_=otaTotal_=0;
@@ -464,10 +465,10 @@ void DeviceService::poll(){
     if(now-apConnectedAt_>=30000){dns_.stop();WiFi.softAPdisconnect(true);WiFi.mode(WIFI_STA);ap_=false;}
   }
   pollSchedule(now);
-  const bool canUpdate=WiFi.status()==WL_CONNECTED&&time(nullptr)>1700000000&&!needsSetup()&&!panelTrial.active&&!ota_&&!scriptLocked_&&!serialInstall_&&!restartAt_;
   pollThemeUpdates(now);
+  const bool canUpdate=WiFi.status()==WL_CONNECTED&&time(nullptr)>1700000000&&!needsSetup()&&!panelTrial.active&&!ota_&&!scriptLocked_&&!serialInstall_&&!restartAt_;
   if(updater.finishCheck()&&updater.state!="up-to-date"&&updater.state!="available")eventLog.add("update-check-failed",updater.state.c_str());
-  if(!updater.busy&&updater.due(now)&&canUpdate){updater.startCheck("1.9.1");if(!updater.busy)eventLog.add("update-check-failed",updater.state.c_str());}
+  if(!updater.busy&&updater.due(now)&&canUpdate){updater.startCheck("1.9.2");if(!updater.busy)eventLog.add("update-check-failed",updater.state.c_str());}
   if(updater.enabled&&updater.available&&canUpdate&&renderLock(true)){
     updater.busy=true;eventLog.add("update-start",updater.targetVersion().c_str());stopScript();
     const bool ready=updater.install(updateProgress,ioTick);
@@ -477,18 +478,10 @@ void DeviceService::poll(){
   }
 }
 
-static bool themeObject(const String& json,int at,int& begin,int& end){
-  begin=json.lastIndexOf('{',at);if(begin<0)return false;bool quoted=false,escape=false;int depth=0;
-  for(int i=begin;i<json.length();i++){
-    const char c=json[i];if(escape){escape=false;continue;}if(c=='\\'&&quoted){escape=true;continue;}if(c=='"'){quoted=!quoted;continue;}if(quoted)continue;
-    if(c=='{')depth++;else if(c=='}'&&!--depth){end=i+1;return true;}
-  }return false;
-}
-
 void DeviceService::startThemeUpdateCheck(){
-  if(themeUpdateBusy_||!fs_||!autoThemeUpdate_)return;
-  themeUpdateBusy_=true;scriptLocked_=true;themeUpdateState_="checking";themeUpdateError_="";themeUpdateDone_.store(false,std::memory_order_release);
-  if(xTaskCreatePinnedToCore([](void* p){auto* self=static_cast<DeviceService*>(p);self->themeUpdateWorker();self->themeUpdateDone_.store(true,std::memory_order_release);vTaskDelete(nullptr);},"theme-update",12288,this,1,nullptr,0)!=pdPASS){themeUpdateBusy_=false;scriptLocked_=false;themeUpdateState_="memory-failed";}
+  if(themeUpdateBusy_||scriptLocked_||updater.busy||!fs_||!autoThemeUpdate_)return;
+  themeUpdateBusy_=true;scriptLocked_=true;themeUpdateState_="checking";themeUpdateError_="";themeUpdateWorkError_="";themeUpdateResult_="retry";themeUpdateWorkSkipped_=0;themeUpdateIndex_=-1;themeUpdateDone_.store(false,std::memory_order_release);
+  if(xTaskCreatePinnedToCore([](void* p){auto* self=static_cast<DeviceService*>(p);self->themeUpdateWorker();self->themeUpdateDone_.store(true,std::memory_order_release);vTaskDelete(nullptr);},"theme-update",12288,this,1,nullptr,0)!=pdPASS){themeUpdateBusy_=false;scriptLocked_=false;themeUpdateState_="memory-failed";themeUpdateDelay_=60000;}
 }
 
 void DeviceService::themeUpdateWorker(){
@@ -496,27 +489,33 @@ void DeviceService::themeUpdateWorker(){
     "https://antonvanke.github.io/HUB-75E/theme-catalog.json",
     "https://cdn.jsdelivr.net/gh/AntonVanke/HUB-75E@main/docs/theme-catalog.json",
     "https://raw.githubusercontent.com/AntonVanke/HUB-75E/main/docs/theme-catalog.json"};
-  String catalog,base;WiFiClientSecure tls;tls.setCACert(UPDATE_ROOT_CA);tls.setHandshakeTimeout(8);HTTPClient http;
+  String base,path,hash;bool selected=false,catalogValid=false,spaceLimited=false;uint32_t bytes=0;
+  LittleFS.remove("/apps/theme-update.tmp");
+  const size_t free=LittleFS.totalBytes()-LittleFS.usedBytes();
+  WiFiClientSecure tls;tls.setCACert(UPDATE_ROOT_CA);tls.setHandshakeTimeout(8);HTTPClient http;
   for(const char* url:catalogUrls){
+    selected=false;spaceLimited=false;themeUpdateWorkSkipped_=0;themeUpdateIndex_=-1;bool invalid=false;
+    ThemeUpdateCatalog catalog([&](const String& row){
+      AppManifest manifest;String error,asset,digest,size;bool found=false;uint32_t count=0;
+      if(!manifest.parse(row,error)){invalid=true;return;}
+      if(!compatible(manifest,error)){themeUpdateWorkSkipped_++;return;}
+      const int index=appIndex(manifest.packageName);const bool installed=appInstalled(index);
+      if(installed){AppManifest old;if(!readManifest(appPath(index).c_str(),old,error)){invalid=true;return;}if(!FirmwareUpdate::newer(manifest.appVersion,old.appVersion))return;}
+      if(!CwJson::field(row,"path",asset,found)||!found||!asset.startsWith("applications/")||asset.indexOf("..")>=0||strspn(asset.c_str(),"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._/")!=asset.length()||
+         !CwJson::field(row,"sha256",digest,found)||!found||digest.length()!=64||strspn(digest.c_str(),"0123456789abcdef")!=64||
+         !CwJson::field(row,"bytes",size,found)||!found||!CwJson::natural(size,count)||count<256){invalid=true;return;}
+      if(count>limits_.appBytes||free<size_t(count)+8192||(!installed&&installed_==UINT64_MAX)){spaceLimited=true;themeUpdateWorkSkipped_++;return;}
+      // Apply existing-app updates before using space for new applications.
+      if(selected&&(!installed||themeUpdateIndex_>=0))return;
+      selected=true;path=asset;hash=digest;bytes=count;themeUpdateIndex_=installed?index:-1;themeUpdatePackage_=manifest.packageName;themeUpdateVersion_=manifest.appVersion;
+    });
     http.setConnectTimeout(5000);http.setTimeout(8000);http.useHTTP10(true);
-    if(http.begin(tls,url)&&http.GET()==200&&http.getSize()>0&&http.getSize()<=180000){catalog=http.getString();base=String(url).substring(0,String(url).lastIndexOf('/')+1);http.end();if(catalog.indexOf("\"apps\"")>=0)break;}
-    http.end();
+    if(http.begin(tls,url)&&http.GET()==200&&http.getSize()<=262144&&http.writeToStream(&catalog)>0&&catalog.complete()&&!invalid){catalogValid=true;base=String(url).substring(0,String(url).lastIndexOf('/')+1);http.end();tls.stop();break;}
+    http.end();tls.stop();
   }
-  if(catalog.isEmpty()){themeUpdateError_="catalog-unreachable";themeUpdateState_="retry";return;}
-#ifdef HUB75_S3_BOARD
-  const char* chip="esp32s3";
-#else
-  const char* chip="esp32";
-#endif
-  for(int i=0;i<64;i++){
-    if(!appInstalled(i))continue;AppManifest old;String error;
-    if(!readManifest(appPath(i).c_str(),old,error)||!old.modern||!old.packageName.length())continue;
-    const int marker=catalog.indexOf(String("\"packageName\":\"")+old.packageName+"\"");int begin,end;
-    if(marker<0||!themeObject(catalog,marker,begin,end))continue;
-    const String row=catalog.substring(begin,end);String version,path,hash,bytesText,requirements;uint32_t bytes=0;bool found=false;
-    if(!CwJson::field(row,"appVersion",version,found)||!found||!FirmwareUpdate::newer(version,old.appVersion)||!CwJson::field(row,"path",path,found)||!found||!CwJson::field(row,"sha256",hash,found)||!found||!CwJson::field(row,"bytes",bytesText,found)||!found||!CwJson::natural(bytesText,bytes))continue;
-    if(bytes<256||bytes>limits_.appBytes||LittleFS.totalBytes()-LittleFS.usedBytes()<bytes+8192||path.indexOf("..")>=0||path.startsWith("/")||hash.length()!=64)continue;
-    const String chipList=String("\"")+chip+"\"";if(row.indexOf("\"chips\"")>=0&&row.indexOf(chipList)<0)continue;
+  if(!catalogValid){themeUpdateWorkError_="catalog-unreachable-or-invalid";return;}
+  if(!selected){themeUpdateResult_=spaceLimited?"storage-limited":"up-to-date";return;}
+  {
     const String urls[]={base+path,
       String("https://cdn.jsdelivr.net/gh/AntonVanke/HUB-75E@main/docs/")+path,
       String("https://raw.githubusercontent.com/AntonVanke/HUB-75E/main/docs/")+path};
@@ -530,27 +529,35 @@ void DeviceService::themeUpdateWorker(){
       unsigned char result[32];char hex[65];mbedtls_sha256_finish_ret(&digest,result);mbedtls_sha256_free(&digest);for(int n=0;n<32;n++)snprintf(hex+n*2,3,"%02x",result[n]);out.close();package.end();
       if(ok&&got==bytes&&hash==hex){downloaded=true;break;}LittleFS.remove("/apps/theme-update.tmp");
     }
-    if(downloaded){themeUpdateIndex_=i;themeUpdatePackage_=old.packageName;themeUpdateBytes_=bytes;themeUpdatePath_="/apps/theme-update.tmp";themeUpdateState_="ready";return;}
-    themeUpdateError_="package-unreachable";
+    if(downloaded){
+      AppManifest manifest;String error;
+      if(!readManifest("/apps/theme-update.tmp",manifest,error)||!compatible(manifest,error)||manifest.packageName!=themeUpdatePackage_||manifest.appVersion!=themeUpdateVersion_){LittleFS.remove("/apps/theme-update.tmp");themeUpdateWorkError_="package-manifest-mismatch";return;}
+      themeUpdateBytes_=bytes;themeUpdatePath_="/apps/theme-update.tmp";themeUpdateResult_="ready";return;
+    }
+    themeUpdateWorkError_="package-download-or-hash-failed";
   }
-  themeUpdateState_="up-to-date";
 }
 
 bool DeviceService::finishThemeUpdate(){
   if(!themeUpdateDone_.exchange(false,std::memory_order_acquire))return false;
-  themeUpdateBusy_=false;
+  themeUpdateBusy_=false;themeUpdateState_=themeUpdateResult_;themeUpdateError_=themeUpdateWorkError_;themeUpdateSkipped_=themeUpdateWorkSkipped_;themeUpdateChecked_=millis();themeUpdateDelay_=themeUpdateState_=="retry"?60000:21600000UL;
   if(themeUpdateState_!="ready"){scriptLocked_=false;return true;}
-  if(!renderLock||!renderLock(true)){themeUpdateState_="render-busy";scriptLocked_=false;return true;}
-  stopScript();LittleFS.remove("/apps/install.tmp");
-  if(!LittleFS.rename(themeUpdatePath_,"/apps/install.tmp")){themeUpdateState_="save-failed";scriptLocked_=false;renderLock(false);return true;}
+  if(!autoThemeUpdate_){LittleFS.remove(themeUpdatePath_);themeUpdateState_="disabled";scriptLocked_=false;return true;}
+  LittleFS.remove("/apps/install.tmp");
+  if(!LittleFS.rename(themeUpdatePath_,"/apps/install.tmp")){themeUpdateState_="save-failed";themeUpdateDelay_=60000;scriptLocked_=false;return true;}
   scriptBytes_=themeUpdateBytes_;installIndex_=-1;installId_="";installTitle_="";installPackageName_=themeUpdatePackage_;uploadError_="";legacyUpload_=false;candidateChecked_=false;
-  int code;completeInstall(code,false);themeUpdateState_=code==200?"updated":"install-failed";if(code==200)themeUpdateChecked_=0;renderLock(false);return true;
+  int code;completeInstall(code,false);themeUpdateState_=code==200?"updated":"install-failed";themeUpdateError_=code==200?"":uploadError_;themeUpdateDelay_=code==200?1000:60000;return true;
 }
 
 void DeviceService::pollThemeUpdates(uint32_t now){
   if(finishThemeUpdate())return;
-  if(!autoThemeUpdate_||themeUpdateBusy_||!fs_||WiFi.status()!=WL_CONNECTED||needsSetup()||ota_||serialInstall_||restartAt_||panelTrial.active)return;
-  if(!themeUpdateChecked_||now-themeUpdateChecked_>=21600000UL){themeUpdateChecked_=now;startThemeUpdateCheck();}
+  if(!autoThemeUpdate_||themeUpdateBusy_||updater.busy||!fs_||WiFi.status()!=WL_CONNECTED||needsSetup()||ota_||scriptLocked_||serialInstall_||restartAt_||panelTrial.active||time(nullptr)<1700000000)return;
+  if(!themeUpdateChecked_||now-themeUpdateChecked_>=themeUpdateDelay_){themeUpdateChecked_=now;startThemeUpdateCheck();}
+}
+
+String DeviceService::themeUpdateJson()const{
+  const char* waiting=!autoThemeUpdate_?"disabled":themeUpdateBusy_?"checking":needsSetup()?"waiting-setup":!fs_?"waiting-storage":WiFi.status()!=WL_CONNECTED?"waiting-network":time(nullptr)<1700000000?"waiting-time":(ota_||serialInstall_||updater.busy||scriptLocked_||panelTrial.active||restartAt_)?"waiting-idle":nullptr;
+  return "{\"enabled\":"+String(autoThemeUpdate_?"true":"false")+",\"state\":"+quote(waiting?String(waiting):themeUpdateState_)+",\"error\":"+quote(themeUpdateError_)+",\"skipped\":"+String(themeUpdateSkipped_)+",\"intervalHours\":6}";
 }
 
 bool DeviceService::readSchedule(const String& text,ThemeSchedule& out,bool allowMissing,bool migrateLegacy){
@@ -750,14 +757,17 @@ String DeviceService::statusJson(){
   const char* source=windowTheme_!=ThemeSchedule::None?"condition":schedule_.mode==1?"interval":!timeValid&&needsTime?"waiting-time":schedule_.mode==2?"daily":"fixed";
   if(windowTheme_==ThemeSchedule::None&&schedule_.mode==1){const uint32_t period=uint32_t(schedule_.interval)*60000,elapsed=uint32_t(millis()-rotateAt_);snprintf(remaining,sizeof(remaining),"%u",unsigned(elapsed>=period?0:(period-elapsed+999)/1000));}
   String ip=(WiFi.status()==WL_CONNECTED?WiFi.localIP():WiFi.softAPIP()).toString();
-  const int length=snprintf(body,sizeof(body),"{\"version\":\"1.9.1\",\"chip\":%s,\"width\":64,\"height\":64,\"ip\":%s,\"stationIP\":%s,\"apIP\":%s,\"configUrl\":%s,\"ssid\":%s,\"connected\":%s,\"networkState\":%s,\"rssi\":%d,\"uptime\":%u,\"heap\":%u,\"largestBlock\":%u,\"theme\":%d,\"generation\":%u,\"brightness\":%d,\"rotationMinutes\":%d,\"timezone\":%s,\"otaMaxBytes\":%u,\"storage\":%s,\"hasCustom\":%s,\"appSlots\":64,\"catalogCount\":%d,\"error\":%s,\"performance\":%s,\"limits\":%s,\"baseTheme\":%d,\"timeValid\":%s,\"localTime\":\"%s\",\"clock\":{\"weekday\":%d,\"hour\":%d,\"minute\":%d,\"second\":%d},\"playbackSource\":\"%s\",\"rotationRemainingSeconds\":%s}",
+  const int length=snprintf(body,sizeof(body),"{\"version\":\"1.9.2\",\"chip\":%s,\"width\":64,\"height\":64,\"ip\":%s,\"stationIP\":%s,\"apIP\":%s,\"configUrl\":%s,\"ssid\":%s,\"connected\":%s,\"networkState\":%s,\"rssi\":%d,\"uptime\":%u,\"heap\":%u,\"largestBlock\":%u,\"theme\":%d,\"generation\":%u,\"brightness\":%d,\"rotationMinutes\":%d,\"timezone\":%s,\"otaMaxBytes\":%u,\"storage\":%s,\"hasCustom\":%s,\"appSlots\":64,\"catalogCount\":%d,\"error\":%s,\"performance\":%s,\"limits\":%s,\"baseTheme\":%d,\"timeValid\":%s,\"localTime\":\"%s\",\"clock\":{\"weekday\":%d,\"hour\":%d,\"minute\":%d,\"second\":%d},\"playbackSource\":\"%s\",\"rotationRemainingSeconds\":%s}",
     quote(ESP.getChipModel()).c_str(),quote(ip).c_str(),quote(WiFi.localIP().toString()).c_str(),quote(WiFi.softAPIP().toString()).c_str(),quote("http://"+ip+"/").c_str(),quote(WiFi.SSID()).c_str(),WiFi.status()==WL_CONNECTED?"true":"false",quote(networkState).c_str(),WiFi.RSSI(),millis()/1000,
     heap_caps_get_free_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT),heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT),theme,generation,brightness,rotationMinutes,
     quote(prefs_.getString("tz","CST-8")).c_str(),unsigned(next?next->size:0),fs_?"true":"false",hasCustom?"true":"false",themeCount,quote(lastError).c_str(),metrics,limits_.json().c_str(),
     baseTheme_,timeValid?"true":"false",localTime,local.tm_wday,local.tm_hour,local.tm_min,local.tm_sec,source,remaining);
   if(length<0||length>=int(sizeof(body))-128)return "{\"error\":\"状态信息过长\"}";
-  String result(body);result.remove(result.length()-1);result+=",\"updates\":{\"enabled\":"+String(updater.enabled?"true":"false")+",\"state\":"+quote(updater.state)+",\"intervalHours\":6}";result+=",\"themeUpdates\":{\"enabled\":"+String(autoThemeUpdate_?"true":"false")+",\"state\":"+quote(themeUpdateState_)+",\"intervalHours\":6}";result+=",\"brightnessControl\":"+brightnessJson();result+=",\"packageVersion\":3,\"runtimeApi\":5,\"internalHeapBytes\":"+String(heap_caps_get_total_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT))+",\"panel\":{\"colorOrder\":"+quote(panelOrder_)+",\"scan\":32,\"clockMHz\":"+String(panelTiming_.clockMHz)+",\"clockPhase\":"+String(panelTiming_.clockPhase)+",\"latchBlanking\":"+String(panelTiming_.latchBlanking)+",\"driver\":"+String(panelTiming_.driver)+",\"refreshHz\":"+String(panelTiming_.refreshHz)+",\"driverName\":"+quote(panelDriverName(panelTiming_.driver))+",\"active\":"+(panelStatus?panelStatus():String("{}"))+",\"testing\":"+(panelTestUntil&&int32_t(panelTestUntil-millis())>0?"true":"false")+"}}";
+  String result(body);result.remove(result.length()-1);result+=",\"updates\":{\"enabled\":"+String(updater.enabled?"true":"false")+",\"state\":"+quote(updater.state)+",\"intervalHours\":6}";result+=",\"themeUpdates\":"+themeUpdateJson();result+=",\"brightnessControl\":"+brightnessJson();result+=",\"packageVersion\":3,\"runtimeApi\":5,\"internalHeapBytes\":"+String(heap_caps_get_total_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT))+",\"panel\":{\"colorOrder\":"+quote(panelOrder_)+",\"scan\":32,\"clockMHz\":"+String(panelTiming_.clockMHz)+",\"clockPhase\":"+String(panelTiming_.clockPhase)+",\"latchBlanking\":"+String(panelTiming_.latchBlanking)+",\"driver\":"+String(panelTiming_.driver)+",\"refreshHz\":"+String(panelTiming_.refreshHz)+",\"driverName\":"+quote(panelDriverName(panelTiming_.driver))+",\"active\":"+(panelStatus?panelStatus():String("{}"))+",\"testing\":"+(panelTestUntil&&int32_t(panelTestUntil-millis())>0?"true":"false")+"}}";
   result.remove(result.length()-1);
+  result+=",\"features\":{\"diagnostics\":1,\"serialDiagnostics\":1,\"serialAppInstall\":1,\"backgroundInstall\":1,\"wifiScan\":1,\"discovery\":1,\"panelTrial\":1,\"factoryReset\":1,\"conditionControl\":1,\"orientation\":"+String(orientationStatus?1:0)+",\"screenPreview\":"+String(copyFrame?1:0)+"}";
+  result+=",\"orientation\":"+(orientationStatus?orientationStatus():String("null"))+",\"sensorCapabilities\":"+sensorCapabilitiesJson()+",\"flashBytes\":"+String(ESP.getFlashChipSize());
+  result+=",\"conditionControl\":{\"activeRule\":"+String(conditions_.active+1)+",\"lightValid\":"+String(ambient.lightValid(millis())?"true":"false")+",\"lightPercent\":"+String(ambient.lightPercent())+",\"ruleCount\":"+String(schedule_.windowCount)+"}";
   result+=",\"timeSync\":"+timeSync_.json();
   result+=",\"panelTrial\":"+trialJson()+",\"setup\":{\"required\":"+(needsSetup()?String("true"):String("false"))+",\"ssid\":"+quote(apName_)+",\"password\":"+(needsSetup()?quote(apPassword_):String("null"))+",\"url\":\"http://192.168.4.1/\",\"wizard\":true,\"step\":"+String(setupStep_)+",\"panelChosen\":"+String(prefs_.getBool("panelChosen",false)?"true":"false")+"}}";
   return result;

@@ -1,5 +1,26 @@
 import {timeStrings} from './time-settings.mjs';
 const pairs = `
+当前固件未报告硬件测试能力，请更新固件后重试。|The firmware did not report diagnostics support. Update the firmware and retry.
+当前固件未报告方向设置能力，请更新固件后重试。|The firmware did not report orientation support. Update the firmware and retry.
+开启后自动安装尚未安装的兼容主题，并优先更新已安装主题；之后每 6 小时检查，网络失败 1 分钟后重试。下载前检查芯片、传感器、内存配额和存储，下载后校验 SHA-256，当前主题继续运行。|Automatically installs missing compatible themes and prioritizes updates to installed apps. Checks every 6 hours and retries network failures after 1 minute. Verifies chip, sensors, memory and storage before download, then SHA-256. The current theme keeps running.
+主题更新状态：|Theme update status:
+正在读取主题库并下载兼容主题|Reading the catalog and downloading compatible themes
+已安装，继续检查下一项|Installed; checking the next application
+下载或校验失败，1 分钟后重试|Download or verification failed; retrying in 1 minute
+兼容主题已全部安装且为最新版本|All compatible themes are installed and up to date
+剩余空间或安装槽位不足，已跳过部分主题|Some themes were skipped because storage or app slots are full
+等待完成首次设置|Waiting for setup to finish
+等待初始化应用存储|Waiting for application storage initialization
+等待连接 Wi-Fi|Waiting for Wi-Fi
+等待校准时间以验证 HTTPS 证书|Waiting for a valid clock to verify HTTPS certificates
+等待当前操作完成|Waiting for the current operation
+后台任务内存不足，1 分钟后重试|Insufficient task memory; retrying in 1 minute
+保存失败，1 分钟后重试|Save failed; retrying in 1 minute
+安装验证失败，1 分钟后重试|Installation validation failed; retrying in 1 minute
+三个目录来源均无法读取或目录无效|All three catalog sources are unavailable or invalid
+应用下载失败或 SHA-256 不匹配|Application download failed or SHA-256 did not match
+下载包身份、版本或兼容性不匹配|Package identity, version or compatibility did not match
+项不符合设备或存储条件|entries do not meet device or storage requirements
 重要事件日志|Important event log
 只保留最近 16 条启动、主动重启、更新和关键故障记录；重启后仍可读取。不记录 Wi-Fi 密码、逐帧数据或正常的版本检查。|Keeps the last 16 boot, intentional restart, update and critical failure events across reboots. No Wi-Fi passwords, frame telemetry or routine update checks.
 读取日志|Read log

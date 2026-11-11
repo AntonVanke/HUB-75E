@@ -2,7 +2,7 @@
 
 简体中文 · [English](FLASHING.en.md)
 
-当前版本 **1.9.1**：[ESP32 4 MB](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.9.1.zip) · [ESP32-S3 8 MB Flash + 8 MB OPI PSRAM](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.9.1.zip)。S3 N4 不适用。旧版保留用于历史设备与回退。
+当前版本 **1.9.2**：[ESP32 4 MB](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.9.2.zip) · [ESP32-S3 8 MB Flash + 8 MB OPI PSRAM](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.9.2.zip)。S3 N4 不适用。旧版保留用于历史设备与回退。
 
 ## 在线安装与更新
 

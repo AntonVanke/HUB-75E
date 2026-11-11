@@ -54,9 +54,12 @@ public:
   bool autoThemeUpdate_=false,themeUpdateBusy_=false;
   std::atomic<bool> themeUpdateDone_{false};
   String themeUpdateState_="idle",themeUpdateError_,themeUpdatePath_,themeUpdatePackage_;
+  String themeUpdateResult_,themeUpdateWorkError_,themeUpdateVersion_;
+  uint16_t themeUpdateSkipped_=0,themeUpdateWorkSkipped_=0;
   size_t themeUpdateBytes_=0;
   int themeUpdateIndex_=-1;
   uint32_t themeUpdateChecked_=0;
+  uint32_t themeUpdateDelay_=21600000UL;
   std::function<void(const PanelOrientation&)> orientationChanged;
   std::function<bool(PanelOrientation&,bool)> orientationCalibrate;
   std::function<String()> orientationStatus;
@@ -182,4 +185,5 @@ private:
   void startThemeUpdateCheck();
   void themeUpdateWorker();
   bool finishThemeUpdate();
+  String themeUpdateJson()const;
 };
