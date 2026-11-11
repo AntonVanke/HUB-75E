@@ -8,7 +8,7 @@
   <title>Clockyr · HUB75 像素时钟</title>
   <link rel="stylesheet" href="style.css">
   <script type="module" src="vendor/esp-web-tools-10.1.0/install-button.js"></script>
-  <script type="module" src="app.mjs?v=1.8.0-offline"></script>
+  <script type="module" src="app.mjs?v=1.9.0-offline"></script>
 </head>
 <body>
   <header class="hero">
@@ -34,15 +34,15 @@
           <fieldset class="board-picker"><legend class="sr-only">硬件型号</legend>
             <label class="board-option"><input type="radio" name="board" value="esp32" checked><span><strong>ESP32</strong><small>4 MB Flash · 无 PSRAM</small></span></label>
             <label class="board-option"><input type="radio" name="board" value="esp32s3"><span><strong>ESP32-S3</strong><small>至少 8 MB Flash · 8 MB OPI PSRAM</small></span></label>
-          </fieldset><label>发布版本<select id="release-version"><option>1.8.0</option></select></label><label>烧录方式<select id="flash-mode"><option value="update">更新固件，保留设置和应用</option><option value="install">全新安装，重置设置</option></select></label>
+          </fieldset><label>发布版本<select id="release-version"><option>1.9.0</option></select></label><label>烧录方式<select id="flash-mode"><option value="update">更新固件，保留设置和应用</option><option value="install">全新安装，重置设置</option></select></label>
           <p id="board-note" class="note">适用于本项目经典 ESP32 接线与 4 MB Flash 分区。</p>
           <div class="install-row">
-            <esp-web-install-button id="installer" manifest="firmware/esp32-v1.8.0/update-manifest.json">
+            <esp-web-install-button id="installer" manifest="firmware/esp32-v1.9.0/update-manifest.json">
               <button id="install-button" class="primary" slot="activate" type="button">连接并烧录 ESP32</button>
               <span slot="unsupported" class="note">此浏览器不支持在线烧录，请下载离线包。</span>
               <span slot="not-allowed" class="note">请通过 HTTPS 或 localhost 打开此页。</span>
             </esp-web-install-button>
-            <a id="release-link" class="button secondary" href="firmware/esp32-v1.8.0.zip" target="_blank" rel="noopener noreferrer">下载离线包 ↗</a>
+            <a id="release-link" class="button secondary" href="firmware/esp32-v1.9.0.zip" target="_blank" rel="noopener noreferrer">下载离线包 ↗</a>
           </div>
           <p id="flash-support" class="small" role="status"></p>
         </article>

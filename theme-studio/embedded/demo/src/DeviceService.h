@@ -6,6 +6,7 @@
 #include <DNSServer.h>
 #include <WiFiUdp.h>
 #include <functional>
+#include <atomic>
 #include <mbedtls/sha256.h>
 #include "ThemeSchedule.h"
 #include "DeviceLimits.h"
@@ -50,6 +51,12 @@ public:
   std::function<bool(const String&,String&)> hardwareTest;
   std::function<String()> panelStatus;
   bool panelReady=false;
+  bool autoThemeUpdate_=false,themeUpdateBusy_=false;
+  std::atomic<bool> themeUpdateDone_{false};
+  String themeUpdateState_="idle",themeUpdateError_,themeUpdatePath_,themeUpdatePackage_;
+  size_t themeUpdateBytes_=0;
+  int themeUpdateIndex_=-1;
+  uint32_t themeUpdateChecked_=0;
   std::function<void(const PanelOrientation&)> orientationChanged;
   std::function<bool(PanelOrientation&,bool)> orientationCalibrate;
   std::function<String()> orientationStatus;
@@ -167,4 +174,8 @@ private:
   bool readSchedule(const String& text,ThemeSchedule& out,bool allowMissing=false,bool migrateLegacy=false);
   String scheduleText()const;
   void pollSchedule(uint32_t now);
+  void pollThemeUpdates(uint32_t now);
+  void startThemeUpdateCheck();
+  void themeUpdateWorker();
+  bool finishThemeUpdate();
 };

@@ -4,7 +4,7 @@
 
 A 64 × 64 HUB75 clock for ESP32 / ESP32-S3. Themes are C/C++ compiled to chip-specific Xtensa machine code in CWP3 packages. Current firmware does not run Lua. Runtime API 5, native ABI 1.
 
-**Current release: 1.8.0** · [Flash firmware](https://antonvanke.github.io/HUB-75E/#flash) · [Applications](https://antonvanke.github.io/HUB-75E/#themes) · [USB settings](https://antonvanke.github.io/HUB-75E/#config) · [Image clock workshop](https://antonvanke.github.io/HUB-75E/studio/index.html)
+**Current release: 1.9.0** · [Flash firmware](https://antonvanke.github.io/HUB-75E/#flash) · [Applications](https://antonvanke.github.io/HUB-75E/#themes) · [USB settings](https://antonvanke.github.io/HUB-75E/#config) · [Image clock workshop](https://antonvanke.github.io/HUB-75E/studio/index.html)
 
 ![Ferrofluid computer preview](web/previews/ferrofluid-clock.gif)
 
@@ -12,6 +12,7 @@ Rendered by the theme's C++ code on a computer, not panel footage or a device FP
 
 ## Current features
 
+- **1.9.0 silent theme updates:** the device can check compatible themes in the background and download verified updates when chip, sensor, code quota and free storage allow it. Firmware and theme downloads fall back from GitHub Pages to jsDelivr and GitHub Raw for networks where Pages is unreachable.
 - **1.8.0 time and pouring:** four NTP peers resolve/query in parallel; the first validated response wins, with background retries. Timezone and synchronization controls live under Other settings, with common/DST presets and custom POSIX rules. Gravity Water v1.3.0 has an irregular stream, 0.5–6 second filling (default 2 seconds), and 10–70% fill. The device app list offers Update application. Firmware updates preserve installed themes: v1.1.0 still declares a 56% limit until the app is updated separately.
 - **1.7.0 updates and water:** background version checks no longer stop/reinitialize themes or show a progress bar. Actual OTA progress follows live gravity orientation. Gravity Water gained a top inlet and up to 70% fill. Maintenance provides the last 16 persistent critical events and JSON export, including boot/reset causes.
 - **1.6.1 basic clock:** the device app list, online gallery and workshop expose the firmware clock (white time on black). Run it directly, use it as default or select it for rotations and conditions. It needs no installation or application slot and cannot be uninstalled.
@@ -29,8 +30,8 @@ Both chips compile and water pouring duration, the 70% cap and rotation/collisio
 
 | Chip | Firmware | Applications | Requirements |
 | --- | --- | --- | --- |
-| ESP32 | [v1.8.0 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.8.0.zip) | [5 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | Classic ESP32, 4 MB Flash |
-| ESP32-S3 | [v1.8.0 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.8.0.zip) | [59 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | Project board, at least 8 MB Flash + 8 MB OPI PSRAM |
+| ESP32 | [v1.9.0 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.9.0.zip) | [5 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | Classic ESP32, 4 MB Flash |
+| ESP32-S3 | [v1.9.0 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.9.0.zip) | [59 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | Project board, at least 8 MB Flash + 8 MB OPI PSRAM |
 
 S3 N4 is unsupported. Other boards require matching memory settings and wiring.
 

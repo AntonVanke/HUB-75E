@@ -11,7 +11,7 @@
 class FirmwareUpdate {
   uint32_t checked_=0;bool checkedOnce_=false;
   std::atomic<bool> checkDone_{false};
-  String current_,checkState_,version_,path_,hash_;uint32_t bytes_=0;
+  String current_,checkState_,version_,path_,hash_,base_;uint32_t bytes_=0;
   void check(){
 #ifdef HUB75_S3_BOARD
     const char* chip="esp32s3";
@@ -21,7 +21,8 @@ class FirmwareUpdate {
     WiFiClientSecure tls;tls.setCACert(UPDATE_ROOT_CA);tls.setHandshakeTimeout(12);
     HTTPClient http;http.setConnectTimeout(8000);http.setTimeout(10000);http.useHTTP10(true);
     checkState_="manifest-download-failed";
-    if(http.begin(tls,String("https://antonvanke.github.io/HUB-75E/updates/")+chip+".json")&&http.GET()==200&&http.getSize()>0&&http.getSize()<=2048){
+    const String urls[]={String("https://antonvanke.github.io/HUB-75E/updates/")+chip+".json",String("https://cdn.jsdelivr.net/gh/AntonVanke/HUB-75E@main/docs/updates/")+chip+".json",String("https://raw.githubusercontent.com/AntonVanke/HUB-75E/main/docs/updates/")+chip+".json"};
+    for(const String& manifestUrl:urls)if(http.begin(tls,manifestUrl)&&http.GET()==200&&http.getSize()>0&&http.getSize()<=2048){
       String json=http.getString(),target;uint32_t flash=0,psram=0;
       checkState_="invalid-manifest";
       if(field(json,"version",version_)&&field(json,"chip",target)&&target==chip&&field(json,"path",path_)&&field(json,"sha256",hash_)&&number(json,"bytes",bytes_)&&number(json,"flashBytes",flash)&&number(json,"psramBytes",psram)){
@@ -29,8 +30,9 @@ class FirmwareUpdate {
         if(!newer(version_,current_))checkState_="up-to-date";
         else if(!slot||bytes_<256||bytes_>slot->size||flash>ESP.getFlashChipSize()||psram>((ESP.getPsramSize()+1048575)/1048576)*1048576)checkState_="incompatible-hardware";
         else if(!path_.startsWith("firmware/")||path_.indexOf("..")>=0||strspn(path_.c_str(),"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._/")!=path_.length()||hash_.length()!=64||strspn(hash_.c_str(),"0123456789abcdef")!=64)checkState_="invalid-asset";
-        else checkState_="available";
+        else {base_=manifestUrl.substring(0,manifestUrl.lastIndexOf("updates/"));checkState_="available";}
       }
+      if(checkState_=="available"||checkState_=="up-to-date")break;http.end();
     }
     http.end();tls.stop();
   }
@@ -63,7 +65,7 @@ public:
     bool displayed=false;
     auto fail=[&](const char* reason){state=reason;http.end();tls.stop();if(displayed&&progress)progress(0,bytes,"FAILED");return false;};
     state="downloading";
-    if(!http.begin(tls,String("https://antonvanke.github.io/HUB-75E/")+path_)||http.GET()!=200||http.getSize()!=int(bytes))return fail("firmware-download-failed");
+    if(!http.begin(tls,base_+path_)||http.GET()!=200||http.getSize()!=int(bytes))return fail("firmware-download-failed");
     uint8_t buffer[1024];auto* stream=http.getStreamPtr();
     if(stream->readBytes(buffer,24)!=24||buffer[0]!=0xe9||(buffer[12]|(buffer[13]<<8))!=chipCode)return fail("wrong-chip-image");
     if(!Update.begin(bytes,U_FLASH))return fail("ota-begin-failed");
