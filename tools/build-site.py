@@ -79,7 +79,7 @@ def main():
     (appdir / "catalog.json").write_text(encoded, encoding="utf-8")
     indexPath=output / "releases.json"
     index=json.loads(indexPath.read_text(encoding="utf-8")) if indexPath.exists() else {"schema":1,"releases":[]}
-    release={"version":version,"runtimeApi":5,"nativeAbi":1,"notes":"Clockyr 1.9.2：修复新固件误报功能版本过低；恢复方向、硬件测试和 USB 安装能力；自动安装未安装的兼容主题并优先更新已有应用，流式解析目录、失败短周期重试，显示等待及存储不足原因。", "catalog":"applications/"+version+"/catalog.json","targets":{}}
+    release={"version":version,"runtimeApi":5,"nativeAbi":1,"notes":"Clockyr 1.9.3：修复自动固件更新阻塞网页服务、慢速收包触发看门狗重启的问题；独立后台下载，主循环继续响应 HTTP，失败恢复主题。包含 1.9.2 能力检测与兼容主题自动下载修复。", "catalog":"applications/"+version+"/catalog.json","targets":{}}
     for chip in ("esp32", "esp32s3"):
         name=chip+"-v"+version
         source=ROOT / "releases" / name

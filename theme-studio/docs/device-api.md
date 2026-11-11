@@ -20,6 +20,10 @@ English: the firmware clock is listed as a protected system app at index -1. It 
 
 ## 自动固件与主题更新 / Automatic firmware and theme updates
 
+1.9.3：自动 OTA 下载和写入在独立低优先级任务执行，HTTP 服务主循环保持响应。网络接收等待主动让出 CPU，进度通过原子字段交给主循环绘制；后台任务不直接操作屏幕或共享传感器状态。网络或校验失败时释放渲染锁并恢复原主题。固件更新期间拒绝同时上传另一个固件或主题，但继续提供页面与状态查询。
+
+English: automatic OTA runs in a separate low-priority task. Receive waits yield, while HTTP and progress rendering stay in the service loop. Failures resume the previous theme; successful installs still reboot normally. Concurrent installation requests return HTTP 409.
+
 `GET /api/status` returns explicit `features`, `orientation`, `sensorCapabilities`, `flashBytes`, `updates` and `themeUpdates`. Version 1.9.2 restores capability fields that were missing from the 1.9.1 status response: clients must use these capability flags, not interpret missing flags as an older version number. `diagnostics`/`serialDiagnostics`, `serialAppInstall`, `backgroundInstall`, `wifiScan`, `discovery`, `panelTrial`, `factoryReset`, `conditionControl`, `orientation` and `screenPreview` advertise the implemented interfaces; physical sensor availability is reported separately.
 
 `POST /api/updates` controls firmware checks. `POST /api/theme-updates` accepts `enabled=true` or `enabled=false`. Enabling schedules an immediate check once setup, Wi-Fi and certificate-valid time are ready. Subsequent successful checks run every 6 hours; download failures retry after 1 minute. The device installs missing compatible applications and prioritizes newer versions of installed packages. It checks chip, ABI/API, declared sensors, memory quotas, free slots and LittleFS space before downloading, then verifies SHA-256, package identity/version and CWP3 content before replacing a package. One package is installed per pass; the next pass follows after 1 second. The active theme keeps running its current version until selected again or restarted.

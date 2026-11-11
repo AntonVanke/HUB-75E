@@ -4,7 +4,7 @@
 
 基于 ESP32 / ESP32-S3 和 HUB75 面板的 64×64 时钟。主题使用 C/C++ 编译为芯片对应的 Xtensa 机器码，打包为 CWP3；当前固件不运行 Lua。Runtime API 5，native ABI 1。
 
-**当前版本：1.9.2** · [在线烧录](https://antonvanke.github.io/HUB-75E/#flash) · [主题应用](https://antonvanke.github.io/HUB-75E/#themes) · [USB 配置](https://antonvanke.github.io/HUB-75E/#config) · [图片时钟工坊](https://antonvanke.github.io/HUB-75E/studio/index.html)
+**当前版本：1.9.3** · [在线烧录](https://antonvanke.github.io/HUB-75E/#flash) · [主题应用](https://antonvanke.github.io/HUB-75E/#themes) · [USB 配置](https://antonvanke.github.io/HUB-75E/#config) · [图片时钟工坊](https://antonvanke.github.io/HUB-75E/studio/index.html)
 
 ![磁流体时钟电脑模拟](web/previews/ferrofluid-clock.gif)
 
@@ -12,6 +12,7 @@
 
 ## 当前功能
 
+- **1.9.3 网页空响应修复**：自动 OTA 改为独立后台任务，下载、慢速收包时网页服务继续处理请求；收包等待主动让出 CPU，失败后恢复主题，避免同步更新阻塞及看门狗重启。
 - **1.9.2 能力检测与主题下载修复**：恢复状态接口的方向、硬件检测、串口安装等能力声明；自动下载未安装的兼容主题，优先更新现有应用。目录逐项解析，网络失败 1 分钟后重试，后台显示等待或失败原因。
 - **1.9.1 首次引导修复**：先确认屏幕驱动，再保存时区、亮度、重力方向，最后连接 Wi-Fi。进度保存在设备，刷新、断电可续接。确认当前轮测驱动不重启；变更驱动/时序在完成配网后统一重启应用。离线立即开启热点，联网稳定 30 秒后关闭。
 - **1.9.0 自动主题更新**：设备可在后台静默检查兼容主题，在满足芯片、传感器、代码配额和剩余空间时下载并校验新包，发现版本更新后自动替换应用。固件和主题下载按 GitHub Pages、jsDelivr、GitHub Raw 依次回退，适合国内网络环境。
@@ -32,8 +33,8 @@
 
 | 芯片 | 固件 | 应用整包 | 硬件要求 |
 | --- | --- | --- | --- |
-| ESP32 | [v1.9.2 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.9.2.zip) | [5 款应用](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | 经典 ESP32，4 MB Flash |
-| ESP32-S3 | [v1.9.2 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.9.2.zip) | [59 款应用](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | 本项目板型，至少 8 MB Flash + 8 MB OPI PSRAM |
+| ESP32 | [v1.9.3 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.9.3.zip) | [5 款应用](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | 经典 ESP32，4 MB Flash |
+| ESP32-S3 | [v1.9.3 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.9.3.zip) | [59 款应用](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | 本项目板型，至少 8 MB Flash + 8 MB OPI PSRAM |
 
 S3 N4 不适用此固件。其它板型须核对 Flash、PSRAM 和接线。
 

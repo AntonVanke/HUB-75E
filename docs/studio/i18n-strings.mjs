@@ -1,5 +1,6 @@
 import {timeStrings} from './time-settings.mjs';
 const pairs = `
+设备安装进行中，请稍后重试|A device installation is in progress. Please retry shortly.
 当前固件未报告硬件测试能力，请更新固件后重试。|The firmware did not report diagnostics support. Update the firmware and retry.
 当前固件未报告方向设置能力，请更新固件后重试。|The firmware did not report orientation support. Update the firmware and retry.
 开启后自动安装尚未安装的兼容主题，并优先更新已安装主题；之后每 6 小时检查，网络失败 1 分钟后重试。下载前检查芯片、传感器、内存配额和存储，下载后校验 SHA-256，当前主题继续运行。|Automatically installs missing compatible themes and prioritizes updates to installed apps. Checks every 6 hours and retries network failures after 1 minute. Verifies chip, sensors, memory and storage before download, then SHA-256. The current theme keeps running.

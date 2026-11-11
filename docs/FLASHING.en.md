@@ -2,7 +2,7 @@
 
 [简体中文](FLASHING.md) · English
 
-Current **1.9.2**: [ESP32 4 MB](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.9.2.zip) · [ESP32-S3 8 MB Flash + 8 MB OPI PSRAM](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.9.2.zip). S3 N4 is unsupported. Older versions remain for historical devices and rollback.
+Current **1.9.3**: [ESP32 4 MB](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.9.3.zip) · [ESP32-S3 8 MB Flash + 8 MB OPI PSRAM](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.9.3.zip). S3 N4 is unsupported. Older versions remain for historical devices and rollback.
 
 ## Web flashing
 
