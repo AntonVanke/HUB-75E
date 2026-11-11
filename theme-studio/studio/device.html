@@ -129,6 +129,7 @@ function status(data,initial=false){
  latestStatus=data;
  const trial=data.panelTrial,setup=data.setup;
  wizard.update(data);
+ $('panel-config').querySelector('button:not([type])').textContent=setup?.required?'确认屏幕设置并继续':'保存屏幕设置并重启';
  $('factory-controls').hidden=data.features?.factoryReset!==1;
  $('panel-trial-controls').hidden=data.features?.panelTrial!==1;
  if(trial){
@@ -226,7 +227,7 @@ $('panel-driver').addEventListener('change',panelDriverFields);
 $('panel-config').addEventListener('change',()=>{panelDirty=true;$('panel-dirty').textContent='屏幕设置有未保存的修改';});
 $('panel-config').onsubmit=async e=>{
  e.preventDefault();const button=e.target.querySelector('button:not([type])');button.disabled=true;
- try{const data=await request('panel',{method:'POST',body:new URLSearchParams(new FormData(e.target))});panelDirty=false;message(data.message);$('panel-dirty').textContent='已保存，正在重启设备…';clearTimeout(timer);timer=setTimeout(poll,7000);}
+ try{const data=await request('panel',{method:'POST',body:new URLSearchParams(new FormData(e.target))});panelDirty=false;message(data.message);$('panel-dirty').textContent=data.message;clearTimeout(timer);timer=setTimeout(poll,data.reboot===false?250:7000);}
  catch(e){message(e.message,true);}finally{button.disabled=false;}
 };
 for(const action of ['start','pause','next','keep','stop'])$('panel-trial-'+action).onclick=async()=>{
@@ -235,8 +236,9 @@ for(const action of ['start','pause','next','keep','stop'])$('panel-trial-'+acti
  try{
   const result=await request('panel/trial',{method:'POST',body:new URLSearchParams({action:operation})});
   if(operation==='keep')panelDirty=false;
-  message(['pause','resume'].includes(operation)?result.message:'正在切换驱动，设备将短暂重启；页面会自动重连。');
-  clearTimeout(timer);timer=setTimeout(poll,['pause','resume'].includes(operation)?500:4000);
+  const reboot=!['pause','resume'].includes(operation)&&!(operation==='keep'&&latestStatus?.setup?.required);
+  message(reboot?'正在切换驱动，设备将短暂重启；页面会自动重连。':result.message);
+  clearTimeout(timer);timer=setTimeout(poll,reboot?4000:250);
  }catch(e){message(e.message,true);}finally{button.disabled=false;}
 };
 $('resume-setup').onclick=async()=>{try{await request('setup',{method:'POST',body:new URLSearchParams({action:'resume'})});status(await request('status'));}catch(e){message(e.message,true);}};

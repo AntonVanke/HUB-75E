@@ -1158,3 +1158,22 @@ Object.assign(strings,{
  "未知亮度操作":"Unknown brightness action",
  "遮挡保护参数无效":"Invalid obstruction protection setting"
 });
+
+Object.assign(strings,{
+ "1 / 3 · 确认屏幕驱动":"1 / 3 · Display driver",
+ "2 / 3 · 其它设置":"2 / 3 · Preferences",
+ "3 / 3 · 连接 Wi-Fi":"3 / 3 · Connect Wi-Fi",
+ "确认画面和 RGB 色彩后保存屏幕设置，继续下一步。保留当前轮测驱动无需重启；更改驱动或时序将在完成配网后统一应用。":"Check the picture and RGB colors, then save to continue. Keeping the tested driver needs no restart. Changed driver or timing settings apply after Wi-Fi setup.",
+ "设置时区、亮度和重力自动旋转，保存后继续配网。已保存的进度在刷新或断电后恢复。":"Set timezone, brightness and gravity rotation, then save to continue. Saved progress resumes after a refresh or power cycle.",
+ "扫描并连接当前地点的 Wi-Fi，成功后自动完成引导并初始化空白应用存储。热点将在联网稳定 30 秒后关闭。":"Scan and connect to the local Wi-Fi to finish setup and initialize empty application storage. The setup hotspot closes after 30 seconds of stable connectivity.",
+ "保存并继续配网":"Save and continue to Wi-Fi",
+ "Wi-Fi 已连接，正在完成设置…":"Wi-Fi connected. Finishing setup…",
+ "未检测到光敏电阻，使用固定亮度。":"No light sensor detected. Using fixed brightness.",
+ "已检测到光敏电阻。":"Light sensor detected.",
+ "当前设备不支持重力自动旋转。":"Gravity rotation is unavailable on this device.",
+ "可根据重力调整显示方向。":"The display can rotate with gravity.",
+ "确认屏幕设置并继续":"Confirm display and continue",
+ "屏幕设置已保存，请继续其它设置":"Display saved. Continue with preferences",
+ "请按顺序确认屏幕、其它设置并连接 Wi-Fi":"Confirm the display and preferences before connecting Wi-Fi",
+ "引导进度保存失败":"Could not save setup progress"
+});

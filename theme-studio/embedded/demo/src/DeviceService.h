@@ -87,6 +87,7 @@ private:
   String apName_,apPassword_;
   bool ap_=false,connecting_=false,wifiStartPending_=false,ota_=false,locked_=false,fs_=false,scriptLocked_=false;
   uint32_t connectAt_=0,retryAt_=0,restartAt_=0,rotateAt_=0,otaAt_=0;
+  uint32_t apConnectedAt_=0;
   const char* restartReason_="unspecified";
   void scheduleRestart(uint32_t delay,const char* reason){restartAt_=millis()+delay;restartReason_=reason;}
   mbedtls_sha256_context hash_;
@@ -156,7 +157,10 @@ private:
   String trialJson()const;
   bool factoryReset(const String& confirmation,String& error);
   bool factoryResetting_=false,setupRequired_=false;
-  bool manualSetup_=false,autoSetupAttempted_=false;
+  bool autoSetupAttempted_=false;
+  int setupStep_=1;
+  bool panelRestartRequired_=false;
+  String activePanelOrder_;
   bool bootRaw_=true,bootStable_=true,bootArmed_=false;
   uint32_t bootChanged_=0,bootClicked_=0;
   void pollSetupButton();

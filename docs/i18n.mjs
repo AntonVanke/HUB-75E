@@ -61,7 +61,11 @@ export const translations = {
   "应用已安装，当前主题继续运行；点击运行以启用新版本":"App installed. Current theme keeps running; click Run to activate the new version",
 
   "完成首次设置":"Finish first-time setup",
-  "先连接 Wi-Fi，再保存屏幕驱动，最后完成设置以自动初始化空白应用存储；也可打开设备后台使用分步引导。":"Connect Wi-Fi, save the display driver, then finish setup to initialize empty application storage. You can also use the step-by-step wizard on the device.",
+  "先确认屏幕驱动，再保存时区、亮度和方向，点击继续配网，最后连接 Wi-Fi。设备保存引导进度，可随时继续。":"Confirm the display, save timezone, brightness and orientation, then continue to Wi-Fi. Progress is saved on the device.",
+  "其它设置已保存，继续配网":"Preferences saved, continue to Wi-Fi",
+  "1 / 3 · 确认屏幕驱动":"1 / 3 · Display driver",
+  "2 / 3 · 其它设置":"2 / 3 · Preferences",
+  "3 / 3 · 连接 Wi-Fi":"3 / 3 · Connect Wi-Fi",
   "完成设置并初始化存储":"Finish setup and initialize storage",
   "跳过引导，手动配置":"Skip wizard and configure manually",
 

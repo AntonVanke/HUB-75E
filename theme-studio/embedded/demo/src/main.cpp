@@ -401,7 +401,7 @@ static void renderTask(void*){
   }
 }
 void setup(){
-  Serial.begin(115200);setCpuFrequencyMhz(240);service.eventLog.begin("1.9.0");
+  Serial.begin(115200);setCpuFrequencyMhz(240);service.eventLog.begin("1.9.1");
   service.panelTrial.begin();
   orientation.configure(panelOrientation());
 #ifdef HUB75_S3_BOARD

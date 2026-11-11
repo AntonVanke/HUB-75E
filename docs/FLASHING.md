@@ -2,7 +2,7 @@
 
 简体中文 · [English](FLASHING.en.md)
 
-当前版本 **1.7.0**：[ESP32 4 MB](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.7.0.zip) · [ESP32-S3 8 MB Flash + 8 MB OPI PSRAM](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.7.0.zip)。S3 N4 不适用。旧版保留用于历史设备与回退。
+当前版本 **1.9.1**：[ESP32 4 MB](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.9.1.zip) · [ESP32-S3 8 MB Flash + 8 MB OPI PSRAM](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.9.1.zip)。S3 N4 不适用。旧版保留用于历史设备与回退。
 
 ## 在线安装与更新
 
@@ -32,6 +32,9 @@ Linux/macOS：`sh ./flash.sh /dev/ttyUSB0`；macOS 端口常为 `/dev/cu.usbseri
 经典 bootloader 位于 `0x1000`，S3 为 `0x0`；分区表 `0x8000`，OTA 初始数据 `0xe000`，app0 `0x10000`。两者合并镜像均从 `0x0` 写入，DIO/40 MHz；S3 OPI 指 PSRAM。摘要见各包 `SHA256SUMS`。
 
 ## 配网和应用
+
+首次引导按屏幕驱动 → 时区/自动亮度/重力方向 → Wi-Fi 进行。每步保存进度，刷新或断电后继续。确认当前驱动不重启；如修改驱动或时序，在联网完成后等待至少 30 秒再统一重启应用。未联网时立即启动热点，连接 Wi-Fi 并获得 IP 后连续 30 秒关闭热点，期间掉线重新计时。主题存储在引导完成后初始化。
+
 
 首次热点 `HUB75-xxxx`，默认密码 **12345678**，后台 [http://192.168.4.1/](http://192.168.4.1/)，以屏幕/串口返回值为准。联网后显示 IP 并倒计时 5 秒进入主题。
 

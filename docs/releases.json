@@ -2,6 +2,39 @@
   "schema": 1,
   "releases": [
     {
+      "version": "1.9.1",
+      "runtimeApi": 5,
+      "nativeAbi": 1,
+      "notes": "Clockyr：四源并行 NTP、其它设置中的时区与校时；重力水 v1.3.0 不规则注水、0.5–6 秒可调、70% 水量；设备后台静默更新兼容主题，GitHub Pages、jsDelivr、GitHub Raw 三路回退。",
+      "catalog": "applications/1.9.1/catalog.json",
+      "targets": {
+        "esp32": {
+          "chip": "esp32",
+          "flashBytes": 4194304,
+          "psramBytes": 0,
+          "manifest": "firmware/esp32-v1.9.1/manifest.json",
+          "updateManifest": "firmware/esp32-v1.9.1/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32-v1.9.1/app.bin",
+            "bytes": 1492384,
+            "sha256": "2e17a7024684f25aef7b63daec7f4278312d90a721f7b6fda04bfc6bce8bf40e"
+          }
+        },
+        "esp32s3": {
+          "chip": "esp32s3",
+          "flashBytes": 8388608,
+          "psramBytes": 8388608,
+          "manifest": "firmware/esp32s3-v1.9.1/manifest.json",
+          "updateManifest": "firmware/esp32s3-v1.9.1/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32s3-v1.9.1/app.bin",
+            "bytes": 1499968,
+            "sha256": "aaeea8df419dfbefe6651695debfa5b7b1197cf9603be0e8ccdc95882b8db7ea"
+          }
+        }
+      }
+    },
+    {
       "version": "1.9.0",
       "runtimeApi": 5,
       "nativeAbi": 1,
@@ -497,5 +530,5 @@
       }
     }
   ],
-  "latest": "1.9.0"
+  "latest": "1.9.1"
 }

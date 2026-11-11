@@ -2,7 +2,7 @@
 
 [简体中文](FLASHING.md) · English
 
-Current **1.7.0**: [ESP32 4 MB](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.7.0.zip) · [ESP32-S3 8 MB Flash + 8 MB OPI PSRAM](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.7.0.zip). S3 N4 is unsupported. Older versions remain for historical devices and rollback.
+Current **1.9.1**: [ESP32 4 MB](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.9.1.zip) · [ESP32-S3 8 MB Flash + 8 MB OPI PSRAM](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.9.1.zip). S3 N4 is unsupported. Older versions remain for historical devices and rollback.
 
 ## Web flashing
 
@@ -98,3 +98,5 @@ python tools/build-site.py
 ```
 
 After editing themes run `python theme-studio/native/build.py` first. PlatformIO uses `espressif32@6.10.0`; the current packager follows root VERSION. `package-releases.py` only repackages historical fixed-hash binaries. Downloads exclude personal NVS, Wi-Fi passwords and logs.
+
+Setup proceeds through display driver → timezone/auto brightness/gravity rotation → Wi-Fi. Each saved step survives refresh and power loss. Confirming the tested driver does not reboot. Changed driver/timing settings apply with one restart at least 30 seconds after setup completes. The hotspot opens immediately offline and closes after 30 continuous seconds with a Wi-Fi IP. Disconnection resets that timer. Empty app storage is initialized after setup.

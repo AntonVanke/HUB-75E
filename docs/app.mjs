@@ -344,7 +344,9 @@ function updateStatus(data) {
   device = data;
   clockSettings.update(data.timeSync);
   $('serial-setup').hidden=!data.setup?.required||!data.setup?.wizard;
-  $('finish-setup').disabled=!data.connected||!data.setup?.panelChosen;
+  $('finish-setup').disabled=!data.connected||!data.setup?.panelChosen||Number(data.setup?.step)!==3;
+  $('setup-wifi').hidden=Number(data.setup?.step)!==2;
+  $('setup-progress').textContent=t(['1 / 3 · 确认屏幕驱动','2 / 3 · 其它设置','3 / 3 · 连接 Wi-Fi'][(data.setup?.step||1)-1]);
   for (const key of ['chip', 'version', 'ip', 'brightness', 'timezone']) $('status-' + key).textContent = String(data[key] ?? '—');
   const theme = data.baseTheme ?? data.theme;
   $('status-theme').textContent = themeLabel(theme);
@@ -777,3 +779,5 @@ $('wifi-scan').onclick=()=>action(async()=>{
 });
 
 for(const operation of ['finish','skip'])$(operation+'-setup').onclick=()=>action(async()=>{await requestSerial({cmd:'setup',action:operation},data=>typeof data.ok==='boolean',30000);await requestSerial({cmd:'status'},data=>Boolean(data.chip&&data.version));});
+
+$('setup-wifi').onclick=()=>action(async()=>{await requestSerial({cmd:'config',...settingsDraft()},d=>typeof d.ok==='boolean');await requestSerial({cmd:'setup',action:'wifi'},d=>typeof d.ok==='boolean');await requestSerial({cmd:'status'},d=>Boolean(d.chip&&d.version));});
