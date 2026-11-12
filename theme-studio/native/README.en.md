@@ -12,6 +12,8 @@ The image editor supports up to 32 PNG/JPEG/WebP slides, 1–3600 seconds per sl
 
 Exported CWP3 contains metadata, resources and machine code, not the editable C/C++ project. Installation validates structure without running the app. Click Run to activate it. Updating the active app retains its old resources until the next run/reboot.
 
+Particle Time v1.1.0 (ESP32-S3) dissolves the clock digits themselves into particles, then reassembles the current time along randomized curves. It repeats roughly every 7–11 seconds and also triggers on minute changes or a button request. Launch delays, paths and destination order vary each cycle; settled digits remain crisp. It targets 60 FPS with an 8 KiB state budget, no animation asset and no per-frame allocations. Update the existing `org.clockwise.particle-time` app; no firmware update is required.
+
 ## Build
 
 Install the repository's PlatformIO toolchain, then run from the repository root:

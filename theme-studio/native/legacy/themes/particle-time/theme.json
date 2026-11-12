@@ -2,21 +2,19 @@
   "id": "particle-time",
   "packageName": "org.clockwise.particle-time",
   "title": "Particle Time",
-  "appVersion": "1.0.0",
-  "description": "流动星尘与大字时钟",
+  "appVersion": "1.1.0",
+  "description": "时钟数字随机散成粒子，再沿曲线聚合成当前时间",
   "author": "Clockwise Theme Studio",
   "category": "粒子",
   "width": 64,
   "height": 64,
-  "resources": {
-    "background": "background.cwa"
-  },
+  "resources": {},
   "requirements": {
     "chips": [
       "esp32s3"
     ],
     "psramBytes": 0,
-    "stateBytes": 49152,
+    "stateBytes": 8192,
     "graphicsBytes": 8192,
     "targetFps": 60,
     "sensors": []

@@ -490,8 +490,8 @@
       "id": "particle-time",
       "packageName": "org.clockwise.particle-time",
       "title": "Particle Time",
-      "appVersion": "1.0.0",
-      "description": "流动星尘与大字时钟",
+      "appVersion": "1.1.0",
+      "description": "时钟数字随机散成粒子，再沿曲线聚合成当前时间",
       "author": "Clockwise Theme Studio",
       "category": "粒子",
       "width": 64,
@@ -501,12 +501,12 @@
           "esp32s3"
         ],
         "psramBytes": 0,
-        "stateBytes": 49152,
+        "stateBytes": 8192,
         "graphicsBytes": 8192,
         "targetFps": 60,
         "sensors": [],
-        "codeBytes": 6456,
-        "dataBytes": 176
+        "codeBytes": 2944,
+        "dataBytes": 112
       },
       "verification": {
         "status": "unverified"
@@ -515,8 +515,8 @@
       "nativeAbi": 1,
       "runtimeApi": 4,
       "file": "particle-time-esp32s3.cwp",
-      "bytes": 60637,
-      "sha256": "46a623ed4e4b71fb31d6c3f4d070c413503d51c78bffc6253b67832e7bb6e0bd"
+      "bytes": 3806,
+      "sha256": "80792546e1450e697878f224c07230b0620148957ee0045aa91af358cd0b906f"
     },
     {
       "id": "zelda-sunrise",

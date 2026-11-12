@@ -224,16 +224,18 @@ CW_EXPORT const CwTheme* cw_theme(){{
 """
 
 
-def generate():
+def generate(only=None):
     themes = json.loads((PROJECT / "themes/catalog.json").read_text(encoding="utf-8"))["themes"]
     folders = []
     for item in themes:
-        if item["id"] in EXISTING:
+        if item["id"] in EXISTING or only is not None and item["id"] not in only:
             continue
         project = json.loads((PROJECT / item["path"].lstrip("/")).read_text(encoding="utf-8"))
         folder = ROOT / "themes" / project["id"]
         folder.mkdir(parents=True, exist_ok=True)
         background = project.get("media", [])
+        if project["id"] == "particle-time":
+            background = []
         resources = {}
         size = 0
         if background:
@@ -274,6 +276,10 @@ def generate():
                 "utcOffset": {"label": "时区 UTC 偏移 / UTC offset", "min": -12,
                               "max": 14, "step": .25, "default": 8}
             }
+        if project["id"] == "particle-time":
+            manifest["appVersion"] = "1.1.0"
+            manifest["description"] = "时钟数字随机散成粒子，再沿曲线聚合成当前时间"
+            manifest["requirements"]["stateBytes"] = 8192
         (folder / "theme.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         folders.append(folder)
     return folders
