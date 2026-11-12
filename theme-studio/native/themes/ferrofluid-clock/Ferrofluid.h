@@ -2,12 +2,12 @@
 #include <stdint.h>
 #include <math.h>
 
-// 2D particle fluid, magnetic digit poles and an implicit, shaded liquid surface.
+// Immiscible black drops in a filled transparent oil cell, over a white backing.
 // Fixed storage and a spatial hash keep the frame path allocation-free.
 class Ferrofluid {
 public:
   static const int PerDigit=60,ColonStart=PerDigit*4,N=ColonStart+12;
-  float magnet=1.6f,gravity=.6f,viscosity=1,shake=1,cohesion=1.2f,morph=2.4f;
+  float magnet=1.6f,gravity=.6f,viscosity=1,shake=1,cohesion=1.2f,morph=2.4f,buoyancy=.7f;
   struct Particle {float x,y,vx,vy,px,py,pressure,nearPressure,mx,my,targetX,targetY;};
   Particle particles[N];
   uint16_t nearest[4096],surface[4096],seeds[512],goals[N];
@@ -19,7 +19,7 @@ public:
     lightX+=(limit(-.65f+(valid?gx*.85f:0),-1,1)-lightX)*a;
     lightY+=(limit(-.25f+(valid?gy*.85f:0),-1,1)-lightY)*a;
   }
-  float accumulated=0,slowX=0,slowY=1,omega=0,energy=0,shapeTime[4]={};
+  float accumulated=0,slowX=0,slowY=1,omega=0,energy=0,oilX=0,oilY=0,oilSpin=0,shapeTime[4]={};
   int digits[4]={-1,-1,-1,-1};
   uint32_t rng=784891;int seedCount=0,hour=-1,minute=-1;bool magnetic=true,inputReady=false;
   static float limit(float v,float a,float b){return v<a?a:v>b?b:v;}
@@ -81,7 +81,7 @@ public:
   }
   void reset(int h,int m){
     for(int j=0;j<PerDigit;j++){float a=j*2.399963f,r=3.8f*sqrtf((j+.5f)/PerDigit);poolX[j]=cosf(a)*r;poolY[j]=sinf(a)*r*.75f;}
-    hour=minute=-1;for(auto& d:digits)d=-1;clock(h,m);magnetic=true;inputReady=false;accumulated=omega=energy=0;
+    hour=minute=-1;for(auto& d:digits)d=-1;clock(h,m);magnetic=true;inputReady=false;accumulated=omega=energy=oilX=oilY=oilSpin=0;
     for(int i=0;i<256;i++){float d=sqrtf((i+.5f)*9.f/256);weight[i]=1-d/3;inverse[i]=1/d;}
     for(int group=0;group<4;group++){shapeTime[group]=-group*.45f;}
     for(int i=0;i<N;i++){
@@ -96,7 +96,7 @@ public:
     x=xs[index/PerDigit]+4.5f+poolX[j];y=43+poolY[j];
   }
   void rotate(int turns){
-    turns=(turns%4+4)%4;while(turns--){for(auto& p:particles){float x=p.x,v=p.vx;p.x=p.y;p.y=63-x;p.vx=p.vy;p.vy=-v;}}
+    turns=(turns%4+4)%4;while(turns--){for(auto& p:particles){float x=p.x,v=p.vx;p.x=p.y;p.y=63-x;p.vx=p.vy;p.vy=-v;}float x=oilX;oilX=oilY;oilY=-x;}
     inputReady=false;
   }
   void advance(float milliseconds,float gx,float gy,float gzDps){
@@ -107,8 +107,14 @@ public:
   void step(float gx,float gy,float gzDps){
     const float dt=1.f/240;for(auto& time:shapeTime)time=limit(time+dt,-2,6);gx=limit(gx,-4,4);gy=limit(gy,-4,4);
     slowX+=(gx-slowX)*.025f;slowY+=(gy-slowY)*.025f;
-    const float fx=gx*180*gravity+(gx-slowX)*2200*shake,fy=gy*180*gravity+(gy-slowY)*2200*shake;
-    const float shock=(gx-slowX)*(gx-slowX)+(gy-slowY)*(gy-slowY),field=1/(1+shock*1.8f*shake);
+    const float impulseX=(gx-slowX)*shake,impulseY=(gy-slowY)*shake;
+    const float reducedGravity=180*gravity*(1-buoyancy);
+    const float fx=gx*reducedGravity+impulseX*1800,fy=gy*reducedGravity+impulseY*1800;
+    // A reduced surrounding-oil flow retains momentum, then viscously decays.
+    // Buoyancy reduces settling; it does not weaken the external magnetic field.
+    oilX=limit((oilX+impulseX*480*dt)/(1+dt*3.5f*viscosity),-65,65);
+    oilY=limit((oilY+impulseY*480*dt)/(1+dt*3.5f*viscosity),-65,65);
+    oilSpin+=(limit(-gzDps*.0174533f,-8,8)-oilSpin)*.012f;
     omega+=(limit(-gzDps*.0174533f,-10,10)-omega)*.12f;
     for(auto& v:heads)v=-1;
     for(int i=0;i<N;i++){
@@ -125,12 +131,15 @@ public:
         const float follow=forming<1?.045f:.035f;
         p.targetX+=(targetX-p.targetX)*follow;p.targetY+=(targetY-p.targetY)*follow;
         float hx=p.targetX-p.x,hy=p.targetY-p.y,d2=hx*hx+hy*hy;
-        float gather=1500*magnet*field/(1+.0015f*d2);ax+=hx*gather;ay+=hy*gather;
-        if(d2>.12f){float inv=1/sqrtf(d2);p.mx=hx*inv;p.my=hy*inv;}else p.my=-1;
+        // Bounded field-gradient force: distant drops drift back instead of snapping.
+        const float distance=sqrtf(d2),gather=1500*magnet/(1+distance*.45f);ax+=hx*gather;ay+=hy*gather;
+        if(d2>.12f){float inv=1/distance;p.mx=hx*inv;p.my=hy*inv;}else p.my=-1;
       }
       ax+=limit((p.x-31.5f)*omega*omega*.12f+2*omega*p.vy*.12f,-1200,1200);
       ay+=limit((p.y-31.5f)*omega*omega*.12f-2*omega*p.vx*.12f,-1200,1200);
-      p.vx=limit((p.vx+ax*dt)*(1-.023f*viscosity),-280,280);p.vy=limit((p.vy+ay*dt)*(1-.023f*viscosity),-280,280);
+      const float drag=9*viscosity,flowX=oilX+(p.y-31.5f)*oilSpin*.18f,flowY=oilY-(p.x-31.5f)*oilSpin*.18f;
+      p.vx=limit((p.vx+(ax+drag*flowX)*dt)/(1+drag*dt),-280,280);
+      p.vy=limit((p.vy+(ay+drag*flowY)*dt)/(1+drag*dt),-280,280);
       p.x=limit(p.x+p.vx*dt,1.1f,61.9f);p.y=limit(p.y+p.vy*dt,1.1f,61.9f);
       int cell=int(p.y/4)*16+int(p.x/4);links[i]=heads[cell];heads[cell]=i;
     }
@@ -186,32 +195,32 @@ public:
       for(int y=0;y<64;y++)row[y]=(surface[imax(0,y-1)*64+x]+2*surface[y*64+x]+surface[imin(63,y+1)*64+x])/4;
       for(int y=0;y<64;y++)surface[y*64+x]=row[y];
     }
-    const float sx=-lightX*3.f,sy=-lightY*3.f;
+    const float sx=-lightX*1.7f,sy=-lightY*1.7f;
     const int dx=int(floorf(sx)),dy=int(floorf(sy));
     const int wx=int((sx-dx)*256),wy=int((sy-dy)*256);
     const float norm=1.f/sqrtf(lightX*lightX+lightY*lightY+.48f*.48f);
     const float lx=lightX*norm,ly=lightY*norm,lz=.48f*norm;
     for(int y=0;y<64;y++)for(int x=0;x<64;x++){
-      int at=y*64+x;float illumination=1-.16f*x/63.f-.09f*y/63.f;
-      const int grain=int((uint32_t(x*917+y*313)*1664525u+1013904223u)>>30)-1;
-      int r=int(215*illumination)+grain,g=int(179*illumination)+grain,b=int(122*illumination)+grain;
-      if(!x||x==63||!y||y==63){pixels[at]=color(55,45,33);continue;}
+      int at=y*64+x;
+      int r=255,g=255,b=255;
+      // No free surface or decorative bubbles: the clear-oil cell is completely full.
+      if(!x||x==63||!y||y==63){pixels[at]=color(239,243,247);continue;}
       const int ax=imin(63,imax(0,x-dx)),bx=imin(63,imax(0,x-dx-1));
       const int ay=imin(63,imax(0,y-dy)),by=imin(63,imax(0,y-dy-1));
       const int upper=(surface[ay*64+ax]*(256-wx)+surface[ay*64+bx]*wx)>>8;
       const int lower=(surface[by*64+ax]*(256-wx)+surface[by*64+bx]*wx)>>8;
       const int shadow=2*((upper*(256-wy)+lower*wy)>>8);
-      const float shadeBack=1-.30f*limit(shadow/1300.f,0,1);r=int(r*shadeBack);g=int(g*shadeBack);b=int(b*shadeBack);
+      const float shadeBack=1-.13f*limit(shadow/1300.f,0,1);r=int(r*shadeBack);g=int(g*shadeBack);b=int(b*shadeBack);
       int f=surface[at];
       if(f>60){
         float nx=(float(surface[at-1])-surface[at+1])*.005f,ny=(float(surface[at-64])-surface[at+64])*.005f;
         float inv=1/sqrtf(nx*nx+ny*ny+1),light=limit((lx*nx+ly*ny+lz)*inv,0,1);
-        float shine=light*light;shine*=shine;shine*=shine;
+        float shine=light*light;shine*=shine;shine*=shine;shine*=shine;
         float gradient=sqrtf(nx*nx+ny*ny)*100;
-        int edge=int(limit((f-210)/(gradient+30)+.5f,0,1)*255),spec=int(shine*210),dark=7+int(light*4);
+        int edge=int(limit((f-210)/(gradient+30)+.5f,0,1)*255),spec=int(shine*45),dark=3+int(light*3);
         r=(r*(255-edge)+(dark+spec)*edge)/255;
         g=(g*(255-edge)+(dark+spec)*edge)/255;
-        b=(b*(255-edge)+(dark+spec+3)*edge)/255;
+        b=(b*(255-edge)+(dark+spec)*edge)/255;
       }
       pixels[at]=color(r,g,b);
     }

@@ -1,7 +1,7 @@
 #include "cw_theme.h"
 #include "Ferrofluid.h"
 struct State {Ferrofluid fluid;int rotation;bool valid;};
-static bool start(void* p,const CwApi* a){auto& s=*(State*)p;auto t=a->clock(a->context);s.fluid.magnet=a->data(a->context,"setting.magnet",1.6f);s.fluid.gravity=a->data(a->context,"setting.gravity",.6f);s.fluid.viscosity=a->data(a->context,"setting.viscosity",1);s.fluid.shake=a->data(a->context,"setting.shake",1);s.fluid.cohesion=a->data(a->context,"setting.cohesion",1.2f);s.fluid.morph=a->data(a->context,"setting.morph",2.4f);s.fluid.rng=784891;s.fluid.reset(t.hour,t.minute);s.rotation=int(a->data(a->context,"screen_rotation",0))/90;return true;}
+static bool start(void* p,const CwApi* a){auto& s=*(State*)p;auto t=a->clock(a->context);s.fluid.magnet=a->data(a->context,"setting.magnet",1.6f);s.fluid.gravity=a->data(a->context,"setting.gravity",.6f);s.fluid.viscosity=a->data(a->context,"setting.viscosity",1);s.fluid.shake=a->data(a->context,"setting.shake",1);s.fluid.cohesion=a->data(a->context,"setting.cohesion",1.2f);s.fluid.morph=a->data(a->context,"setting.morph",2.4f);s.fluid.buoyancy=a->data(a->context,"setting.buoyancy",.7f);s.fluid.rng=a->random(a->context)|1;s.fluid.reset(t.hour,t.minute);s.rotation=int(a->data(a->context,"screen_rotation",0))/90;return true;}
 static bool update(void* p,const CwApi* a,uint32_t dt){
   auto& s=*(State*)p;auto t=a->clock(a->context);s.fluid.clock(t.hour,t.minute);
   int rotation=int(a->data(a->context,"screen_rotation",0))/90;if(rotation!=s.rotation){s.fluid.rotate(rotation-s.rotation);s.rotation=rotation;}

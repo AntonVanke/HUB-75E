@@ -119,21 +119,21 @@
       "packageName": "org.clockwise.ferrofluid-clock",
       "id": "ferrofluid-clock",
       "title": "磁流体时钟",
-      "appVersion": "1.4.0",
-      "description": "S3 专用：黑色油性液滴聚合成字，磁场约束、惯性摇散、重力回落与光泽液面；参数可调。",
+      "appVersion": "1.5.0",
+      "description": "S3 专用：白底黑色磁流体数字，浸于透明油液；浮力、油阻力、惯性晃散与磁场回聚，参数可调。",
       "author": "HUB-75E",
       "requirements": {
         "sensors": [
           "imu"
         ],
         "targetFps": 120,
-        "stateBytes": 49152,
+        "stateBytes": 36864,
         "graphicsBytes": 8192,
         "chips": [
           "esp32s3"
         ],
-        "codeBytes": 13896,
-        "dataBytes": 500,
+        "codeBytes": 14112,
+        "dataBytes": 520,
         "psramBytes": 0
       },
       "parameters": {
@@ -178,14 +178,21 @@
           "max": 6,
           "step": 0.1,
           "default": 2.4
+        },
+        "buoyancy": {
+          "label": "油中浮力 / Buoyancy",
+          "min": 0,
+          "max": 0.95,
+          "step": 0.05,
+          "default": 0.7
         }
       },
       "runtime": "native",
       "nativeAbi": 1,
       "runtimeApi": 5,
       "file": "ferrofluid-clock-esp32s3.cwp",
-      "bytes": 15643,
-      "sha256": "27179338b140b7dc056a301707469abb0d0a0fa164267a2af2ac4141543d2866",
+      "bytes": 15988,
+      "sha256": "4de9c9ff54ac6b87fc0183eebe67a7beec648c4dd3402fe2ca19c8bd5a657b15",
       "path": "applications/1.10.0/ferrofluid-clock-esp32s3.cwp",
       "firmwareVersion": "1.10.0"
     },
