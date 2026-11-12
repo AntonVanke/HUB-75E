@@ -8,7 +8,7 @@
   <title>Clockyr · HUB75 像素时钟</title>
   <link rel="stylesheet" href="style.css">
   <script type="module" src="vendor/esp-web-tools-10.1.0/install-button.js"></script>
-  <script type="module" src="app.mjs?v=1.9.3-offline"></script>
+  <script type="module" src="app.mjs?v=1.10.0-offline"></script>
 </head>
 <body>
   <header class="hero">
@@ -34,15 +34,15 @@
           <fieldset class="board-picker"><legend class="sr-only">硬件型号</legend>
             <label class="board-option"><input type="radio" name="board" value="esp32" checked><span><strong>ESP32</strong><small>4 MB Flash · 无 PSRAM</small></span></label>
             <label class="board-option"><input type="radio" name="board" value="esp32s3"><span><strong>ESP32-S3</strong><small>至少 8 MB Flash · 8 MB OPI PSRAM</small></span></label>
-          </fieldset><label>发布版本<select id="release-version"><option>1.9.3</option></select></label><label>烧录方式<select id="flash-mode"><option value="update">更新固件，保留设置和应用</option><option value="install">全新安装，重置设置</option></select></label>
+          </fieldset><label>发布版本<select id="release-version"><option>1.10.0</option></select></label><label>烧录方式<select id="flash-mode"><option value="update">更新固件，保留设置和应用</option><option value="install">全新安装，重置设置</option></select></label>
           <p id="board-note" class="note">适用于本项目经典 ESP32 接线与 4 MB Flash 分区。</p>
           <div class="install-row">
-            <esp-web-install-button id="installer" manifest="firmware/esp32-v1.9.3/update-manifest.json">
+            <esp-web-install-button id="installer" manifest="firmware/esp32-v1.10.0/update-manifest.json">
               <button id="install-button" class="primary" slot="activate" type="button">连接并烧录 ESP32</button>
               <span slot="unsupported" class="note">此浏览器不支持在线烧录，请下载离线包。</span>
               <span slot="not-allowed" class="note">请通过 HTTPS 或 localhost 打开此页。</span>
             </esp-web-install-button>
-            <a id="release-link" class="button secondary" href="firmware/esp32-v1.9.3.zip" target="_blank" rel="noopener noreferrer">下载离线包 ↗</a>
+            <a id="release-link" class="button secondary" href="firmware/esp32-v1.10.0.zip" target="_blank" rel="noopener noreferrer">下载离线包 ↗</a>
           </div>
           <p id="flash-support" class="small" role="status"></p>
         </article>
@@ -53,7 +53,7 @@
 
     <section id="panel-themes" role="tabpanel" aria-labelledby="tab-themes" hidden>
       <div class="section-heading"><div><p class="eyebrow">THEME LIBRARY</p><h2>小屏幕，大世界 <span id="theme-count" class="count">—</span></h2><p>电脑直接下载主题包，通过 USB 串口传给设备；无需设备访问 GitHub。</p></div><a class="button secondary" href="studio/index.html">进入主题工坊 ↗</a></div>
-      <div class="card theme-connection"><div class="connection-actions"><button id="theme-connect" type="button" class="primary">连接 USB 串口</button><button id="theme-disconnect" type="button" class="secondary" disabled>断开</button><button id="theme-read-apps" type="button" class="secondary" data-connected disabled>刷新已安装应用</button><span id="theme-connection-state" class="tag">未连接</span></div><p id="theme-serial-note" class="small">桌面 Chrome / Edge · 连接后自动识别芯片并显示安装、运行与卸载按钮。</p><p id="theme-message" role="status"></p></div>
+      <div class="card theme-connection"><div class="connection-actions"><button id="theme-connect" type="button" class="primary">连接 USB 串口</button><button id="theme-disconnect" type="button" class="secondary" disabled>断开</button><button id="theme-read-apps" type="button" class="secondary" data-connected disabled>刷新已安装应用</button><button id="theme-check-updates" type="button" data-connected disabled>检查主题更新</button><span id="theme-connection-state" class="tag">未连接</span></div><p id="theme-serial-note" class="small">桌面 Chrome / Edge · 连接后自动识别芯片并显示安装、运行与卸载按钮。</p><p id="theme-message" role="status"></p></div>
       <details class="card"><summary>查看设备画面</summary><div id="theme-screen-preview"></div></details>
       <div class="card theme-toolbar"><label class="search"><span class="sr-only">搜索主题</span><input id="theme-search" type="search" placeholder="搜索名称、描述或分类…" autocomplete="off"></label><label>芯片 <select id="theme-chip"><option value="all">全部</option><option value="esp32">ESP32</option><option value="esp32s3">ESP32-S3</option></select></label><label>PSRAM <select id="theme-memory"><option value="all">全部需求</option><option value="none">无需 PSRAM</option><option value="required">需要 PSRAM</option></select></label></div>
       <label>对应固件版本<select id="app-release"><option value="">最新发布</option></select></label><p id="theme-result" class="small" role="status">正在读取主题目录…</p>

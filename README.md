@@ -4,7 +4,7 @@
 
 基于 ESP32 / ESP32-S3 和 HUB75 面板的 64×64 时钟。主题使用 C/C++ 编译为芯片对应的 Xtensa 机器码，打包为 CWP3；当前固件不运行 Lua。Runtime API 5，native ABI 1。
 
-**当前版本：1.9.3** · [在线烧录](https://antonvanke.github.io/HUB-75E/#flash) · [主题应用](https://antonvanke.github.io/HUB-75E/#themes) · [USB 配置](https://antonvanke.github.io/HUB-75E/#config) · [图片时钟工坊](https://antonvanke.github.io/HUB-75E/studio/index.html)
+**当前版本：1.10.0** · [在线烧录](https://antonvanke.github.io/HUB-75E/#flash) · [主题应用](https://antonvanke.github.io/HUB-75E/#themes) · [USB 配置](https://antonvanke.github.io/HUB-75E/#config) · [图片时钟工坊](https://antonvanke.github.io/HUB-75E/studio/index.html)
 
 ![磁流体时钟电脑模拟](web/previews/ferrofluid-clock.gif)
 
@@ -12,10 +12,11 @@
 
 ## 当前功能
 
+- **1.10.0 主题检查与国内镜像**：设备应用页和 Pages USB 主题页新增「检查主题更新」；设备页支持「更新全部」。直接读取在线目录比较包名、芯片和版本，修复仅比较固件内置目录的问题。维护页可设置可信 HTTPS 镜像供固件、主题优先下载，补齐备用源根证书，失败换源并校验相同 SHA-256。提供 [镜像部署说明](UPDATE_MIRROR.md) 和 [当前镜像包](https://antonvanke.github.io/HUB-75E/update-mirror.zip)；尚未部署国内托管域名或实机验证。
 - **1.9.3 网页空响应修复**：自动 OTA 改为独立后台任务，下载、慢速收包时网页服务继续处理请求；收包等待主动让出 CPU，失败后恢复主题，避免同步更新阻塞及看门狗重启。
 - **1.9.2 能力检测与主题下载修复**：恢复状态接口的方向、硬件检测、串口安装等能力声明；自动下载未安装的兼容主题，优先更新现有应用。目录逐项解析，网络失败 1 分钟后重试，后台显示等待或失败原因。
 - **1.9.1 首次引导修复**：先确认屏幕驱动，再保存时区、亮度、重力方向，最后连接 Wi-Fi。进度保存在设备，刷新、断电可续接。确认当前轮测驱动不重启；变更驱动/时序在完成配网后统一重启应用。离线立即开启热点，联网稳定 30 秒后关闭。
-- **1.9.0 自动主题更新**：设备可在后台静默检查兼容主题，在满足芯片、传感器、代码配额和剩余空间时下载并校验新包，发现版本更新后自动替换应用。固件和主题下载按 GitHub Pages、jsDelivr、GitHub Raw 依次回退，适合国内网络环境。
+- **1.9.0 自动主题更新**：设备可在后台静默检查兼容主题，在满足芯片、传感器、代码配额和剩余空间时下载并校验新包，发现版本更新后自动替换应用。GitHub Pages、jsDelivr、GitHub Raw 提供备用下载源，但不能保证国内连通性；国内稳定更新应配置实际同步镜像。
 - **1.8.0 校时与注水**：四个 NTP 来源并行解析、请求，使用首个有效响应；失败后台重试。时区和“时间与校准”统一在“其它设置”，支持常用时区、夏令时和自定义 POSIX。重力水 v1.3.0 使用不规则流束，注水时长 0.5–6 秒（默认 2 秒）、水量 10–70%；设备主题列表提供“更新应用”。固件更新保留已安装主题，旧 v1.1.0 包仍会显示 56% 上限，需单独更新主题。
 - **1.7.0 更新与重力水**：版本检查在后台运行，不停止或重新初始化主题、不显示进度条；实际 OTA 进度使用实时重力方向。重力水增加顶部注水和 70% 水量上限。维护页提供最近 16 条重要事件的持久化日志与导出，可区分主动重启、程序异常、看门狗和欠压。
 - **1.6.1 基础时钟入口**：设备主题列表、在线主题库和工坊均显示固件内置基础时钟，黑底白字只显示时间；可直接运行、设为默认、参与轮换或条件控制，无需安装，不占应用槽位，不可卸载。
@@ -33,8 +34,8 @@
 
 | 芯片 | 固件 | 应用整包 | 硬件要求 |
 | --- | --- | --- | --- |
-| ESP32 | [v1.9.3 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.9.3.zip) | [5 款应用](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | 经典 ESP32，4 MB Flash |
-| ESP32-S3 | [v1.9.3 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.9.3.zip) | [59 款应用](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | 本项目板型，至少 8 MB Flash + 8 MB OPI PSRAM |
+| ESP32 | [v1.10.0 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.10.0.zip) | [5 款应用](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | 经典 ESP32，4 MB Flash |
+| ESP32-S3 | [v1.10.0 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.10.0.zip) | [59 款应用](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | 本项目板型，至少 8 MB Flash + 8 MB OPI PSRAM |
 
 S3 N4 不适用此固件。其它板型须核对 Flash、PSRAM 和接线。
 

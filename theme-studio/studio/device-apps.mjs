@@ -1,6 +1,8 @@
 import {themeSettings} from './theme-settings.mjs';
 import {localizeTheme,registerThemes,onLanguageChange} from './i18n.mjs';
 import {nativeInfo,checkAppCompatibility} from './native-package.mjs';
+import {compareVersions,chipId} from './releases.mjs';
+import {fetchUpdateJson,downloadUpdateAsset} from './update-sources.mjs';
 
 const DEFAULT_LIMITS={appBytes:1024*1024,sourceBytes:65536,archiveBytes:524288,archiveExpandedBytes:2*1024*1024};
 const capacity=bytes=>bytes>=1024*1024?(bytes/(1024*1024)).toFixed(2)+' MiB':(bytes/1024).toFixed(0)+' KiB';
@@ -16,9 +18,11 @@ export function applicationSlot(apps,id){
   throw new Error('应用位置已用满，请先卸载不使用的应用');
 }
 function download(blob,name){const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=name;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-export function applicationControls($,getBase,request,upload,message,{local=false,changed=async()=>{}}={}){
+export function applicationControls($,getBase,request,upload,message,{local=false,changed=async()=>{},sha256}={}){
   let apps=[],catalog=[],active=-1,busy=false,limits={...DEFAULT_LIMITS},installFreeBytes=Infinity,device={},previousPerf,observedFps,catalogAt=0,appBase='';
   const selected=new Set(),catalogUrl=local?new URL('/themes/apps/catalog.json',location.href):new URL('https://antonvanke.github.io/HUB-75E/theme-catalog.json');
+  let onlineBase='',checkState='';
+  const pending=()=>apps.filter(app=>app.installed&&!app.system).map(app=>({app,latest:catalog.find(item=>item.packageName===app.packageName)})).filter(({app,latest})=>latest&&compareVersions(latest.appVersion,app.appVersion)>0&&compatibility(latest).status!=='incompatible');
   const identity=app=>app.system?{index:app.index}:app.packageName?{packageName:app.packageName}:{id:app.id};
   const key=app=>app.packageName||app.id;
   function compatibility(app){
@@ -44,7 +48,7 @@ export function applicationControls($,getBase,request,upload,message,{local=fals
     const visible=[...$('app-list').querySelectorAll('input.app-select')],checked=visible.filter(input=>input.checked).length;
     $('app-select-all').checked=!!visible.length&&checked===visible.length;$('app-select-all').indeterminate=checked>0&&checked<visible.length;$('app-select-all').disabled=busy||!visible.length;
   }
-  function setBusy(value){busy=value;$('app-install').disabled=value;$('app-refresh').disabled=value;for(const control of $('app-list').querySelectorAll('button,input'))control.disabled=value;selection();}
+  function setBusy(value){busy=value;$('app-install').disabled=value;$('app-refresh').disabled=value;$('app-check-updates').disabled=value;$('app-update-all').disabled=value||!pending().length;for(const control of $('app-list').querySelectorAll('button,input'))control.disabled=value;selection();}
   async function perform(action,reload=true){if(busy)return;setBusy(true);try{await action();if(reload){await changed();await refresh();}}catch(error){message(error.message,true);}finally{setBusy(false);render();}}
   async function install(file,info){
     const check=compatibility(info);if(check.status==='incompatible')throw new Error('此应用不适用于当前设备：'+check.reason);
@@ -69,6 +73,12 @@ export function applicationControls($,getBase,request,upload,message,{local=fals
   }
   async function installCatalog(item){
           if(item.bytes>limits.appBytes||item.bytes>installFreeBytes)throw new Error('设备安装空间不足，请先卸载不使用的应用。');
+          if(onlineBase&&item.sha256){
+            const bytes=await downloadUpdateAsset(item,sha256,{mirror:device.updateSource?.base,preferred:onlineBase});
+            const info=applicationInfo(bytes,item.id+'.cwp',limits);
+            if(info.packageName!==item.packageName||info.appVersion!==item.appVersion)throw new Error('下载应用的包名或版本与主题库不一致');
+            await install(new File([bytes],item.id+'.cwp'),info);return;
+          }
           const path=item.path||'themes/apps/'+item.id+'.cwp',url=path.startsWith('/api/')?getBase()+path:new URL(path,catalogUrl);
           const response=await fetch(url,{credentials:'omit',signal:AbortSignal.timeout(30000)});if(!response.ok)throw new Error('无法读取主题应用包');
           const bytes=new Uint8Array(await response.arrayBuffer()),info=applicationInfo(bytes,item.id+'.cwp',limits);
@@ -93,8 +103,7 @@ export function applicationControls($,getBase,request,upload,message,{local=fals
       size.textContent=app.installed?(app.bytes/1024).toFixed(1)+' KiB':'—';actions.className='app-actions';
       if(app.installed){const runButton=button('运行',()=>run(app));runButton.disabled=check.status==='incompatible';actions.append(button('参数设置',()=>themeSettings(app,values=>request('apps/config?'+new URLSearchParams(identity(app)),values===undefined?{}:{method:'POST',body:new URLSearchParams({values:JSON.stringify(values)})})),false),runButton,button('导出应用',()=>exportApp(app,false),false),button('卸载',async()=>{const result=await uninstall(app);message(result.message||'应用已卸载，所占空间已释放。');}));}
       const latest=catalog.find(item=>item.packageName?item.packageName===app.packageName:item.id===app.id);
-      const version=n=>String(n||'0').split('.').map(Number);
-      const newer=latest&&version(latest.appVersion).some((n,i,a)=>n>(version(app.appVersion)[i]||0)&&a.slice(0,i).every((v,j)=>v===(version(app.appVersion)[j]||0)));
+      const newer=latest&&compareVersions(latest.appVersion,app.appVersion)>0;
       if(app.installed&&newer){const update=button('更新应用',()=>installCatalog(latest));update.title='v'+app.appVersion+' → v'+latest.appVersion;update.disabled=compatibility(latest).status==='incompatible';actions.prepend(update);}
       if(!app.installed){
         const item=latest;
@@ -109,9 +118,11 @@ export function applicationControls($,getBase,request,upload,message,{local=fals
     if(!visible.length)$('app-empty').textContent=search?'没有匹配的应用。':'此列表暂无应用。';
     measurements();
     selection();
+    $('app-update-all').disabled=busy||!pending().length;
+    if(checkState)$('app-update-state').textContent=checkState;
   }
   async function refresh(){
-    if(appBase!==getBase()){selected.clear();catalogAt=0;appBase=getBase();}
+    if(appBase!==getBase()){selected.clear();catalogAt=0;onlineBase='';checkState='';appBase=getBase();}
     const data=await request('apps');apps=data.apps||[];active=apps.find(app=>app.active)?.index??-1;setLimits(data.limits);installFreeBytes=data.installFreeBytes??data.freeBytes??Infinity;
     $('app-storage').textContent='已安装 '+apps.filter(app=>app.installed&&!app.system).length+' 个应用 · 可用 '+((data.freeBytes||0)/1024).toFixed(1)+' / '+((data.totalBytes||0)/1024).toFixed(1)+' KiB';
     if(!catalogAt){
@@ -126,7 +137,25 @@ export function applicationControls($,getBase,request,upload,message,{local=fals
   onLanguageChange(()=>{setLimits(limits);render();});
   $('app-file').onchange=()=>{$('app-folder').value='';};$('app-folder').onchange=()=>{$('app-file').value='';};
   $('app-filter').onchange=$('app-search').oninput=render;
-  $('app-refresh').onclick=()=>perform(async()=>{catalogAt=0;});
+  $('app-refresh').onclick=()=>perform(async()=>{if(!onlineBase)catalogAt=0;});
+  $('app-check-updates').onclick=()=>perform(async()=>{
+    checkState='正在检查已安装主题的更新…';$('app-update-state').textContent=checkState;
+    try{
+      await refresh();const chip=chipId(device.chip);if(!chip)throw new Error('请先连接设备并读取芯片型号');
+      const result=await fetchUpdateJson('theme-catalog.json',{mirror:device.updateSource?.base,validate:v=>v.format===3&&Array.isArray(v.apps)&&v.apps.length>0&&v.apps.every(a=>a.packageName&&a.appVersion&&a.requirements?.chips?.length&&a.path&&a.sha256)});
+      catalog=result.value.apps.filter(item=>item.requirements.chips.includes(chip));onlineBase=result.base;catalogAt=Date.now();await refresh();
+      const count=pending().length;
+      checkState=(count?'发现 '+count+' 个可更新主题':'已安装的兼容主题已是最新版本')+' · '+new Date().toLocaleTimeString();
+      $('app-catalog-state').textContent='在线主题库：'+catalog.length+' 个应用 · '+new URL(onlineBase).host;
+      message(count?'已标记可更新主题，可逐个更新或点击“更新全部”。':'已安装的兼容主题已是最新版本');
+    }catch(error){checkState=error.message;throw error;}
+  },false);
+  $('app-update-all').onclick=()=>perform(async()=>{
+    const updates=pending();let done=0;
+    try{for(const {latest} of updates){await installCatalog(latest);done++;await changed();await refresh();}}
+    finally{checkState='已更新 '+done+' / '+updates.length+' 个主题';}
+    message(checkState);
+  });
   $('app-select-all').onchange=()=>{const checked=$('app-select-all').checked;for(const input of $('app-list').querySelectorAll('input.app-select')){input.checked=checked;input.onchange();}};
   $('app-remove-selected').onclick=()=>perform(async()=>{
     const chosen=apps.filter(app=>app.installed&&!app.system&&selected.has(key(app)));let removed=0;

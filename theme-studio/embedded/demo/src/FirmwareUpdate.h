@@ -6,10 +6,11 @@
 #include <mbedtls/sha256.h>
 #include "AppManifest.h"
 #include "UpdateTrust.h"
+#include "UpdateSources.h"
 #include <functional>
 #include <atomic>
 class FirmwareUpdate {
-  uint32_t checked_=0;bool checkedOnce_=false;
+  uint32_t checked_=0,retryDelay_=60000;bool checkedOnce_=false;
   std::atomic<bool> checkDone_{false};
   std::atomic<bool> installDone_{false};
   std::atomic<uint32_t> transferred_{0};
@@ -26,8 +27,11 @@ class FirmwareUpdate {
     WiFiClientSecure tls;tls.setCACert(UPDATE_ROOT_CA);tls.setHandshakeTimeout(12);
     HTTPClient http;http.setConnectTimeout(8000);http.setTimeout(10000);http.useHTTP10(true);
     checkState_="manifest-download-failed";
-    const String urls[]={String("https://antonvanke.github.io/HUB-75E/updates/")+chip+".json",String("https://cdn.jsdelivr.net/gh/AntonVanke/HUB-75E@main/docs/updates/")+chip+".json",String("https://raw.githubusercontent.com/AntonVanke/HUB-75E/main/docs/updates/")+chip+".json"};
-    for(const String& manifestUrl:urls)if(http.begin(tls,manifestUrl)&&http.GET()==200&&http.getSize()>0&&http.getSize()<=2048){
+    for(unsigned source=0;source<4;source++){
+      const String root=UpdateSources::base(source,mirror);if(root.isEmpty())continue;
+      const String manifestUrl=root+"updates/"+chip+".json";
+      http.end();tls.stop();
+      if(http.begin(tls,manifestUrl)&&http.GET()==200&&http.getSize()>0&&http.getSize()<=2048){
       String json=http.getString(),target;uint32_t flash=0,psram=0;
       checkState_="invalid-manifest";
       if(field(json,"version",version_)&&field(json,"chip",target)&&target==chip&&field(json,"path",path_)&&field(json,"sha256",hash_)&&number(json,"bytes",bytes_)&&number(json,"flashBytes",flash)&&number(json,"psramBytes",psram)){
@@ -38,15 +42,16 @@ class FirmwareUpdate {
         else {base_=manifestUrl.substring(0,manifestUrl.lastIndexOf("updates/"));checkState_="available";}
       }
       if(checkState_=="available"||checkState_=="up-to-date")break;http.end();
+      }
     }
     http.end();tls.stop();
   }
   static bool field(const String& json,const char* key,String& value){bool found=false;return CwJson::field(json,key,value,found)&&found;}
   static bool number(const String& json,const char* key,uint32_t& value){String s;return field(json,key,s)&&CwJson::natural(s,value);}
 public:
-  bool enabled=false,busy=false,available=false;String state="idle";
-  bool due(uint32_t now)const{return enabled&&(!checkedOnce_?now>=60000:now-checked_>=21600000);}
-  void schedule(){checkedOnce_=false;}
+  bool enabled=false,busy=false,available=false;String state="idle",mirror;
+  bool due(uint32_t now)const{return enabled&&(!checkedOnce_?now>=60000:now-checked_>=(state=="up-to-date"||state=="incompatible-hardware"?21600000UL:retryDelay_));}
+  void schedule(){checkedOnce_=false;retryDelay_=60000;}
   static bool newer(const String& a,const String& b){unsigned x[3],y[3];int n=0;if(sscanf(a.c_str(),"%u.%u.%u%n",x,x+1,x+2,&n)!=3||n!=int(a.length())||sscanf(b.c_str(),"%u.%u.%u",y,y+1,y+2)!=3)return false;for(int i=0;i<3;i++)if(x[i]!=y[i])return x[i]>y[i];return false;}
   void startCheck(const char* current){
     if(busy)return;checked_=millis();checkedOnce_=true;current_=current;available=false;busy=true;state="checking";
@@ -54,7 +59,8 @@ public:
   }
   bool finishCheck(){
     if(!checkDone_.exchange(false,std::memory_order_acquire))return false;
-    busy=false;state=checkState_;available=state=="available";return true;
+    busy=false;state=checkState_;available=state=="available";
+    retryDelay_=available||state=="up-to-date"?60000:std::min<uint32_t>(retryDelay_*2,3600000);return true;
   }
   const String& targetVersion()const{return version_;}
   bool installing()const{return installing_;}
@@ -80,10 +86,18 @@ public:
     const uint8_t stage=stage_.load(std::memory_order_acquire);
     if(stage&&progress)progress(transferred_.load(std::memory_order_relaxed),bytes_,stage==2?"VERIFY":stage==3?"RESTART":stage==4?"FAILED":"UPDATING");
     if(!installDone_.exchange(false,std::memory_order_acquire))return false;
-    success=installOK_;state=installState_;busy=installing_=false;return true;
+    success=installOK_;state=installState_;busy=installing_=false;checked_=millis();return true;
   }
 private:
   bool install(const std::function<void(uint32_t,uint32_t,const char*)>& progress,const std::function<void()>& tick){
+    if(installFrom(base_,progress,tick))return true;
+    for(unsigned source=0;source<4;source++){
+      const String root=UpdateSources::base(source,mirror);if(root.isEmpty()||root==base_)continue;
+      if(installFrom(root,progress,tick))return true;
+    }
+    return false;
+  }
+  bool installFrom(const String& root,const std::function<void(uint32_t,uint32_t,const char*)>& progress,const std::function<void()>& tick){
 #ifdef HUB75_S3_BOARD
     const int chipCode=9;
 #else
@@ -94,7 +108,7 @@ private:
     HTTPClient http;http.setConnectTimeout(8000);http.setTimeout(2000);http.useHTTP10(true);
     bool displayed=false;
     auto fail=[&](const char* reason){installState_=reason;http.end();tls.stop();if(displayed&&progress)progress(0,bytes,"FAILED");return false;};
-    if(!http.begin(tls,base_+path_)||http.GET()!=200||http.getSize()!=int(bytes))return fail("firmware-download-failed");
+    if(!http.begin(tls,root+path_)||http.GET()!=200||http.getSize()!=int(bytes))return fail("firmware-download-failed");
     uint8_t buffer[1024];auto* stream=http.getStreamPtr();
     auto read=[&](uint8_t* out,size_t size)->size_t{
       size_t got=0;uint32_t last=millis();

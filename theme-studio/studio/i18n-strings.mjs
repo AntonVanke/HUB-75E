@@ -1,5 +1,32 @@
 import {timeStrings} from './time-settings.mjs';
 const pairs = `
+更新源地址过长|Update source URL is too long
+检查主题更新|Check theme updates
+刷新列表|Refresh list
+更新全部|Update all
+检查后显示可更新版本；检查不会自动安装新主题。|Check for newer versions. Checking does not install missing themes.
+正在检查已安装主题的更新…|Checking installed themes for updates…
+已安装的兼容主题已是最新版本|Installed compatible themes are up to date
+已标记可更新主题，可逐个更新或点击“更新全部”。|Updates are marked. Update individually or choose Update all.
+国内镜像与下载源|Mirror and download sources
+优先更新源（HTTPS 根地址）|Preferred source (HTTPS root URL)
+保存更新源|Save update source
+填写你信任的同步镜像，目录结构须与本项目 docs/ 相同。固件和主题均优先使用此源；留空使用 GitHub Pages、jsDelivr、GitHub Raw。只有设置国内可达镜像后，才能避免依赖跨境连接。|Use a trusted synchronized mirror with the same directory structure as docs/. Firmware and themes prefer this source. Leave empty for GitHub Pages, jsDelivr and GitHub Raw. A locally reachable mirror avoids relying on overseas connectivity.
+更新源必须是 HTTPS 根地址，不含账号、查询参数或上级路径|Use an HTTPS root without credentials, query parameters or parent paths
+更新源需要完整域名或 IP 地址|The source requires a full hostname or IP address
+更新目录暂时无法连接，请检查网络或设置国内镜像；尚未确认是否为最新版本|Cannot reach the catalog. Check connectivity or configure a local mirror; update status is unknown
+所有更新源下载或校验失败，原应用保持不变|All download sources failed or returned invalid files. The existing app is unchanged
+更新源已保存，固件和主题优先使用此镜像|Source saved. Firmware and themes will prefer this mirror
+正在更新，请完成后再修改更新源|Wait for the update to finish before changing sources
+更新源保存失败|Failed to save the source
+请先连接设备并读取芯片型号|Connect a device and read its chip model first
+下载应用的包名或版本与主题库不一致|Package identity or version does not match the catalog
+所有目录来源均无法读取或目录无效|All catalog sources are unreachable or invalid
+手动更新由浏览器下载并校验；自动更新由设备优先从所设镜像下载，失败时切换备用源，保留设置和应用。|Manual updates download and verify in the browser; device automatic updates prefer the configured mirror and fall back to other sources, preserving settings and apps.
+个可更新主题|theme updates available
+发现 |Found 
+已更新 |Updated 
+ 个主题| themes
 设备安装进行中，请稍后重试|A device installation is in progress. Please retry shortly.
 当前固件未报告硬件测试能力，请更新固件后重试。|The firmware did not report diagnostics support. Update the firmware and retry.
 当前固件未报告方向设置能力，请更新固件后重试。|The firmware did not report orientation support. Update the firmware and retry.

@@ -2,6 +2,39 @@
   "schema": 1,
   "releases": [
     {
+      "version": "1.10.0",
+      "runtimeApi": 5,
+      "nativeAbi": 1,
+      "notes": "Clockyr 1.10.0：新增手动检查主题更新、更新全部和国内 HTTPS 镜像设置；修复仅比较固件内置目录、备用源证书不足的问题，固件和主题支持跨源下载校验及失败重试。",
+      "catalog": "applications/1.10.0/catalog.json",
+      "targets": {
+        "esp32": {
+          "chip": "esp32",
+          "flashBytes": 4194304,
+          "psramBytes": 0,
+          "manifest": "firmware/esp32-v1.10.0/manifest.json",
+          "updateManifest": "firmware/esp32-v1.10.0/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32-v1.10.0/app.bin",
+            "bytes": 1515248,
+            "sha256": "82baf34acaa099efe25ddd6b8170c608e412d8377ab785067f020c35fa7a9799"
+          }
+        },
+        "esp32s3": {
+          "chip": "esp32s3",
+          "flashBytes": 8388608,
+          "psramBytes": 8388608,
+          "manifest": "firmware/esp32s3-v1.10.0/manifest.json",
+          "updateManifest": "firmware/esp32s3-v1.10.0/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32s3-v1.10.0/app.bin",
+            "bytes": 1522352,
+            "sha256": "235533c3015f61b9f1ab4f18dae1129d4421504dff98452156b5374061a44f14"
+          }
+        }
+      }
+    },
+    {
       "version": "1.9.3",
       "runtimeApi": 5,
       "nativeAbi": 1,
@@ -596,5 +629,5 @@
       }
     }
   ],
-  "latest": "1.9.3"
+  "latest": "1.10.0"
 }

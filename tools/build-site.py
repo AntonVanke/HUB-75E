@@ -79,7 +79,7 @@ def main():
     (appdir / "catalog.json").write_text(encoded, encoding="utf-8")
     indexPath=output / "releases.json"
     index=json.loads(indexPath.read_text(encoding="utf-8")) if indexPath.exists() else {"schema":1,"releases":[]}
-    release={"version":version,"runtimeApi":5,"nativeAbi":1,"notes":"Clockyr 1.9.3：修复自动固件更新阻塞网页服务、慢速收包触发看门狗重启的问题；独立后台下载，主循环继续响应 HTTP，失败恢复主题。包含 1.9.2 能力检测与兼容主题自动下载修复。", "catalog":"applications/"+version+"/catalog.json","targets":{}}
+    release={"version":version,"runtimeApi":5,"nativeAbi":1,"notes":"Clockyr 1.10.0：新增手动检查主题更新、更新全部和国内 HTTPS 镜像设置；修复仅比较固件内置目录、备用源证书不足的问题，固件和主题支持跨源下载校验及失败重试。", "catalog":"applications/"+version+"/catalog.json","targets":{}}
     for chip in ("esp32", "esp32s3"):
         name=chip+"-v"+version
         source=ROOT / "releases" / name
@@ -96,6 +96,21 @@ def main():
     index["releases"]=[release]+[r for r in index["releases"] if r["version"]!=version]
     index["latest"]=version
     indexPath.write_text(json.dumps(index,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+    # A directly hostable mirror: current firmware/apps first, catalogs last.
+    mirror = ROOT / "releases" / ("update-mirror-v"+version+".zip")
+    assets = [t["app"] for t in release["targets"].values()] + catalog["apps"]
+    with zipfile.ZipFile(mirror,"w",zipfile.ZIP_DEFLATED) as archive:
+        for asset in assets:
+            file=output/asset["path"]
+            assert file.stat().st_size==asset["bytes"] and hashlib.sha256(file.read_bytes()).hexdigest()==asset["sha256"]
+            archive.write(file,asset["path"])
+        for chip in release["targets"]:
+            archive.write(updates/(chip+".json"),"updates/"+chip+".json")
+        archive.writestr("theme-catalog.json",encoded)
+        archive.writestr("applications/"+version+"/catalog.json",encoded)
+        archive.writestr("releases.json",json.dumps({"schema":1,"latest":version,"releases":[release]},ensure_ascii=False,indent=2)+"\n")
+        archive.write(ROOT/"UPDATE_MIRROR.md","README.md")
+    shutil.copyfile(mirror,output/"update-mirror.zip")
     with zipfile.ZipFile(ROOT / "releases" / ("native-sdk-v"+version+".zip"),"w",zipfile.ZIP_DEFLATED) as archive:
         root=ROOT / "theme-studio/native"
         for f in root.rglob("*"):
@@ -106,7 +121,7 @@ def main():
     shutil.copyfile(ROOT / "releases" / ("native-sdk-v"+version+".zip"),output / "native-sdk.zip")
     # HTTPS Pages cannot act as the device's HTTP origin; route this existing workshop link to USB configuration.
     (output / "studio/device.html").write_text('''<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="refresh" content="0;url=../#config"><title>Clockwise</title><p><a href="../#config">设备配置 / Device configuration</a></p></html>\n''', encoding="utf-8")
-    for name in ("FLASHING.md", "FLASHING.en.md", "THIRD_PARTY_NOTICES.md"):
+    for name in ("FLASHING.md", "FLASHING.en.md", "THIRD_PARTY_NOTICES.md", "UPDATE_MIRROR.md"):
         shutil.copyfile(ROOT / name, output / name)
     (output / ".nojekyll").write_text("", encoding="utf-8")
     size = sum(p.stat().st_size for p in output.rglob("*") if p.is_file())

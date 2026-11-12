@@ -8,6 +8,9 @@ const $ = (id) => document.getElementById(id);
 const supported = 'serial' in navigator && window.isSecureContext;
 import {creditsHTML} from './studio/credits.mjs';
 import {nativeInfo} from './studio/native-package.mjs';
+import {compareVersions} from './studio/releases.mjs';
+import {fetchUpdateJson,downloadUpdateAsset} from './studio/update-sources.mjs';
+let themeCatalogBase='';
 let releases=null;
 const boards = {
  esp32:{label:'ESP32',note:'经典 ESP32 · 4 MB Flash · 无 PSRAM'},
@@ -268,7 +271,7 @@ function renderThemes() {
       action.disabled = !port || appInstalling || Boolean(reason) || !device?.features?.serialAppInstall;
       action.addEventListener('click', () => installed ? manageApplication(installed.packageName, true) : startThemeInstall(app));
       if(installed){const run=element('button','button primary',t('运行'));run.dataset.themeAction='run';run.addEventListener('click',()=>manageApplication(installed.packageName));run.disabled=!port||appInstalling;downloads.append(run);}
-      if(installed&&installed.appVersion!==app.appVersion){const upgrade=element('button','button secondary',t('更新应用'));upgrade.dataset.themeAction=app.packageName;upgrade.dataset.incompatible=String(Boolean(themeCompatibility(app)));upgrade.disabled=!port||appInstalling||Boolean(themeCompatibility(app));upgrade.addEventListener('click',()=>startThemeInstall(app));downloads.append(upgrade);}
+      if(installed&&compareVersions(app.appVersion,installed.appVersion)>0){const upgrade=element('button','button secondary',t('更新应用'));upgrade.title='v'+installed.appVersion+' → v'+app.appVersion;upgrade.dataset.themeAction=app.packageName;upgrade.dataset.incompatible=String(Boolean(themeCompatibility(app)));upgrade.disabled=!port||appInstalling||Boolean(themeCompatibility(app));upgrade.addEventListener('click',()=>startThemeInstall(app));downloads.append(upgrade);}
       downloads.append(action);
       if (reason) card.append(element('p', 'theme-device-note', reason));
     }
@@ -294,6 +297,7 @@ function renderThemes() {
 }
 
 async function loadThemes() {
+  themeCatalogBase='';
   try {
     const version=$('app-release')?.value;const response = await fetch(version?'applications/'+version+'/catalog.json':'theme-catalog.json');
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -309,6 +313,16 @@ async function loadThemes() {
 }
 ['theme-search', 'theme-chip', 'theme-memory'].forEach((id) => $(id).addEventListener('input', renderThemes));
 loadThemes();
+$('theme-check-updates').onclick=()=>action(async()=>{
+  message(t('正在检查主题更新…'));
+  await requestSerial({cmd:'apps'},data=>Array.isArray(data.apps));
+  const result=await fetchUpdateJson('theme-catalog.json',{mirror:device?.updateSource?.base,validate:v=>v.format===3&&Array.isArray(v.apps)&&v.apps.length>0});
+  themes=result.value.apps;themeCatalogBase=result.base;
+  let latest=$('app-release').querySelector('option[value=""]');if(!latest){latest=new Option(t('最新发布'),'');$('app-release').prepend(latest);}$('app-release').value='';
+  const chip=/S3/i.test(device?.chip)?'esp32s3':'esp32';
+  const count=installedApps.filter(app=>themes.some(next=>next.packageName===app.packageName&&next.requirements.chips.includes(chip)&&compareVersions(next.appVersion,app.appVersion)>0&&!themeCompatibility(next))).length;
+  renderThemes();message(count?t('发现 {0} 个可更新主题，请点击对应的“更新应用”。',[count]):t('已安装的兼容主题已是最新版本'));
+});
 
 function selectDeviceTheme(value) {
   const number = Number(value);
@@ -511,7 +525,7 @@ async function installTheme(app) {
   log(t('开始安装：{0}', [metadata(app, 'title')]));
   let started = false;
   try {
-    const bytes = await fetchBoundedPackage(relativeAsset(app.path || app.file, `themes/apps/${app.id}.cwp`), Number(device.limits?.appBytes || 1048576));
+    const bytes = themeCatalogBase?await downloadUpdateAsset(app,async b=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',b))].map(v=>v.toString(16).padStart(2,'0')).join(''),{mirror:device?.updateSource?.base,preferred:themeCatalogBase}):await fetchBoundedPackage(relativeAsset(app.path || app.file, `themes/apps/${app.id}.cwp`), Number(device.limits?.appBytes || 1048576));
     const info=nativeInfo(bytes);if(device.packageVersion<3)throw Error('请先更新到原生固件 1.0.1');if(!info.requirements.chips.includes(/S3/i.test(device.chip)?'esp32s3':'esp32'))throw Error('二进制芯片不匹配');
     const header = new DataView(bytes.buffer), metadataOffset = 24 + header.getUint32(12, true) * 40, metadataLength = header.getUint32(16, true);
     if (metadataLength > 2048 || metadataOffset + metadataLength > bytes.length) throw new Error(t('应用包内容不完整'));
