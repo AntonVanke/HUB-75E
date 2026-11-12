@@ -55,8 +55,8 @@
       "file": "ambient-clock-esp32.cwp",
       "bytes": 2337,
       "sha256": "b0247071d4b7df84b9dfd7a290d808c73d4e098f0c03445fa49dff08c6ba50ee",
-      "path": "applications/1.10.0/ambient-clock-esp32.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/ambient-clock-esp32.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "packageName": "org.clockwise.ambient-clock",
@@ -112,8 +112,8 @@
       "file": "ambient-clock-esp32s3.cwp",
       "bytes": 2340,
       "sha256": "b2cd5d07227221c8a3352d1c652f55e1c0b37b30388d4ace8696b069b4534cff",
-      "path": "applications/1.10.0/ambient-clock-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/ambient-clock-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "packageName": "org.clockwise.ferrofluid-clock",
@@ -193,8 +193,8 @@
       "file": "ferrofluid-clock-esp32s3.cwp",
       "bytes": 15988,
       "sha256": "4de9c9ff54ac6b87fc0183eebe67a7beec648c4dd3402fe2ca19c8bd5a657b15",
-      "path": "applications/1.10.0/ferrofluid-clock-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/ferrofluid-clock-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "packageName": "org.clockwise.gravity-liquid",
@@ -274,8 +274,8 @@
       "file": "gravity-liquid-esp32.cwp",
       "bytes": 2001,
       "sha256": "8212bbc2957f40130021e339664b4534572178f0ba3dbee7fa3011670f1dc959",
-      "path": "applications/1.10.0/gravity-liquid-esp32.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/gravity-liquid-esp32.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "packageName": "org.clockwise.gravity-liquid",
@@ -355,8 +355,8 @@
       "file": "gravity-liquid-esp32s3.cwp",
       "bytes": 2004,
       "sha256": "94823354eaa8c1caf5c052b10e51078c22d3ef447a61548a7decd8a1bc0c8146",
-      "path": "applications/1.10.0/gravity-liquid-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/gravity-liquid-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "packageName": "org.clockwise.gravity-maze",
@@ -385,8 +385,8 @@
       "file": "gravity-maze-esp32.cwp",
       "bytes": 5030,
       "sha256": "1982ebbbdab1ff0251dd6b557630b2caefc733a7740b4b4a167af7b8ead3d430",
-      "path": "applications/1.10.0/gravity-maze-esp32.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/gravity-maze-esp32.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "packageName": "org.clockwise.gravity-maze",
@@ -415,8 +415,8 @@
       "file": "gravity-maze-esp32s3.cwp",
       "bytes": 5033,
       "sha256": "6d39d7304b7008f1f7d305560bdac7ffd9a73d37992e721ca0d68d1b3e464944",
-      "path": "applications/1.10.0/gravity-maze-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/gravity-maze-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "packageName": "org.clockwise.mario-1-1",
@@ -442,8 +442,8 @@
       "file": "mario-1-1-esp32.cwp",
       "bytes": 40246,
       "sha256": "fa432fd21aa51439eae641c7f41bb61cdcb2d51f711e45b9fc1be08b81ac10fb",
-      "path": "applications/1.10.0/mario-1-1-esp32.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/mario-1-1-esp32.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "packageName": "org.clockwise.mario-1-1",
@@ -469,8 +469,8 @@
       "file": "mario-1-1-esp32s3.cwp",
       "bytes": 40248,
       "sha256": "373339f0d3157e4f6ecf8c0500046696ed56182f196c3362c9fe385ce1245c3f",
-      "path": "applications/1.10.0/mario-1-1-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/mario-1-1-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "packageName": "org.clockwise.pacman",
@@ -496,8 +496,8 @@
       "file": "pacman-esp32.cwp",
       "bytes": 10134,
       "sha256": "40d9c7b54d790fef6503234578ad80e985985aa927949f85d86fa6e9820d43d8",
-      "path": "applications/1.10.0/pacman-esp32.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/pacman-esp32.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "packageName": "org.clockwise.pacman",
@@ -523,8 +523,8 @@
       "file": "pacman-esp32s3.cwp",
       "bytes": 10136,
       "sha256": "1af6466c507349962a0599e6e21a25239f28941437fb554e92552fea8b0f06ed",
-      "path": "applications/1.10.0/pacman-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/pacman-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "particle-time",
@@ -557,8 +557,8 @@
       "file": "particle-time-esp32s3.cwp",
       "bytes": 3806,
       "sha256": "80792546e1450e697878f224c07230b0620148957ee0045aa91af358cd0b906f",
-      "path": "applications/1.10.0/particle-time-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/particle-time-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "zelda-sunrise",
@@ -591,8 +591,8 @@
       "file": "zelda-sunrise-esp32s3.cwp",
       "bytes": 13860,
       "sha256": "09853ebec69553f81f0c69775034b29b2e6e42c029291bda379348032b412c07",
-      "path": "applications/1.10.0/zelda-sunrise-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/zelda-sunrise-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "gta-vi",
@@ -625,8 +625,8 @@
       "file": "gta-vi-esp32s3.cwp",
       "bytes": 12680,
       "sha256": "549b229cc815ae899760e8809f054535ea0a107b8d023d504fee615319136c6a",
-      "path": "applications/1.10.0/gta-vi-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/gta-vi-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "rainy-window",
@@ -659,8 +659,8 @@
       "file": "rainy-window-esp32s3.cwp",
       "bytes": 15218,
       "sha256": "59236cdd519c28c275ba6d97df6679701a425b074c89786405826c6f00f47d4d",
-      "path": "applications/1.10.0/rainy-window-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/rainy-window-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "codex",
@@ -693,8 +693,8 @@
       "file": "codex-esp32s3.cwp",
       "bytes": 17362,
       "sha256": "ac8397e08de63caf338295707c446cd7c73e0f760eb9a3d50cfe0989303e0687",
-      "path": "applications/1.10.0/codex-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/codex-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "minecraft-village",
@@ -727,8 +727,8 @@
       "file": "minecraft-village-esp32s3.cwp",
       "bytes": 12898,
       "sha256": "9fbd05a4e4e15d8f2004dcbb39ebfc2a31350025df4eff826da02e2b7764b557",
-      "path": "applications/1.10.0/minecraft-village-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/minecraft-village-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "zootopia",
@@ -761,8 +761,8 @@
       "file": "zootopia-esp32s3.cwp",
       "bytes": 8133,
       "sha256": "f2d2a1b3d130a015340cca9af839fd43ecc6802a9b9ecc1c5513bbed17c5f632",
-      "path": "applications/1.10.0/zootopia-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/zootopia-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "twinkle-twinkle",
@@ -795,8 +795,8 @@
       "file": "twinkle-twinkle-esp32s3.cwp",
       "bytes": 13134,
       "sha256": "086db761ad0ee01c06de704ae006c0ebdf7ed5aa7b4e60c937b1594bd2aa7556",
-      "path": "applications/1.10.0/twinkle-twinkle-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/twinkle-twinkle-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "hello-kitty",
@@ -829,8 +829,8 @@
       "file": "hello-kitty-esp32s3.cwp",
       "bytes": 17414,
       "sha256": "50b1f4ebd7c1fbcf62f60ba34f29fb8e156d54ec6441ec6d9ecc47a49e86daac",
-      "path": "applications/1.10.0/hello-kitty-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/hello-kitty-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "labubu-zimomo",
@@ -863,8 +863,8 @@
       "file": "labubu-zimomo-esp32s3.cwp",
       "bytes": 14330,
       "sha256": "9b9f276f4b0fbbc1ddd844ee111f690504711fa1543fbdfcaf6b6cd4682f9393",
-      "path": "applications/1.10.0/labubu-zimomo-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/labubu-zimomo-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "kirby",
@@ -897,8 +897,8 @@
       "file": "kirby-esp32s3.cwp",
       "bytes": 41103,
       "sha256": "d03013fc179a307ed92618a119c2f6d5051a50d5ef0bcf2668ecf6f7d4e2d4e9",
-      "path": "applications/1.10.0/kirby-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/kirby-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "girl",
@@ -931,8 +931,8 @@
       "file": "girl-esp32s3.cwp",
       "bytes": 24763,
       "sha256": "a83bf7f28edd8e56cf9649dc4a6464405247a59f95a0e598ffa483e6cea36b46",
-      "path": "applications/1.10.0/girl-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/girl-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "shar-pei-dog",
@@ -965,8 +965,8 @@
       "file": "shar-pei-dog-esp32s3.cwp",
       "bytes": 18857,
       "sha256": "1c0498fe04f8dbb012da5bd71b7ca5a0c40a6ce5ed7d9d14d19826ff5143cbef",
-      "path": "applications/1.10.0/shar-pei-dog-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/shar-pei-dog-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "pikachu",
@@ -999,8 +999,8 @@
       "file": "pikachu-esp32s3.cwp",
       "bytes": 40242,
       "sha256": "1a4bb0a5df8e81cc4de1d9b2a0d591cbd14737459e181738a9ce27d63d949b70",
-      "path": "applications/1.10.0/pikachu-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/pikachu-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "pepsi",
@@ -1033,8 +1033,8 @@
       "file": "pepsi-esp32s3.cwp",
       "bytes": 14375,
       "sha256": "fa5849bdc7b2ea162590a7453e3e1177f0a90af1ef360fe178aca6f1c8a59056",
-      "path": "applications/1.10.0/pepsi-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/pepsi-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "coffee",
@@ -1067,8 +1067,8 @@
       "file": "coffee-esp32s3.cwp",
       "bytes": 12611,
       "sha256": "f9513f0b356570388d2ed65f7eda400252577f15a5425d5dce5b65486de154dd",
-      "path": "applications/1.10.0/coffee-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/coffee-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "minecraft-torch",
@@ -1101,8 +1101,8 @@
       "file": "minecraft-torch-esp32s3.cwp",
       "bytes": 37002,
       "sha256": "9708e38ecdfecf523984b5f8f3570128d45ea487a3434303d2584c19763a9e89",
-      "path": "applications/1.10.0/minecraft-torch-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/minecraft-torch-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "transformer",
@@ -1135,8 +1135,8 @@
       "file": "transformer-esp32s3.cwp",
       "bytes": 80593,
       "sha256": "8390fcb3f875c7bf78a9d1ad29961c4ecf9330795c4cdd4400864c459df137d2",
-      "path": "applications/1.10.0/transformer-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/transformer-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "nyan-cat",
@@ -1169,8 +1169,8 @@
       "file": "nyan-cat-esp32s3.cwp",
       "bytes": 20958,
       "sha256": "427635071a87513612bec77a4478a052b25025dce889298f65137b47c976b613",
-      "path": "applications/1.10.0/nyan-cat-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/nyan-cat-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "snoopy",
@@ -1203,8 +1203,8 @@
       "file": "snoopy-esp32s3.cwp",
       "bytes": 9538,
       "sha256": "e8c1b062ad58b0f88305d1731000b53ca0a5bfd81fe42754d137b46f00018123",
-      "path": "applications/1.10.0/snoopy-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/snoopy-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "retro-computer",
@@ -1237,8 +1237,8 @@
       "file": "retro-computer-esp32s3.cwp",
       "bytes": 11555,
       "sha256": "c537336a7715d54d12916bb86bc15ba591794d3abacd75a59ff3cd60342f92bb",
-      "path": "applications/1.10.0/retro-computer-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/retro-computer-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "pokedex",
@@ -1271,8 +1271,8 @@
       "file": "pokedex-esp32s3.cwp",
       "bytes": 19495,
       "sha256": "da00ef1f4949a8cfc434d203916ed8cdf0ea47346c79d29e860c8418a609690a",
-      "path": "applications/1.10.0/pokedex-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/pokedex-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "clock-tower",
@@ -1305,8 +1305,8 @@
       "file": "clock-tower-esp32s3.cwp",
       "bytes": 9866,
       "sha256": "e923180654a600b6c9b4f5a0c4ac67f3bcf28745e387263ea7bb7e2b546dc919",
-      "path": "applications/1.10.0/clock-tower-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/clock-tower-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "time-in-words",
@@ -1339,8 +1339,8 @@
       "file": "time-in-words-esp32s3.cwp",
       "bytes": 7512,
       "sha256": "5b273997c3f4537258f9079a066cdafe88c328afdcc0f05bc531466c00c1874b",
-      "path": "applications/1.10.0/time-in-words-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/time-in-words-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "world-map",
@@ -1382,8 +1382,8 @@
       "file": "world-map-esp32s3.cwp",
       "bytes": 9660,
       "sha256": "21ecec3acc874f811584dd816a6becd3562a5da644557364a33afe9b09446364",
-      "path": "applications/1.10.0/world-map-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/world-map-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "super-mario",
@@ -1416,8 +1416,8 @@
       "file": "super-mario-esp32s3.cwp",
       "bytes": 7177,
       "sha256": "0209fe8de1a8e84548c7e7fc0b101f7711ab6c3422d6cef908edc42e456a277a",
-      "path": "applications/1.10.0/super-mario-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/super-mario-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "cyberpunk-night-city",
@@ -1450,8 +1450,8 @@
       "file": "cyberpunk-night-city-esp32s3.cwp",
       "bytes": 13154,
       "sha256": "35b613bac9f785990ba58484a11a63519637f054a1e1f84aa5dcb0904effc075",
-      "path": "applications/1.10.0/cyberpunk-night-city-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/cyberpunk-night-city-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "elden-ring",
@@ -1484,8 +1484,8 @@
       "file": "elden-ring-esp32s3.cwp",
       "bytes": 13085,
       "sha256": "53544e3a5f4615825e9ee8ddf583044e83f07903deaf131175e5e12d6611db77",
-      "path": "applications/1.10.0/elden-ring-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/elden-ring-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "hollow-knight-silksong",
@@ -1518,8 +1518,8 @@
       "file": "hollow-knight-silksong-esp32s3.cwp",
       "bytes": 13468,
       "sha256": "bc244eb046f1adc69e7b4a2365cfd9b929b7b1768e9bfbd0b80df9be67499fd9",
-      "path": "applications/1.10.0/hollow-knight-silksong-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/hollow-knight-silksong-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "stardew-valley",
@@ -1552,8 +1552,8 @@
       "file": "stardew-valley-esp32s3.cwp",
       "bytes": 12878,
       "sha256": "1f5c0e85469adf995b83c929d4b1bc7f6d7f271efdf496565ad842162983aeed",
-      "path": "applications/1.10.0/stardew-valley-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/stardew-valley-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "terraria",
@@ -1586,8 +1586,8 @@
       "file": "terraria-esp32s3.cwp",
       "bytes": 12903,
       "sha256": "5fdfcec1912accb2afb933d60d6803b8ef0a56350ac57bee6ac472d8e8213443",
-      "path": "applications/1.10.0/terraria-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/terraria-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "genshin-impact",
@@ -1620,8 +1620,8 @@
       "file": "genshin-impact-esp32s3.cwp",
       "bytes": 13006,
       "sha256": "a98ad78ecd00a1925f55020cb23e911733aa653848a56c45f46f4bf9af690de9",
-      "path": "applications/1.10.0/genshin-impact-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/genshin-impact-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "final-fantasy-vii",
@@ -1654,8 +1654,8 @@
       "file": "final-fantasy-vii-esp32s3.cwp",
       "bytes": 13255,
       "sha256": "42f22e8d4712931066f1e6061a8f81c0cca93fec4846aa33eccbf050878bc009",
-      "path": "applications/1.10.0/final-fantasy-vii-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/final-fantasy-vii-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "black-myth-wukong",
@@ -1688,8 +1688,8 @@
       "file": "black-myth-wukong-esp32s3.cwp",
       "bytes": 12900,
       "sha256": "fb4d1d2843ac92fff8babb334369c061cf7fd429bf71c297bf97816af8f59cde",
-      "path": "applications/1.10.0/black-myth-wukong-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/black-myth-wukong-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "monster-hunter",
@@ -1722,8 +1722,8 @@
       "file": "monster-hunter-esp32s3.cwp",
       "bytes": 13114,
       "sha256": "fd40146098ae9b9a60d73af44901dcb88b42c9ba1b9172118cec7ba6fec107f3",
-      "path": "applications/1.10.0/monster-hunter-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/monster-hunter-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "death-stranding",
@@ -1756,8 +1756,8 @@
       "file": "death-stranding-esp32s3.cwp",
       "bytes": 13423,
       "sha256": "a875525c79047a4f69054e7f07f9697e847476788df08d625ccdb09a5860a32b",
-      "path": "applications/1.10.0/death-stranding-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/death-stranding-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "star-wars",
@@ -1790,8 +1790,8 @@
       "file": "star-wars-esp32s3.cwp",
       "bytes": 12082,
       "sha256": "00b09cfcbd8cae4122198fcabe5a5be95498e646820150a6bd8b49e66a81de14",
-      "path": "applications/1.10.0/star-wars-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/star-wars-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "blade-runner",
@@ -1824,8 +1824,8 @@
       "file": "blade-runner-esp32s3.cwp",
       "bytes": 13375,
       "sha256": "1bedc732f44db0c6ead6d0844133edd1714a6267f03596756fab3214036206e5",
-      "path": "applications/1.10.0/blade-runner-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/blade-runner-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "dune",
@@ -1858,8 +1858,8 @@
       "file": "dune-esp32s3.cwp",
       "bytes": 12365,
       "sha256": "f810e6b8939413dbb4f78957d5f73b4121386b16ffd0e93183b54de7ab059d79",
-      "path": "applications/1.10.0/dune-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/dune-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "lord-of-the-rings",
@@ -1892,8 +1892,8 @@
       "file": "lord-of-the-rings-esp32s3.cwp",
       "bytes": 13343,
       "sha256": "f06447b1b58acc52fad7cf9ea96fc59a6ba8bb19ecd690667883727825f0c52e",
-      "path": "applications/1.10.0/lord-of-the-rings-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/lord-of-the-rings-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "avatar-pandora",
@@ -1926,8 +1926,8 @@
       "file": "avatar-pandora-esp32s3.cwp",
       "bytes": 13299,
       "sha256": "43b5c89a5ba381281cb484d61604854e6157485eecbc4219af60b5982c339428",
-      "path": "applications/1.10.0/avatar-pandora-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/avatar-pandora-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "stranger-things",
@@ -1960,8 +1960,8 @@
       "file": "stranger-things-esp32s3.cwp",
       "bytes": 12936,
       "sha256": "fc521d09a5e6f657517a91db193b994ff33ad369f5fc669df88626b1ab18bae5",
-      "path": "applications/1.10.0/stranger-things-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/stranger-things-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "wednesday",
@@ -1994,8 +1994,8 @@
       "file": "wednesday-esp32s3.cwp",
       "bytes": 13011,
       "sha256": "f115a601c8d8fef5ab6c70c5b12d94eee85e77abfc463f597a3b7ef339c70e28",
-      "path": "applications/1.10.0/wednesday-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/wednesday-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "arcane",
@@ -2028,8 +2028,8 @@
       "file": "arcane-esp32s3.cwp",
       "bytes": 13310,
       "sha256": "0d1e3255e36906974147451d2fb225c7c2c55567729db4ff6ed6709956501766",
-      "path": "applications/1.10.0/arcane-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/arcane-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "one-piece",
@@ -2062,8 +2062,8 @@
       "file": "one-piece-esp32s3.cwp",
       "bytes": 12868,
       "sha256": "6cd20b069dfff0705d188fa796254a7faf3d9b8111fd81e9f80a6d99282a768b",
-      "path": "applications/1.10.0/one-piece-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/one-piece-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "harry-potter",
@@ -2096,8 +2096,8 @@
       "file": "harry-potter-esp32s3.cwp",
       "bytes": 12927,
       "sha256": "b312085495a736fb1b826d8eecdc7eb2078c3d5b500d491831a0489900d6a05d",
-      "path": "applications/1.10.0/harry-potter-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/harry-potter-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "spider-man-2",
@@ -2130,8 +2130,8 @@
       "file": "spider-man-2-esp32s3.cwp",
       "bytes": 32337,
       "sha256": "823cbc059c4f74674a4dc4d78dcb4bfadf6862bbd4d5e43163f6eced4dbf1202",
-      "path": "applications/1.10.0/spider-man-2-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/spider-man-2-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "sensor-weather-station",
@@ -2167,8 +2167,8 @@
       "file": "sensor-weather-station-esp32s3.cwp",
       "bytes": 3216,
       "sha256": "d28d23777c55ed9b351204af99d8543173d482a91b6eb6a6261b2fe3fd79e676",
-      "path": "applications/1.10.0/sensor-weather-station-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/sensor-weather-station-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "sensor-comfort-garden",
@@ -2204,8 +2204,8 @@
       "file": "sensor-comfort-garden-esp32s3.cwp",
       "bytes": 4933,
       "sha256": "ed60b79df45a4f3c783a23f24910e008e72919fdcba6953b440c376bcca96a1b",
-      "path": "applications/1.10.0/sensor-comfort-garden-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/sensor-comfort-garden-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "sensor-climate-trend",
@@ -2241,8 +2241,8 @@
       "file": "sensor-climate-trend-esp32s3.cwp",
       "bytes": 3370,
       "sha256": "25403d14853b43e2fe835bebb4c21d786880c3800fe572c4dc926f633de26a7a",
-      "path": "applications/1.10.0/sensor-climate-trend-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/sensor-climate-trend-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "gravity-hourglass",
@@ -2277,8 +2277,8 @@
       "file": "gravity-hourglass-esp32s3.cwp",
       "bytes": 3243,
       "sha256": "4f2b71fd1cdac1c7082e0ccf2418254609b7c94817e3adb2d1639456d168f2a4",
-      "path": "applications/1.10.0/gravity-hourglass-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/gravity-hourglass-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "gravity-level",
@@ -2313,8 +2313,8 @@
       "file": "gravity-level-esp32s3.cwp",
       "bytes": 2855,
       "sha256": "545e515303411e92c30e981630d9a89b498bed3f8316fbf28fefba79624565c5",
-      "path": "applications/1.10.0/gravity-level-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/gravity-level-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     },
     {
       "id": "gravity-stardust",
@@ -2349,8 +2349,8 @@
       "file": "gravity-stardust-esp32s3.cwp",
       "bytes": 3085,
       "sha256": "38b7586579ba74a7bbc63ca14037f458029868265402cbba44aaf44cea481a18",
-      "path": "applications/1.10.0/gravity-stardust-esp32s3.cwp",
-      "firmwareVersion": "1.10.0"
+      "path": "applications/1.10.1/gravity-stardust-esp32s3.cwp",
+      "firmwareVersion": "1.10.1"
     }
   ]
 }

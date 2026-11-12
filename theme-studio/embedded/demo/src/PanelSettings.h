@@ -7,11 +7,21 @@ inline bool openExistingPreferences(Preferences& settings,const char* name){nvs_
 
 inline PanelOrientation panelOrientation(){
   PanelOrientation value;Preferences settings;
-  if(openExistingPreferences(settings,"cwstudio")){value.rotation=settings.getInt("panelRotation",3);value.autoRotate=settings.getBool("panelAutoRotate",false);value.gravityRotation=settings.getInt("gravityRotation",0);value.zeroX=(settings.isKey("gravityZeroX")?settings.getFloat("gravityZeroX",0):0);value.zeroY=(settings.isKey("gravityZeroY")?settings.getFloat("gravityZeroY",0):0);settings.end();}
+  if(openExistingPreferences(settings,"cwstudio")){
+    int32_t stored[5];
+    if(settings.isKey("orientation")&&settings.getBytesLength("orientation")==sizeof(stored)&&settings.getBytes("orientation",stored,sizeof(stored))==sizeof(stored)){
+      value.rotation=stored[0];value.autoRotate=stored[1]!=0;value.gravityRotation=stored[2];memcpy(&value.zeroX,&stored[3],sizeof(float));memcpy(&value.zeroY,&stored[4],sizeof(float));
+    }else{value.rotation=settings.getInt("panelRotation",3);value.autoRotate=settings.getBool("panelAutoRotate",false);value.gravityRotation=settings.getInt("gravityRotation",0);value.zeroX=(settings.isKey("gravityZeroX")?settings.getFloat("gravityZeroX",0):0);value.zeroY=(settings.isKey("gravityZeroY")?settings.getFloat("gravityZeroY",0):0);}
+    settings.end();
+  }
   return validPanelOrientation(value)?value:PanelOrientation{};
 }
 inline bool savePanelOrientation(Preferences& settings,const PanelOrientation& value){
-  return validPanelOrientation(value)&&settings.putInt("panelRotation",value.rotation)==sizeof(int32_t)&&settings.putBool("panelAutoRotate",value.autoRotate)==sizeof(uint8_t)&&settings.putInt("gravityRotation",value.gravityRotation)==sizeof(int32_t)&&settings.putFloat("gravityZeroX",value.zeroX)==sizeof(float)&&settings.putFloat("gravityZeroY",value.zeroY)==sizeof(float);
+  if(!validPanelOrientation(value))return false;
+  int32_t stored[]={value.rotation,value.autoRotate?1:0,value.gravityRotation,0,0};memcpy(&stored[3],&value.zeroX,sizeof(float));memcpy(&stored[4],&value.zeroY,sizeof(float));
+  if(settings.putBytes("orientation",stored,sizeof(stored))!=sizeof(stored))return false;
+  for(const char* key:{"panelRotation","panelAutoRotate","gravityRotation","gravityZeroX","gravityZeroY"})if(settings.isKey(key))settings.remove(key);
+  return true;
 }
 
 struct PanelTiming { int clockMHz=8,clockPhase=1,latchBlanking=2,driver=0,refreshHz=0; };

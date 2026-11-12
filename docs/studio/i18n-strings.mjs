@@ -1224,5 +1224,8 @@ Object.assign(strings,{
  "确认屏幕设置并继续":"Confirm display and continue",
  "屏幕设置已保存，请继续其它设置":"Display saved. Continue with preferences",
  "请按顺序确认屏幕、其它设置并连接 Wi-Fi":"Confirm the display and preferences before connecting Wi-Fi",
- "引导进度保存失败":"Could not save setup progress"
+ "引导进度保存失败":"Could not save setup progress",
+ "应用已更新，正在重新加载当前主题":"App updated. Reloading the current theme.",
+ "应用恢复失败，旧包保留在备份；请重启设备":"App recovery failed. The previous package remains in backup; restart the device.",
+ "渲染任务忙，请重试更新":"The renderer is busy. Retry the update."
 });

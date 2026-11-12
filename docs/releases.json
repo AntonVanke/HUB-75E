@@ -2,6 +2,39 @@
   "schema": 1,
   "releases": [
     {
+      "version": "1.10.1",
+      "runtimeApi": 5,
+      "nativeAbi": 1,
+      "notes": "Clockyr 1.10.1：修复重复安装、应用元数据挤满 NVS 导致方向无法保存，以及正在运行的应用更新失败；升级时合并重复包并保留参数和播放计划。",
+      "catalog": "applications/1.10.1/catalog.json",
+      "targets": {
+        "esp32": {
+          "chip": "esp32",
+          "flashBytes": 4194304,
+          "psramBytes": 0,
+          "manifest": "firmware/esp32-v1.10.1/manifest.json",
+          "updateManifest": "firmware/esp32-v1.10.1/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32-v1.10.1/app.bin",
+            "bytes": 1518496,
+            "sha256": "f25dee5971d7e90f66c34ea7298ca9141ede7f8743e8da7a087db9215b50dc98"
+          }
+        },
+        "esp32s3": {
+          "chip": "esp32s3",
+          "flashBytes": 8388608,
+          "psramBytes": 8388608,
+          "manifest": "firmware/esp32s3-v1.10.1/manifest.json",
+          "updateManifest": "firmware/esp32s3-v1.10.1/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32s3-v1.10.1/app.bin",
+            "bytes": 1525920,
+            "sha256": "fbc190af89bd3bbd2fb3593a4994ebcb53e9eb769aa6a3404c760223662d67b3"
+          }
+        }
+      }
+    },
+    {
       "version": "1.10.0",
       "runtimeApi": 5,
       "nativeAbi": 1,
@@ -629,5 +662,5 @@
       }
     }
   ],
-  "latest": "1.10.0"
+  "latest": "1.10.1"
 }

@@ -1,9 +1,9 @@
 {
-  "version": "1.10.0",
+  "version": "1.10.1",
   "chip": "esp32",
   "flashBytes": 4194304,
   "psramBytes": 0,
-  "path": "firmware/esp32-v1.10.0/app.bin",
-  "bytes": 1515248,
-  "sha256": "82baf34acaa099efe25ddd6b8170c608e412d8377ab785067f020c35fa7a9799"
+  "path": "firmware/esp32-v1.10.1/app.bin",
+  "bytes": 1518496,
+  "sha256": "f25dee5971d7e90f66c34ea7298ca9141ede7f8743e8da7a087db9215b50dc98"
 }

@@ -4,7 +4,7 @@
 
 A 64 × 64 HUB75 clock for ESP32 / ESP32-S3. Themes are C/C++ compiled to chip-specific Xtensa machine code in CWP3 packages. Current firmware does not run Lua. Runtime API 5, native ABI 1.
 
-**Current release: 1.10.0** · [Flash firmware](https://antonvanke.github.io/HUB-75E/#flash) · [Applications](https://antonvanke.github.io/HUB-75E/#themes) · [USB settings](https://antonvanke.github.io/HUB-75E/#config) · [Image clock workshop](https://antonvanke.github.io/HUB-75E/studio/index.html)
+**Current release: 1.10.1** · [Flash firmware](https://antonvanke.github.io/HUB-75E/#flash) · [Applications](https://antonvanke.github.io/HUB-75E/#themes) · [USB settings](https://antonvanke.github.io/HUB-75E/#config) · [Image clock workshop](https://antonvanke.github.io/HUB-75E/studio/index.html)
 
 ![Ferrofluid computer preview](web/previews/ferrofluid-clock.gif)
 
@@ -12,6 +12,7 @@ Rendered by the theme's C++ code on a computer, not panel footage or a device FP
 
 ## Current features
 
+- **1.10.1 app and settings storage fixes:** package manifests are authoritative; redundant titles, IDs and package names no longer fill the 20 KiB NVS partition. Boot migration releases old metadata and merges duplicate packages while preserving newer versions, parameters and playback references. Orientation saves in one atomic write. Downloads and validation keep the active theme running; only the final replacement closes the file and reloads it, fixing LittleFS open-file rename failures. Regression coverage includes 14 duplicate copies, full settings storage and failed-update rollback. Device validation is reported separately.
 - **1.10.0 theme checks and mirrors:** device apps and Pages USB apps now have an explicit Check theme updates action; the device page also supports Update all. Compare live catalog package names, chips and versions rather than the firmware's embedded catalog. Maintenance can persist a trusted HTTPS mirror for firmware and themes; additional CA roots and hash-preserving download failover are included. See [mirror deployment](UPDATE_MIRROR.md) and the [mirror archive](https://antonvanke.github.io/HUB-75E/update-mirror.zip). No mainland hosting endpoint or physical validation is provided by this release.
 - **1.9.3 empty HTTP response fix:** automatic OTA runs in a separate background task while HTTP requests remain serviced. Receive waits yield the CPU; failed updates restore the theme instead of blocking the service loop or starving the watchdog.
 - **1.9.2 capability and theme download fix:** restore orientation, diagnostics and USB feature reports; install missing compatible themes and prioritize existing app updates. Stream catalog entries with bounded memory, retry network failures after one minute, and expose waiting/failure states.
@@ -34,8 +35,8 @@ Both chips compile. Setup refresh recovery, interrupted saves, unsupported senso
 
 | Chip | Firmware | Applications | Requirements |
 | --- | --- | --- | --- |
-| ESP32 | [v1.10.0 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.10.0.zip) | [5 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | Classic ESP32, 4 MB Flash |
-| ESP32-S3 | [v1.10.0 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.10.0.zip) | [59 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | Project board, at least 8 MB Flash + 8 MB OPI PSRAM |
+| ESP32 | [v1.10.1 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.10.1.zip) | [5 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | Classic ESP32, 4 MB Flash |
+| ESP32-S3 | [v1.10.1 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.10.1.zip) | [59 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | Project board, at least 8 MB Flash + 8 MB OPI PSRAM |
 
 S3 N4 is unsupported. Other boards require matching memory settings and wiring.
 

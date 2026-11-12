@@ -10,8 +10,19 @@ const decoder=new TextDecoder();
 const slug=(id,fallback)=>/^[a-zA-Z0-9_-]{1,32}$/.test(id||'')?id:fallback;
 function fileId(name){let hash=2166136261;for(const c of name)hash=Math.imul(hash^c.codePointAt(0),16777619)>>>0;return 'user-'+hash.toString(16);}
 export function applicationInfo(bytes,name='theme.cwp',limits={}){return nativeInfo(bytes,limits);}
+export function mergeApplications(apps,catalog=[]){
+  const identity=app=>app.system?'system:'+app.id:app.packageName||app.id;
+  const installed=new Map(),result=new Map();
+  for(const app of apps.filter(a=>a.installed)){
+    const key=identity(app),previous=installed.get(key),version=previous?compareVersions(app.appVersion||'0.0.0',previous.appVersion||'0.0.0'):1;
+    if(!previous||version>0||version===0&&app.active)installed.set(key,app);
+  }
+  for(const item of catalog.length?catalog:apps){const key=identity(item);if(!result.has(key))result.set(key,installed.get(key)||{...item,builtin:true,installed:false,index:item.index??-1});}
+  for(const [key,app] of installed)result.set(key,app);
+  return [...result.values()];
+}
 export function applicationSlot(apps,id){
-  const existing=apps.find(app=>app.packageName===id||app.id===id);
+  const existing=apps.find(app=>app.installed&&(app.packageName===id||app.id===id))||apps.find(app=>app.packageName===id||app.id===id);
   if(existing)return existing.index;
   const first=Math.max(0,...apps.filter(app=>app.builtin).map(app=>Number(app.index)+1));
   for(let index=first;index<64;index++)if(!apps.some(app=>app.index===index&&app.installed))return index;
@@ -123,13 +134,13 @@ export function applicationControls($,getBase,request,upload,message,{local=fals
   }
   async function refresh(){
     if(appBase!==getBase()){selected.clear();catalogAt=0;onlineBase='';checkState='';appBase=getBase();}
-    const data=await request('apps');apps=data.apps||[];active=apps.find(app=>app.active)?.index??-1;setLimits(data.limits);installFreeBytes=data.installFreeBytes??data.freeBytes??Infinity;
+    const data=await request('apps');apps=mergeApplications(data.apps||[]);active=apps.find(app=>app.active)?.index??-1;setLimits(data.limits);installFreeBytes=data.installFreeBytes??data.freeBytes??Infinity;
     $('app-storage').textContent='已安装 '+apps.filter(app=>app.installed&&!app.system).length+' 个应用 · 可用 '+((data.freeBytes||0)/1024).toFixed(1)+' / '+((data.totalBytes||0)/1024).toFixed(1)+' KiB';
     if(!catalogAt){
       try{const value=await request('apps/catalog'),items=Array.isArray(value)?value:value.apps||value.themes;if(!Array.isArray(items))throw new Error('目录格式无效');catalog=items.filter(item=>/^[a-zA-Z0-9_-]{1,32}$/.test(item.id||''));catalogAt=Date.now();$('app-catalog-state').textContent=(local?'本地主题库：':'在线主题库：')+catalog.length+' 个应用，可直接安装兼容项。';}
       catch(error){$('app-catalog-state').textContent='主题库暂时无法读取，已安装应用和手动导入仍可使用。';}
     }
-    if(catalog.length){const installed=apps.filter(app=>app.installed),merged=catalog.map(item=>installed.find(app=>item.packageName?app.packageName===item.packageName:app.id===item.id)||{...item,builtin:true,installed:false,index:-1});apps=[...merged,...installed.filter(app=>!merged.includes(app))];}
+    if(catalog.length)apps=mergeApplications(apps,catalog);
     apps.sort((a,b)=>Number(!!b.system)-Number(!!a.system));
     registerThemes(apps);for(const item of [...selected])if(!apps.some(app=>app.installed&&!app.system&&key(app)===item))selected.delete(item);
     render();

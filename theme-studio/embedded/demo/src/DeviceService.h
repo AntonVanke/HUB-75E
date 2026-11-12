@@ -111,6 +111,7 @@ private:
   uint64_t incompatible_=0;
   DeviceLimits limits_;
   uint32_t appBytes_[64]={};
+  uint32_t appIdentityHash_[64]={};
   uint8_t appTargetFps_[64]={};
   uint8_t candidateTargetFps_=60;
   bool candidateChecked_=false;
@@ -147,6 +148,7 @@ private:
   String catalogJson(int index)const;
   int catalogIndexByName(const String& name,const String& id)const;
   void refreshApps();
+  void reconcileApps();
   void sendApps(bool serial=false);
   String appConfig(int index,const String* values,int& code);
   void exportApp(int index,bool archive=false,bool source=false);

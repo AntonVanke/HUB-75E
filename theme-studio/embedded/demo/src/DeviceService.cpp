@@ -33,6 +33,7 @@ static bool integer(const String& text,int& value){
 static bool safeId(const String& id){return id.length()>0&&id.length()<64&&strspn(id.c_str(),"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_")==id.length();}
 static bool safeTitle(const String& title){if(title.isEmpty()||title.length()>96)return false;for(size_t i=0;i<title.length();i++)if((unsigned char)title[i]<32)return false;return true;}
 static String appKey(int index,char suffix){return "a"+String(index)+suffix;}
+static uint32_t appIdentityHash(const String& name){uint32_t hash=2166136261u;for(size_t i=0;i<name.length();i++)hash=(hash^(uint8_t)name[i])*16777619u;return hash;}
 uint8_t DeviceService::sensorCapabilities()const{
   const String status=sensorStatus?sensorStatus():"{}";String value;bool found;uint8_t result=0;
   if(jsonField(status,"ahtPresent",value,found)&&found&&value=="true")result|=3;
@@ -61,7 +62,7 @@ bool DeviceService::saveOrientation(int degrees,bool automatic,int gravityDegree
 }
 String DeviceService::discoveryIdentity()const{
   char id[17];snprintf(id,sizeof(id),"%012llx",ESP.getEfuseMac()&0xffffffffffffULL);
-  return "{\"product\":\"clockwise-hub75\",\"id\":"+quote(id)+",\"chip\":"+quote(ESP.getChipModel())+",\"version\":\"1.10.0\"}";
+  return "{\"product\":\"clockwise-hub75\",\"id\":"+quote(id)+",\"chip\":"+quote(ESP.getChipModel())+",\"version\":\"1.10.1\"}";
 }
 bool DeviceService::startDiscovery(String& error){
   if(WiFi.status()!=WL_CONNECTED){error="请先让设备连接局域网 Wi-Fi";return false;}
@@ -218,7 +219,7 @@ void DeviceService::begin(int count,const char* titlesJson){
   pinMode(0,INPUT_PULLUP);
   fs_=mountAppStorage(!setupRequired_);
   limits_=DeviceLimits::detect(fs_?LittleFS.totalBytes():0);
-  bool migratedLegacy=false;
+  bool migratedLegacy=theme==50&&prefs_.getBool("custom",false)&&prefs_.isKey("a63i")&&prefs_.getString("a63i","")=="custom";
   if(fs_){
     LittleFS.mkdir("/apps");
     if(!LittleFS.exists("/apps/63.pkg")){
@@ -229,12 +230,13 @@ void DeviceService::begin(int count,const char* titlesJson){
     refreshApps();
   }
   hasCustom=appInstalled(63);
-  if(hasCustom&&theme==50&&prefs_.getBool("custom",false)&&prefs_.getString("a63i","")=="custom")migratedLegacy=true;
+  if(!hasCustom)migratedLegacy=false;
   if(prefs_.getBool("custom",false)&&hasCustom)theme=63;
   {String error;if(!appInstalled(theme)||!appCompatible(theme,error))theme=-1;}
   baseTheme_=theme;for(int i=0;i<64;i++)if(appInstalled(i))schedule_.pool[schedule_.poolCount++]=i;
   schedule_.interval=rotationMinutes?rotationMinutes:1;schedule_.mode=rotationMinutes?1:0;
   ThemeSchedule restored;if(readSchedule((prefs_.isKey("schedule")?prefs_.getString("schedule",""):String()),restored,true,migratedLegacy)){schedule_=restored;pruneSchedule();}
+  reconcileApps();
   rotationMinutes=schedule_.mode==1?schedule_.interval:0;
   ssid_=(prefs_.isKey("ssid")?prefs_.getString("ssid",""):String());password_=(prefs_.isKey("wifiPass")?prefs_.getString("wifiPass",""):String());
   WiFi.persistent(false);WiFi.mode(WIFI_AP_STA);WiFi.setSleep(false);startAP();
@@ -375,7 +377,7 @@ void DeviceService::begin(int count,const char* titlesJson){
   });
   web_.begin();
   Serial.printf("Provision AP: %s  Password: %s\n",apName_.c_str(),apPassword_.c_str());
-  Serial.println("CWJSON:{\"ok\":true,\"version\":\"1.10.0\",\"message\":\"串口设置已就绪，发送 {\\\"cmd\\\":\\\"help\\\"} 查看命令\"}");
+  Serial.println("CWJSON:{\"ok\":true,\"version\":\"1.10.1\",\"message\":\"串口设置已就绪，发送 {\\\"cmd\\\":\\\"help\\\"} 查看命令\"}");
 }
 void DeviceService::uploadScript(){
   auto& u=web_.upload();
@@ -484,7 +486,7 @@ void DeviceService::poll(){
   pollThemeUpdates(now);
   const bool canUpdate=WiFi.status()==WL_CONNECTED&&time(nullptr)>1700000000&&!needsSetup()&&!panelTrial.active&&!ota_&&!scriptLocked_&&!serialInstall_&&!restartAt_;
   if(updater.finishCheck()&&updater.state!="up-to-date"&&updater.state!="available")eventLog.add("update-check-failed",updater.state.c_str());
-  if(!updater.busy&&updater.due(now)&&canUpdate){updater.startCheck("1.10.0");if(!updater.busy)eventLog.add("update-check-failed",updater.state.c_str());}
+  if(!updater.busy&&updater.due(now)&&canUpdate){updater.startCheck("1.10.1");if(!updater.busy)eventLog.add("update-check-failed",updater.state.c_str());}
   if(updater.enabled&&updater.available&&canUpdate&&renderLock(true)){
     scriptLocked_=true;eventLog.add("update-start",updater.targetVersion().c_str());stopScript();
     if(!updater.startInstall()){eventLog.add("update-failed",updater.state.c_str());scriptLocked_=false;generation++;renderLock(false);}
@@ -639,16 +641,17 @@ int DeviceService::catalogIndexByName(const String& name,const String& id)const{
     if(jsonField(row,"packageName",value,found)&&found&&value==name&&jsonField(row,"id",identity,found)&&found&&identity==id&&jsonField(row,"index",number,found)&&found&&integer(number,index))return index;
   }return -1;
 }
-String DeviceService::appId(int index){const String key=appKey(index,'i');String id=prefs_.isKey(key.c_str())?prefs_.getString(key.c_str(),""):index<themeCount?catalogField(index,"id"):String();return id.length()?id:"theme-"+String(index);}
-String DeviceService::appTitle(int index){const String key=appKey(index,'t');String title=prefs_.isKey(key.c_str())?prefs_.getString(key.c_str(),""):index<themeCount?catalogField(index,"title"):String();return title.length()?title:"用户应用 "+String(index);}
+String DeviceService::appId(int index){AppManifest m;String error;if(index>=0&&appInstalled(index)&&readManifest(appPath(index).c_str(),m,error))return m.id;String id=catalogField(index,"id");return id.length()?id:"theme-"+String(index);}
+String DeviceService::appTitle(int index){AppManifest m;String error;if(index>=0&&appInstalled(index)&&readManifest(appPath(index).c_str(),m,error))return m.title;String title=catalogField(index,"title");return title.length()?title:"用户应用 "+String(index);}
 String DeviceService::appPackageName(int index){
-  const String key=appKey(index,'n');if(prefs_.isKey(key.c_str()))return prefs_.getString(key.c_str(),"");
-  if(index<themeCount&&appId(index)==catalogField(index,"id")){String name=catalogField(index,"packageName");return name.length()?name:"org.clockwise."+appId(index);}
-  return "legacy."+appId(index);
+  AppManifest m;String error;if(index>=0&&appInstalled(index)&&readManifest(appPath(index).c_str(),m,error))return m.packageName;
+  return catalogField(index,"packageName");
 }
 int DeviceService::appIndex(const String& identity){
   if(identity.isEmpty())return -2;
-  for(int i=0;i<64;i++)if((i<themeCount||appInstalled(i))&&appPackageName(i)==identity)return i;
+  const uint32_t hash=appIdentityHash(identity);
+  for(int i=0;i<64;i++)if(appInstalled(i)&&appIdentityHash_[i]==hash&&appPackageName(i)==identity)return i;
+  for(int i=0;i<themeCount;i++)if(!appInstalled(i)&&catalogField(i,"packageName")==identity)return i;
   int found=-2;for(int i=0;i<64;i++)if((i<themeCount||appInstalled(i))&&appId(i)==identity){if(found>=0)return -3;found=i;}return found;
 }
 int DeviceService::requestAppIndex(String& error){
@@ -706,7 +709,7 @@ bool DeviceService::checkPackage(const char* path,String& error,int* targetFps){
 }
 bool DeviceService::appCompatible(int index,String& error){if(index==-1)return true;if(!(incompatible_&(uint64_t(1)<<index)))return true;return checkPackage(appPath(index).c_str(),error);}
 void DeviceService::refreshApps(){
-  installed_=incompatible_=0;memset(appBytes_,0,sizeof(appBytes_));memset(appTargetFps_,60,sizeof(appTargetFps_));candidateChecked_=false;candidateTargetFps_=60;if(!fs_)return;
+  installed_=incompatible_=0;memset(appBytes_,0,sizeof(appBytes_));memset(appIdentityHash_,0,sizeof(appIdentityHash_));memset(appTargetFps_,60,sizeof(appTargetFps_));candidateChecked_=false;candidateTargetFps_=60;if(!fs_)return;
   LittleFS.remove("/apps/install.tmp");
   for(int i=0;i<64;i++){
     String path=appPath(i),backup=path+".bak";
@@ -720,11 +723,36 @@ void DeviceService::refreshApps(){
       const bool validManifest=readManifest(path.c_str(),manifest,error);
       if(!validManifest||!compatible(manifest,error))incompatible_|=uint64_t(1)<<i;
       if(validManifest)appTargetFps_[i]=manifest.targetFps;
-      if(validManifest&&manifest.modern&&manifest.packageName.length()){
-        for(const auto& item:{std::pair<char,String>('i',manifest.id),{'t',manifest.title},{'n',manifest.packageName}}){const String key=appKey(i,item.first);if(!prefs_.isKey(key.c_str())||prefs_.getString(key.c_str(),"")!=item.second)prefs_.putString(key.c_str(),item.second);}
-      }
+      if(validManifest&&manifest.modern)appIdentityHash_[i]=appIdentityHash(manifest.packageName);
     }
-  }hasCustom=appInstalled(63);
+    // Identity lives in the package. Reclaim redundant NVS strings, not user settings.
+    for(char suffix:{'i','t','n'}){const String key=appKey(i,suffix);if(prefs_.isKey(key.c_str()))prefs_.remove(key.c_str());}
+  }
+  // Empty slots may also have metadata left by failed or interrupted installs.
+  for(int i=0;i<64;i++)if(!appInstalled(i))for(char suffix:{'i','t','n'}){const String key=appKey(i,suffix);if(prefs_.isKey(key.c_str()))prefs_.remove(key.c_str());}
+  hasCustom=appInstalled(63);
+}
+void DeviceService::reconcileApps(){
+  if(!fs_)return;
+  for(int i=0;i<64;i++)if(appInstalled(i)&&appIdentityHash_[i])for(int j=i+1;j<64;j++)if(appInstalled(j)&&appIdentityHash_[i]==appIdentityHash_[j]){
+    AppManifest a,b;String error;if(!readManifest(appPath(i).c_str(),a,error)||!readManifest(appPath(j).c_str(),b,error)||a.packageName!=b.packageName)continue;
+    const int keep=FirmwareUpdate::newer(b.appVersion,a.appVersion)||(a.appVersion==b.appVersion&&theme==j)?j:i,drop=keep==i?j:i;
+    const String from=appKey(drop,'c'),to=appKey(keep,'c');
+    if(prefs_.isKey(from.c_str())&&!prefs_.isKey(to.c_str())){String values=prefs_.getString(from.c_str(),"{}");if(prefs_.putString(to.c_str(),values)!=values.length())continue;}
+    const auto previous=schedule_;const int oldTheme=theme,oldBase=baseTheme_,oldWindow=windowTheme_;
+    if(theme==drop)theme=keep;if(baseTheme_==drop)baseTheme_=keep;if(windowTheme_==drop)windowTheme_=keep;
+    uint8_t count=0;for(int n=0;n<schedule_.poolCount;n++){int slot=schedule_.pool[n]==drop?keep:schedule_.pool[n];bool seen=false;for(int p=0;p<count;p++)if(schedule_.pool[p]==slot)seen=true;if(!seen)schedule_.pool[count++]=slot;}schedule_.poolCount=count;
+    for(int n=0;n<schedule_.windowCount;n++)if(schedule_.windows[n].theme==drop)schedule_.windows[n].theme=keep;
+    const String plan=scheduleText();
+    if(prefs_.putInt("theme",baseTheme_)!=4||prefs_.putString("schedule",plan)!=plan.length()){
+      schedule_=previous;theme=oldTheme;baseTheme_=oldBase;windowTheme_=oldWindow;continue;
+    }
+    prefs_.putBool("custom",baseTheme_==63);
+    if(!LittleFS.remove(appPath(drop)))continue;
+    installed_&=~(uint64_t(1)<<drop);incompatible_&=~(uint64_t(1)<<drop);appBytes_[drop]=appIdentityHash_[drop]=0;appTargetFps_[drop]=60;prefs_.remove(from.c_str());
+    if(drop==i)break;
+  }
+  hasCustom=appInstalled(63);
 }
 void DeviceService::sendApps(bool serial){
   if(serial)Serial.print("CWJSON:");else{access();web_.setContentLength(CONTENT_LENGTH_UNKNOWN);web_.send(200,"application/json; charset=utf-8","");}
@@ -768,7 +796,7 @@ String DeviceService::statusJson(){
   const char* source=windowTheme_!=ThemeSchedule::None?"condition":schedule_.mode==1?"interval":!timeValid&&needsTime?"waiting-time":schedule_.mode==2?"daily":"fixed";
   if(windowTheme_==ThemeSchedule::None&&schedule_.mode==1){const uint32_t period=uint32_t(schedule_.interval)*60000,elapsed=uint32_t(millis()-rotateAt_);snprintf(remaining,sizeof(remaining),"%u",unsigned(elapsed>=period?0:(period-elapsed+999)/1000));}
   String ip=(WiFi.status()==WL_CONNECTED?WiFi.localIP():WiFi.softAPIP()).toString();
-  const int length=snprintf(body,sizeof(body),"{\"version\":\"1.10.0\",\"chip\":%s,\"width\":64,\"height\":64,\"ip\":%s,\"stationIP\":%s,\"apIP\":%s,\"configUrl\":%s,\"ssid\":%s,\"connected\":%s,\"networkState\":%s,\"rssi\":%d,\"uptime\":%u,\"heap\":%u,\"largestBlock\":%u,\"theme\":%d,\"generation\":%u,\"brightness\":%d,\"rotationMinutes\":%d,\"timezone\":%s,\"otaMaxBytes\":%u,\"storage\":%s,\"hasCustom\":%s,\"appSlots\":64,\"catalogCount\":%d,\"error\":%s,\"performance\":%s,\"limits\":%s,\"baseTheme\":%d,\"timeValid\":%s,\"localTime\":\"%s\",\"clock\":{\"weekday\":%d,\"hour\":%d,\"minute\":%d,\"second\":%d},\"playbackSource\":\"%s\",\"rotationRemainingSeconds\":%s}",
+  const int length=snprintf(body,sizeof(body),"{\"version\":\"1.10.1\",\"chip\":%s,\"width\":64,\"height\":64,\"ip\":%s,\"stationIP\":%s,\"apIP\":%s,\"configUrl\":%s,\"ssid\":%s,\"connected\":%s,\"networkState\":%s,\"rssi\":%d,\"uptime\":%u,\"heap\":%u,\"largestBlock\":%u,\"theme\":%d,\"generation\":%u,\"brightness\":%d,\"rotationMinutes\":%d,\"timezone\":%s,\"otaMaxBytes\":%u,\"storage\":%s,\"hasCustom\":%s,\"appSlots\":64,\"catalogCount\":%d,\"error\":%s,\"performance\":%s,\"limits\":%s,\"baseTheme\":%d,\"timeValid\":%s,\"localTime\":\"%s\",\"clock\":{\"weekday\":%d,\"hour\":%d,\"minute\":%d,\"second\":%d},\"playbackSource\":\"%s\",\"rotationRemainingSeconds\":%s}",
     quote(ESP.getChipModel()).c_str(),quote(ip).c_str(),quote(WiFi.localIP().toString()).c_str(),quote(WiFi.softAPIP().toString()).c_str(),quote("http://"+ip+"/").c_str(),quote(WiFi.SSID()).c_str(),WiFi.status()==WL_CONNECTED?"true":"false",quote(networkState).c_str(),WiFi.RSSI(),millis()/1000,
     heap_caps_get_free_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT),heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT),theme,generation,brightness,rotationMinutes,
     quote(prefs_.getString("tz","CST-8")).c_str(),unsigned(next?next->size:0),fs_?"true":"false",hasCustom?"true":"false",themeCount,quote(lastError).c_str(),metrics,limits_.json().c_str(),
@@ -928,7 +956,7 @@ bool DeviceService::uninstallApp(int index,String& error){
   if(ota_||scriptLocked_){error="设备正在写入，请稍后重试";return false;}
   if(!renderLock(true)){error="渲染任务忙";return false;}stopScript();
   if(!LittleFS.remove(appPath(index))){generation++;renderLock(false);error="无法删除应用文件";return false;}
-  installed_&=~(uint64_t(1)<<index);incompatible_&=~(uint64_t(1)<<index);appBytes_[index]=0;appTargetFps_[index]=60;hasCustom=appInstalled(63);
+  installed_&=~(uint64_t(1)<<index);incompatible_&=~(uint64_t(1)<<index);appBytes_[index]=appIdentityHash_[index]=0;appTargetFps_[index]=60;hasCustom=appInstalled(63);
   if(theme==index||baseTheme_==index||windowTheme_==index){theme=baseTheme_=-1;windowTheme_=ThemeSchedule::None;}
   for(char key:{'i','t','n','c'})prefs_.remove(appKey(index,key).c_str());
   pruneSchedule();prefs_.putInt("theme",baseTheme_);prefs_.putBool("custom",baseTheme_==63);generation++;renderLock(false);return true;
@@ -960,16 +988,19 @@ String DeviceService::completeInstall(int& code,bool serial){
   if(uploadError_.isEmpty()&&(!validateScript||!validateScript("/apps/install.tmp",uploadError_))){if(uploadError_.isEmpty())uploadError_="应用验证失败";}
   if(!uploadError_.isEmpty()){LittleFS.remove("/apps/install.tmp");finishScript();return "{\"error\":"+quote(uploadError_)+"}";}
   const String path=appPath(installIndex_),backup=path+".bak";
+  // The ESP LittleFS VFS rejects renaming an open file. Only pause the active
+  // package for the final commit, after upload and validation have completed.
+  const bool active=theme==installIndex_;
+  if(active){if(!renderLock(true)){LittleFS.remove("/apps/install.tmp");finishScript();code=503;return "{\"error\":\"渲染任务忙，请重试更新\"}";}stopScript();}
   bool saved=true,old=LittleFS.exists(path);
   if(old){LittleFS.remove(backup);saved=LittleFS.rename(path,backup);}
   if(saved)saved=LittleFS.rename("/apps/install.tmp",path);
-  if(!saved){if(old&&LittleFS.exists(backup))LittleFS.rename(backup,path);LittleFS.remove("/apps/install.tmp");finishScript();code=500;return "{\"error\":\"应用保存失败，原应用已保留\"}";}
-  if(theme!=installIndex_)LittleFS.remove(backup);installed_|=uint64_t(1)<<installIndex_;incompatible_&=~(uint64_t(1)<<installIndex_);appBytes_[installIndex_]=scriptBytes_;
+  if(!saved){bool restored=true;if(old&&LittleFS.exists(backup))restored=LittleFS.rename(backup,path);LittleFS.remove("/apps/install.tmp");if(active){generation++;if(ioTick)ioTick();renderLock(false);}finishScript();code=500;return restored?"{\"error\":\"应用保存失败，原应用已保留\"}":"{\"error\":\"应用恢复失败，旧包保留在备份；请重启设备\"}";}
+  LittleFS.remove(backup);installed_|=uint64_t(1)<<installIndex_;incompatible_&=~(uint64_t(1)<<installIndex_);appBytes_[installIndex_]=scriptBytes_;appIdentityHash_[installIndex_]=appIdentityHash(installPackageName_);
   appTargetFps_[installIndex_]=candidateTargetFps_;
-  prefs_.putString(appKey(installIndex_,'i').c_str(),installId_);prefs_.putString(appKey(installIndex_,'t').c_str(),installTitle_);
-  if(installPackageName_.length())prefs_.putString(appKey(installIndex_,'n').c_str(),installPackageName_);else prefs_.remove(appKey(installIndex_,'n').c_str());
+  if(active){generation++;if(ioTick)ioTick();renderLock(false);}
   hasCustom=appInstalled(63);finishScript();
-  code=200;return "{\"message\":\"应用已安装，当前主题继续运行；点击运行以启用新版本\",\"index\":"+String(installIndex_)+",\"id\":"+quote(installId_)+",\"packageName\":"+quote(appPackageName(installIndex_))+"}";
+  code=200;return "{\"message\":"+quote(active?"应用已更新，正在重新加载当前主题":"应用已安装，当前主题继续运行；点击运行以启用新版本")+",\"index\":"+String(installIndex_)+",\"id\":"+quote(installId_)+",\"packageName\":"+quote(appPackageName(installIndex_))+"}";
 }
 void DeviceService::abortSerialInstall(){
   if(!serialInstall_)return;
