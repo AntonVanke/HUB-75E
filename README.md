@@ -4,7 +4,7 @@
 
 基于 ESP32 / ESP32-S3 和 HUB75 面板的 64×64 时钟。主题使用 C/C++ 编译为芯片对应的 Xtensa 机器码，打包为 CWP3；当前固件不运行 Lua。Runtime API 5，native ABI 1。
 
-**当前版本：1.10.3** · [在线烧录](https://antonvanke.github.io/HUB-75E/#flash) · [主题应用](https://antonvanke.github.io/HUB-75E/#themes) · [USB 配置](https://antonvanke.github.io/HUB-75E/#config) · [图片时钟工坊](https://antonvanke.github.io/HUB-75E/studio/index.html)
+**当前版本：1.11.0** · [在线烧录](https://antonvanke.github.io/HUB-75E/#flash) · [主题应用](https://antonvanke.github.io/HUB-75E/#themes) · [USB 配置](https://antonvanke.github.io/HUB-75E/#config) · [图片时钟工坊](https://antonvanke.github.io/HUB-75E/studio/index.html)
 
 ![重力沙漏电脑模拟](web/previews/gravity-hourglass.gif)
 
@@ -14,7 +14,7 @@
 
 - **1.10.3 网页与查询提速**：先读取状态，网络、其它设置和维护不再等待完整应用列表；显示/概览只读主题名称，应用与条件控制按页加载。同一轮重复读取合并，保存和上传前后仍重新读取；无需重启的屏幕保存不再等待 8 秒。固件主题名称每包只解析一次并合并发送，应用目录按包名哈希筛选后精确核对，页面支持 ETag 条件缓存；Pages 复用发布目录，搜索防抖。优化前在 172.16.11.130 测得状态 0.094 秒、主题名称 6.204 秒、应用详情 4.062 秒；这是旧固件基线，尚未测量升级后的设备耗时。
 
-- **重力沙漏 v2.0.0**：按参考视频改为双菱形 LED、64 粒白色光点，倾斜堆积、翻转回流、流尽闪环；自动旋屏时容器保持与板体一致。A 复位、B 暂停，流沙时长 5–600 秒（默认 60 秒，非校准计时器）。格点占用替代两两碰撞，40 Hz 固定物理步长配合像素插值，目标帧率由 60 提高至 120 FPS；状态实际 292 字节、声明预算 512 字节，无逐帧分配。需 ESP32-S3 + IMU，更新同包名应用即可，无需重刷固件。通过主机沙粒守恒、翻转、倾斜、四向旋屏、暂停和无传感器检查；电脑 update + draw 平均 2.39 微秒/帧，不代表设备实测帧率。
+- **重力沙漏 v2.1.0**：沙粒颜色与边框颜色独立设置，任意 RGB 颜色（面板输出 RGB565）；黑色边框可隐藏。沙粒支持 1 或 2 像素，形状支持双菱形、铺满 64×64 的双等腰三角形。1 像素模式严格逐点绘制，全屏三角形含 931 粒沙；2 像素模式保留运动插值。A 复位、B 暂停，流沙时长 5–600 秒；目标 120 FPS，状态预算 21 KiB，无逐帧分配。更新应用后，在在线主题工坊连接 USB → 读取应用 → 重力沙漏 → 参数设置，用颜色选择器和下拉框设置；固件 1.11.0 的设备网页也提供颜色选择器与形状下拉框。四种组合与颜色保存检查通过，未烧录或实测设备帧率。
 
 - **1.10.2 崩溃记录**：panic 时将 PC/SP、异常代码及最多 10 层回溯地址保存到 RTC 内存，重启后把最近一次详情持久化到 NVS。维护 → 读取日志 / 导出日志可通过 IP 获取，包含最近注册接口（不含查询参数、请求内容和密码）、主题、每秒内存采样及固件 ELF SHA-256；最近接口是排查线索，不等于根因。发布包附带 `firmware.elf.gz` 调试符号。断电或来不及进入捕获流程时可能无详情，无需修改分区。此版本仅做本地编译及异常入口链接检查，未烧录或在实机上故意触发崩溃。
 - **1.10.1 应用和设置存储修复**：安装以包内 packageName 为准，不再把包名、标题和 ID 重复写入只有 20 KiB 的 NVS；升级启动时释放旧元数据，合并同包名副本，保留较新版本、参数和播放计划。方向设置使用一次原子写入，避免部分保存。更新正在播放的应用时，下载与校验期间继续运行，仅最终提交时关闭文件并重载；修复 LittleFS 拒绝重命名已打开文件的问题。回归覆盖 14 份重复包、设置分区满、更新失败回滚；已在 ESP32-S3 实机通过 OTA 升级、14 份重复应用合并、方向保存/恢复、运行中更新和重复安装验证。磁流体 v1.5.0 在开启自动主题更新的短时采样中约 10.4 FPS，尚未达到 120 FPS 目标；这不属于本次存储修复的性能承诺。
@@ -40,8 +40,8 @@
 
 | 芯片 | 固件 | 应用整包 | 硬件要求 |
 | --- | --- | --- | --- |
-| ESP32 | [v1.10.3 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.10.3.zip) | [5 款应用](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | 经典 ESP32，4 MB Flash |
-| ESP32-S3 | [v1.10.3 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.10.3.zip) | [59 款应用](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | 本项目板型，至少 8 MB Flash + 8 MB OPI PSRAM |
+| ESP32 | [v1.11.0 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.11.0.zip) | [5 款应用](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | 经典 ESP32，4 MB Flash |
+| ESP32-S3 | [v1.11.0 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.11.0.zip) | [59 款应用](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | 本项目板型，至少 8 MB Flash + 8 MB OPI PSRAM |
 
 S3 N4 不适用此固件。其它板型须核对 Flash、PSRAM 和接线。
 

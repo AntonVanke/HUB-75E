@@ -2,6 +2,39 @@
   "schema": 1,
   "releases": [
     {
+      "version": "1.11.0",
+      "runtimeApi": 5,
+      "nativeAbi": 1,
+      "notes": "Clockyr 1.11.0：重力沙漏 v2.1.0 支持独立沙粒/边框颜色、1/2 像素沙粒和全屏双三角形；参数页增加颜色选择器与下拉框。目标 120 FPS，未实测设备帧率。",
+      "catalog": "applications/1.11.0/catalog.json",
+      "targets": {
+        "esp32": {
+          "chip": "esp32",
+          "flashBytes": 4194304,
+          "psramBytes": 0,
+          "manifest": "firmware/esp32-v1.11.0/manifest.json",
+          "updateManifest": "firmware/esp32-v1.11.0/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32-v1.11.0/app.bin",
+            "bytes": 1530720,
+            "sha256": "e5c89cdd17c498cc8dfc0ae9e8a2b59ab83a3f603ec30232593c6a064d117fff"
+          }
+        },
+        "esp32s3": {
+          "chip": "esp32s3",
+          "flashBytes": 8388608,
+          "psramBytes": 8388608,
+          "manifest": "firmware/esp32s3-v1.11.0/manifest.json",
+          "updateManifest": "firmware/esp32s3-v1.11.0/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32s3-v1.11.0/app.bin",
+            "bytes": 1537920,
+            "sha256": "0004dac8994f9e1d49c25b72aab01e1eec9316e08e2182ad4465950188ed5b47"
+          }
+        }
+      }
+    },
+    {
       "version": "1.10.3",
       "runtimeApi": 5,
       "nativeAbi": 1,
@@ -728,5 +761,5 @@
       }
     }
   ],
-  "latest": "1.10.3"
+  "latest": "1.11.0"
 }

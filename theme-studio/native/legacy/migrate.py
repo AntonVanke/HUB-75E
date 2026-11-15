@@ -281,11 +281,19 @@ def generate(only=None):
             manifest["description"] = "时钟数字随机散成粒子，再沿曲线聚合成当前时间"
             manifest["requirements"]["stateBytes"] = 8192
         if project["id"] == "gravity-hourglass":
-            manifest["appVersion"] = "2.0.0"
-            manifest["description"] = "双菱形 LED 重力沙漏，64 粒白色光点随倾斜堆积、翻转回流；A 复位、B 暂停，流沙时长可调。目标 120 FPS，非校准计时器。"
-            manifest["requirements"].update(stateBytes=512, targetFps=120)
+            manifest["appVersion"] = "2.1.0"
+            manifest["description"] = "重力沙漏：沙粒和边框颜色独立可调，1/2 像素沙粒，双菱形或全屏双三角；A 复位、B 暂停。目标 120 FPS，非校准计时器。"
+            manifest["requirements"].update(stateBytes=21504, targetFps=120)
             manifest["parameters"] = {"seconds": {"label": "流沙时长 / Duration (s)",
-                "min": 5, "max": 600, "step": 5, "default": 60}}
+                "min": 5, "max": 600, "step": 5, "default": 60},
+                "sandColor": {"label": "沙粒颜色 / Sand", "type": "color", "min": 0,
+                    "max": 16777215, "step": 1, "default": 16777215},
+                "borderColor": {"label": "边框颜色 / Border", "type": "color", "min": 0,
+                    "max": 16777215, "step": 1, "default": 6583435},
+                "grainSize": {"label": "沙粒大小 / Grain size", "min": 1, "max": 2,
+                    "step": 1, "default": 2, "options": {"1": "1 像素 / 1 pixel", "2": "2 像素 / 2 pixels"}},
+                "shape": {"label": "沙漏形状 / Shape", "min": 0, "max": 1, "step": 1,
+                    "default": 0, "options": {"0": "双菱形 / Diamonds", "1": "全屏双三角 / Full triangles"}}}
         (folder / "theme.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         folders.append(folder)
     return folders
