@@ -34,12 +34,54 @@ constexpr int FRAME_US=16667;
 constexpr int THEME_COUNT=6;
 struct Snapshot {
   ThemeClock clock;int theme=0,brightness=80,rotation=PANEL_ROTATION;uint32_t generation=0;
+  PanelOrientation orientationConfig;
   float temperature=NAN,humidity=NAN,accel[3]={},gyro[3]={},gravity[3]={};
   bool a=false,b=false,panelTest=false,imuSupported=false,imuValid=false,temperatureValid=false,humidityValid=false,autoRotate=false;
 };
 struct Metrics { uint32_t frames=0,presents=0,scans=0,late=0,missed=0,maxUs=0,computeUs=0,blitUs=0,heap=0,lua=0,luaUsed=0,graphics=0,generation=0,sampleMs=0; int theme=-1,level=0,area=0,deaths=0,coins=0,targetFps=60; char error[256]={}; };
 static QueueHandle_t snapshotQueue,metricsQueue;
 static TaskHandle_t renderHandle;
+static TaskHandle_t serviceHandle;
+#ifdef HUB75_S3_BOARD
+struct SensorReading {
+  float temperature=NAN,humidity=NAN,accel[3]={},gyro[3]={};
+  uint32_t at=0,samples=0;
+  bool temperatureValid=false,humidityValid=false,imuValid=false;
+};
+static QueueHandle_t sensorQueue;
+static SemaphoreHandle_t sensorGate;
+static TaskHandle_t sensorHandle;
+static BoardSensors sensorCopy(){
+  xSemaphoreTake(sensorGate,portMAX_DELAY);const BoardSensors copy=sensors;xSemaphoreGive(sensorGate);return copy;
+}
+static SensorReading sensorReading(){
+  SensorReading value;if(sensorQueue)xQueuePeek(sensorQueue,&value,0);
+  const uint32_t age=millis()-value.at;
+  value.imuValid=value.imuValid&&age<500;value.temperatureValid=value.temperatureValid&&age<10000;value.humidityValid=value.humidityValid&&age<10000;
+  return value;
+}
+static void pollSensors(){
+    xSemaphoreTake(sensorGate,portMAX_DELAY);sensors.poll();
+    SensorReading value;value.at=millis();value.samples=sensors.imuSamples;
+    value.temperatureValid=sensors.temperatureValid();value.humidityValid=sensors.humidityValid();value.imuValid=sensors.imuValid();
+    value.temperature=sensors.temperature;value.humidity=sensors.humidity;
+    for(int i=0;i<3;i++){value.accel[i]=sensors.accel[i];value.gyro[i]=sensors.gyro[i];}
+    xQueueOverwrite(sensorQueue,&value);xSemaphoreGive(sensorGate);
+}
+static void sensorTask(void*){
+  const TickType_t period=std::max(TickType_t(1),pdMS_TO_TICKS(4));TickType_t wake=xTaskGetTickCount();
+  for(;;){
+    pollSensors();if(xTaskGetTickCount()-wake>period)wake=xTaskGetTickCount();
+    vTaskDelayUntil(&wake,period);
+  }
+}
+static void copySensors(Snapshot& next,const SensorReading& value){
+  next.temperatureValid=value.temperatureValid;next.humidityValid=value.humidityValid;
+  next.temperature=value.temperatureValid?value.temperature:NAN;next.humidity=value.humidityValid?value.humidity:NAN;
+  next.imuSupported=true;next.imuValid=value.imuValid;
+  for(int i=0;i<3;i++){next.accel[i]=value.imuValid?value.accel[i]:0;next.gyro[i]=value.imuValid?value.gyro[i]:0;}
+}
+#endif
 static esp_timer_handle_t frameTimer;
 static MatrixPanel_I2S_DMA* matrix;
 #ifdef HUB75_S3_BOARD
@@ -215,7 +257,8 @@ static bool loadScript(const char* path){
   framePeriodUs=(1000000+targetFps-1)/targetFps;
   host.packageFile=LittleFS.open(path,"r");
   if(!host.package.read(host.packageFile,limits)||host.package.version!=3){packageError="需要 C/C++ 二进制主题包 CWP3";return false;}
-  
+  // Cache bounded resources during activation, before the first animated frame.
+  if(limits.packageCacheBytes)for(uint32_t i=0;i<host.package.count;i++)host.cachedResource(i);
   return runtime.load([](void* context,size_t offset,char* out,size_t count)->size_t{
     auto& h=*(DmaHost*)context;if(!h.packageFile.seek(h.package.sourceOffset+offset))return 0;return h.packageFile.read((uint8_t*)out,count);
   },&host,host.package.sourceSize);
@@ -329,12 +372,24 @@ static void publishInputs();
 static void renderTask(void*){
   Metrics metrics;int current=-2;uint32_t generation=0;int64_t previous=esp_timer_get_time()/1000,reportAt=esp_timer_get_time(),nextFrameAt=0;bool healthy=false;
   bool testing=false;
+#ifdef HUB75_S3_BOARD
+  PanelOrientationController liveOrientation;bool orientationReady=false;
+#endif
   for(;;){
     const uint32_t pending=ulTaskNotifyTake(pdTRUE,portMAX_DELAY);
     xSemaphoreTake(renderGate,portMAX_DELAY);
     if(pending>1)metrics.missed+=pending-1;
     const bool oldA=snapshot.a,oldB=snapshot.b;
     xQueueReceive(snapshotQueue,&snapshot,0);
+#ifdef HUB75_S3_BOARD
+    const auto& config=snapshot.orientationConfig;const auto& old=liveOrientation.configuration();
+    if(!orientationReady||config.rotation!=old.rotation||config.autoRotate!=old.autoRotate||config.gravityRotation!=old.gravityRotation||config.zeroX!=old.zeroX||config.zeroY!=old.zeroY){liveOrientation.configure(config);orientationReady=true;}
+    const auto input=sensorReading();copySensors(snapshot,input);
+    liveOrientation.update(millis(),true,input.imuValid,input.samples,input.accel[0],input.accel[1],input.accel[2]);
+    snapshot.rotation=liveOrientation.rotation();snapshot.autoRotate=config.autoRotate;
+    if(input.imuValid)liveOrientation.screenGravity(snapshot.gravity[0],snapshot.gravity[1],snapshot.gravity[2]);
+    else for(auto& value:snapshot.gravity)value=0;
+#endif
     if(!panelInitialized){xSemaphoreGive(renderGate);continue;}
 #ifdef HUB75_S3_BOARD
     if(diagnosticPanel()){
@@ -403,18 +458,21 @@ static void renderTask(void*){
   }
 }
 void setup(){
-  Serial.begin(115200);setCpuFrequencyMhz(240);service.eventLog.begin("1.11.0");
+  serviceHandle=xTaskGetCurrentTaskHandle();
+  Serial.begin(115200);setCpuFrequencyMhz(240);service.eventLog.begin("1.11.1");
   service.panelTrial.begin();
   orientation.configure(panelOrientation());
 #ifdef HUB75_S3_BOARD
   delay(1500);
   Serial.printf("[BOARD] HUB75-S3 20261101-1 chip=%s flash=%u psram=%u\n",ESP.getChipModel(),ESP.getFlashChipSize(),ESP.getPsramSize());
   sensors.begin();
+  sensorGate=xSemaphoreCreateMutex();sensorQueue=xQueueCreate(1,sizeof(SensorReading));
+  if(!sensorGate||!sensorQueue){Serial.println("Sensor queue allocation failed");return;}
   diagnostics.begin();
   service.ambient.supported=true;
   service.hardwareStatus=[](){return diagnostics.json();};
-  service.hardwareTest=[](const String& test,String& error){if(test=="buzzer"){diagnostics.beep();return true;}if(test=="imu"){if(sensors.testImu())return true;error="IMU 自检失败或未检测到";return false;}error="未知测试项目";return false;};
-  service.sensorStatus=[](){return sensors.json();};
+  service.hardwareTest=[](const String& test,String& error){if(test=="buzzer"){diagnostics.beep();return true;}if(test=="imu"){xSemaphoreTake(sensorGate,portMAX_DELAY);const bool ok=sensors.testImu();xSemaphoreGive(sensorGate);if(ok)return true;error="IMU 自检失败或未检测到";return false;}error="未知测试项目";return false;};
+  service.sensorStatus=[](){return sensorCopy().json();};
 #else
   service.sensorStatus=[](){return String("{\"ahtPresent\":false,\"imuPresent\":false,\"imuSupported\":false,\"temperatureValid\":false,\"humidityValid\":false,\"imuValid\":false,\"ahtHealthy\":false,\"imuHealthy\":false,\"temperature\":null,\"humidity\":null,\"accelG\":null,\"gyroDps\":null}");};
 #endif
@@ -422,7 +480,7 @@ void setup(){
   service.orientationCalibrate=[](PanelOrientation& value,bool flat){return orientation.calibrate(value,flat,millis());};
   service.orientationStatus=[](){
 #ifdef HUB75_S3_BOARD
-    const bool supported=true,valid=sensors.imuValid();
+    const bool supported=true,valid=sensorReading().imuValid;
 #else
     const bool supported=false,valid=false;
 #endif
@@ -480,8 +538,12 @@ void setup(){
   if(!snapshotQueue||!metricsQueue||!renderGate){Serial.println("Queue allocation failed");return;}
   service.renderLock=[](bool lock){if(lock)return xSemaphoreTake(renderGate,pdMS_TO_TICKS(2000))==pdTRUE;xSemaphoreGive(renderGate);return true;};
   service.stopScript=[](){runtime.stop();host.releasePackage();};
+  service.detachActivePackage=[](){
+    for(uint32_t i=0;i<host.package.count;i++)if(host.package.media[i].size&&!host.packageCache[i])return false;
+    host.packageFile.close();return true;
+  };
   service.updateProgress=drawUpdateProgress;
-  service.ioTick=publishInputs;
+  service.ioTick=[](){if(xTaskGetCurrentTaskHandle()==serviceHandle)publishInputs();};
   service.copyFrame=[](uint16_t* out,uint8_t& rotation){
     if(!renderHandle||service.panelTrial.active||service.needsSetup()||diagnosticPanel()||(service.panelTestUntil&&int32_t(service.panelTestUntil-millis())>0))return false;
     if(xSemaphoreTake(renderGate,pdMS_TO_TICKS(40))!=pdTRUE)return false;
@@ -508,13 +570,17 @@ void setup(){
   service.begin(THEME_COUNT,THEME_TITLES);
   if(service.needsSetup())setupQr.begin(service.setupName().c_str(),service.setupPassword().c_str());
   service.lastError=panelInitError;if(panelInitError.length())service.eventLog.add("panel-failed",panelInitError.c_str());
+#ifdef HUB75_S3_BOARD
+  if(xTaskCreatePinnedToCore(sensorTask,"board-input",4096,nullptr,2,&sensorHandle,0)!=pdPASS){service.lastError="Sensor task allocation failed";service.eventLog.add("sensor-task-failed",service.lastError.c_str());}
+#endif
   Serial.printf("64x64, 240 MHz, render core 1, service core 0; %d catalog apps. Serial: {\"cmd\":\"help\"}\n",THEME_COUNT);
 }
 static void publishInputs(){
   static uint32_t last=0;const uint32_t now=millis();if(now-last<4)return;last=now;
 #ifdef HUB75_S3_BOARD
-  sensors.poll();if(diagnostics.poll()){
-    service.ambient.sampleImu(sensors.imuValid(),sensors.accel[0],sensors.accel[1],sensors.accel[2],sensors.gyro[0],sensors.gyro[1],sensors.gyro[2],now);
+  if(!sensorHandle&&sensorGate&&sensorQueue)pollSensors();
+  const auto input=sensorReading();if(diagnostics.poll()){
+    service.ambient.sampleImu(input.imuValid,input.accel[0],input.accel[1],input.accel[2],input.gyro[0],input.gyro[1],input.gyro[2],now);
     service.ambient.sample(diagnostics.lightRaw(),diagnostics.lightMillivolts(),now);
   }
 #endif
@@ -522,15 +588,14 @@ static void publishInputs(){
   static Snapshot next;next.a=service.buttonAUntil&&int32_t(service.buttonAUntil-millis())>0;next.b=service.buttonBUntil&&int32_t(service.buttonBUntil-millis())>0;next.theme=service.theme;next.generation=service.generation;next.brightness=service.ambient.tick(service.brightness,millis());
   next.panelTest=service.panelTestUntil&&int32_t(service.panelTestUntil-millis())>0;
 #ifdef HUB75_S3_BOARD
-  next.temperatureValid=sensors.temperatureValid();next.humidityValid=sensors.humidityValid();
-  next.temperature=next.temperatureValid?sensors.temperature:NAN;next.humidity=next.humidityValid?sensors.humidity:NAN;
-  next.imuSupported=true;next.imuValid=sensors.imuValid();
-  orientation.update(millis(),true,next.imuValid,sensors.imuSamples,sensors.accel[0],sensors.accel[1],sensors.accel[2]);
-  if(next.imuValid){for(int i=0;i<3;i++){next.accel[i]=sensors.accel[i];next.gyro[i]=sensors.gyro[i];}orientation.screenGravity(next.gravity[0],next.gravity[1],next.gravity[2]);}
+  copySensors(next,input);
+  orientation.update(now,true,next.imuValid,input.samples,input.accel[0],input.accel[1],input.accel[2]);
+  if(next.imuValid)orientation.screenGravity(next.gravity[0],next.gravity[1],next.gravity[2]);
 #else
   orientation.update(millis(),false,false,0,0,0,0);
 #endif
   next.rotation=orientation.rotation();next.autoRotate=orientation.configuration().autoRotate;
+  next.orientationConfig=orientation.configuration();
   struct timeval tv;gettimeofday(&tv,nullptr);time_t epoch=tv.tv_sec;struct tm t;localtime_r(&epoch,&t);
   next.clock.hour=t.tm_hour;next.clock.minute=t.tm_min;next.clock.second=t.tm_sec;
   next.clock.day=t.tm_mday;next.clock.month=t.tm_mon+1;next.clock.year=t.tm_year+1900;next.clock.weekday=t.tm_wday;

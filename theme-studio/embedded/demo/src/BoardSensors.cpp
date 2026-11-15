@@ -87,7 +87,6 @@ void BoardSensors::poll(){
       if(readRegisters(0x22,b,12)){for(int a=0;a<3;a++){gyro[a]=int16_t(uint16_t(b[a*2])|(uint16_t(b[a*2+1])<<8))*0.00875f;accel[a]=int16_t(uint16_t(b[6+a*2])|(uint16_t(b[7+a*2])<<8))*0.000061f;}imuSamples++;imuGood_=now;}else imuErrors++;
     }
   }
-  if(now-reportAt_>=1000){reportAt_=now;Serial.printf("[SENSORS] T=%.2fC RH=%.2f%% aht_samples=%u aht_errors=%u accel_g=%.4f,%.4f,%.4f gyro_dps=%.3f,%.3f,%.3f imu_samples=%u imu_errors=%u selftest=%s/%s\n",temperature,humidity,ahtSamples,ahtErrors,accel[0],accel[1],accel[2],gyro[0],gyro[1],gyro[2],imuSamples,imuErrors,accelSelfTest?"PASS":"FAIL",gyroSelfTest?"PASS":"FAIL");}
 }
 String BoardSensors::json()const{
   const bool tv=temperatureValid(),hv=humidityValid(),iv=imuValid();

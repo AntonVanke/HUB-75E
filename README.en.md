@@ -4,13 +4,15 @@
 
 A 64 × 64 HUB75 clock for ESP32 / ESP32-S3. Themes are C/C++ compiled to chip-specific Xtensa machine code in CWP3 packages. Current firmware does not run Lua. Runtime API 5, native ABI 1.
 
-**Current release: 1.11.0** · [Flash firmware](https://antonvanke.github.io/HUB-75E/#flash) · [Applications](https://antonvanke.github.io/HUB-75E/#themes) · [USB settings](https://antonvanke.github.io/HUB-75E/#config) · [Image clock workshop](https://antonvanke.github.io/HUB-75E/studio/index.html)
+**Current release: 1.11.1** · [Flash firmware](https://antonvanke.github.io/HUB-75E/#flash) · [Applications](https://antonvanke.github.io/HUB-75E/#themes) · [USB settings](https://antonvanke.github.io/HUB-75E/#config) · [Image clock workshop](https://antonvanke.github.io/HUB-75E/studio/index.html)
 
 ![Gravity Hourglass computer preview](web/previews/gravity-hourglass.gif)
 
 Rendered by the theme's C++ code on a computer, not panel footage or a device FPS measurement.
 
 ## Current features
+
+- **1.11.1 background/playback isolation:** brightness/timezone saves preserve theme state, conditional playback and rotation timers. Removing another app never locks or stops rendering. S3 samples sensors in a separate task; the renderer consumes fresh queued IMU data and calculates orientation even while HTTP is blocked. Sampling no longer emits large periodic serial logs. Resources are prefetched at activation within the existing PSRAM quota. A fully cached active app continues its old instance after replacement; Run or the next activation loads the update. HTTP, USB and automatic app downloads use bounded yielding writes. Host checks cover continuity, rollback, fresh inputs during service stalls and write failures. No device FPS measurement or flashing was performed; uncached active updates still reload, and flash writes, intrusive tests, restart and explicit switching cannot promise zero dropped frames.
 
 - **1.10.3 web/query performance:** load status first; Network, Other settings and Maintenance no longer wait for the full app list. Names, apps and conditions load when their pages need them. Coalesce overlapping reads without caching across writes/uploads, and avoid the eight-second reboot wait when panel settings need no restart. Firmware parses each name manifest once, batches output and filters catalog identities by hash with exact verification. Embedded pages support ETag revalidation; Pages shares its release request and debounces search. Old firmware on 172.16.11.130 measured 0.094 s for status, 6.204 s for names and 4.062 s for app details; these are baseline readings, not post-update performance results.
 
@@ -34,14 +36,14 @@ Rendered by the theme's C++ code on a computer, not panel footage or a device FP
 - Provisioning, driver trials, smooth brightness, orientation calibration, playback schedules and app parameters. Optional firmware auto-update checks run every six hours, default off and separate from daily NTP.
 - Image clocks: 32 slides, dragging, eight text layers, 19 fonts, Unifont Unicode, decoration, gradients, dates and seconds progress. Full fonts stay on the computer; only needed glyphs/assets are installed.
 
-Both chips compile; 10 request-queue and lazy-page-loading regression checks pass. This publication has not flashed or physically validated a device. Water and maze target 120 FPS; actual performance during installation/network traffic needs device measurement.
+Both chips compile; application lifecycle and simulated service-stall checks pass. This publication has not flashed or physically validated a device. Water and maze target 120 FPS; actual performance during installation/network traffic needs device measurement.
 
 ## Downloads
 
 | Chip | Firmware | Applications | Requirements |
 | --- | --- | --- | --- |
-| ESP32 | [v1.11.0 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.11.0.zip) | [5 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | Classic ESP32, 4 MB Flash |
-| ESP32-S3 | [v1.11.0 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.11.0.zip) | [59 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | Project board, at least 8 MB Flash + 8 MB OPI PSRAM |
+| ESP32 | [v1.11.1 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.11.1.zip) | [5 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | Classic ESP32, 4 MB Flash |
+| ESP32-S3 | [v1.11.1 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.11.1.zip) | [59 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | Project board, at least 8 MB Flash + 8 MB OPI PSRAM |
 
 S3 N4 is unsupported. Other boards require matching memory settings and wiring.
 

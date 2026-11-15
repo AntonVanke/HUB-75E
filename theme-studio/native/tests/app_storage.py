@@ -25,7 +25,9 @@ methods = '\n'.join(function(service, name) for name in [
     'String DeviceService::appId(', 'String DeviceService::appTitle(',
     'String DeviceService::appPackageName(', 'int DeviceService::appIndex(',
     'void DeviceService::refreshApps(', 'void DeviceService::reconcileApps(',
-    'void DeviceService::finishScript(', 'String DeviceService::completeInstall('
+    'void DeviceService::finishScript(', 'String DeviceService::completeInstall(',
+    'bool DeviceService::saveConfig(', 'bool DeviceService::runApp(',
+    'void DeviceService::pruneSchedule(', 'bool DeviceService::uninstallApp('
 ])
 newer = next(line.strip() for line in (source / 'FirmwareUpdate.h').read_text(encoding='utf-8').splitlines() if 'static bool newer(' in line)
 code = r'''
@@ -72,21 +74,26 @@ Preferences* globalPrefs;bool openExistingPreferences(Preferences& p,const char*
 ORIENTATION
 struct FirmwareUpdate {NEWER};
 struct ThemePackage {bool read(const File& f,int){return bool(f);}};
+uint32_t millis(){return 5000;}int setenv(const char*,const char*,int){return 0;}void tzset(){}
 static String quote(const String& s){return "\""+s+"\"";}static bool safeId(const String& s){return !s.empty();}static bool safeTitle(const String& s){return !s.empty();}
 struct DeviceService {
- Preferences prefs_;bool fs_=true,hasCustom=false,candidateChecked_=false,scriptLocked_=false;uint64_t installed_=0,incompatible_=0;
+ Preferences prefs_;bool fs_=true,hasCustom=false,candidateChecked_=false,scriptLocked_=false,serialInstall_=false,ota_=false;uint64_t installed_=0,incompatible_=0;
+ int brightness=80,rotationMinutes=0;uint32_t rotateAt_=1234;struct {void reset(){}} conditions_;
  uint32_t appBytes_[64]={},appIdentityHash_[64]={},generation=0;uint8_t appTargetFps_[64]={},candidateTargetFps_=120;
  int themeCount=6,theme=4,baseTheme_=4,windowTheme_=-2,limits_=0,installIndex_=-1;size_t scriptBytes_=12000;
  String uploadError_,installId_,installTitle_,installPackageName_,serialInstallPackage_;File scriptFile_;ThemeSchedule schedule_;
  std::map<int,AppManifest> catalog;struct {void releaseParsedUpload(){}} web_;
  std::function<bool(const char*,String&)> validateScript=[](const char*,String&){return true;};
  std::function<bool(bool)> renderLock=[](bool){return true;};std::function<void()> stopScript=[](){},ioTick=[](){};
+ std::function<bool()> detachActivePackage;
  bool readManifest(const char* p,AppManifest& m,String&){if(!LittleFS.exists(p)||!manifests.count(LittleFS.files[p]))return false;m=manifests[LittleFS.files[p]];return true;}
  bool compatible(const AppManifest&,String&){return true;}
+ bool appCompatible(int,String&){return true;}
  String catalogField(int i,const char* key){if(!catalog.count(i))return "";auto& m=catalog[i];return !strcmp(key,"id")?m.id:!strcmp(key,"title")?m.title:m.packageName;}
  String scheduleText(){String s;for(int n=0;n<schedule_.poolCount;n++)s+=String(schedule_.pool[n])+",";for(int n=0;n<schedule_.windowCount;n++)s+=String(schedule_.windows[n].theme)+";";return s;}
  bool appInstalled(int)const;String appPath(int)const;String appId(int);String appTitle(int);String appPackageName(int);int appIndex(const String&);
  void refreshApps();void reconcileApps();void finishScript();String completeInstall(int&,bool=false);
+ bool saveConfig(int,int,int,const String&,String&);bool runApp(int,String&);void pruneSchedule();bool uninstallApp(int,String&);
 };
 #define LittleFS fsProxy
 METHODS
@@ -120,7 +127,21 @@ int main(){
  assert(code==500&&!locked&&stops==2&&LittleFS.files[d.appPath(4)]=="water1.1.0"&&!LittleFS.exists(d.appPath(4)+".bak"));
  // An unrelated application update never closes the running file.
  active=File(d.appPath(4));LittleFS.files["/apps/install.tmp"]="one-piece1.1.0";d.completeInstall(code);assert(code==200&&stops==2&&bool(active));
- std::cout<<"PASS: full NVS reclamation, atomic orientation save/failure, 14-copy reconciliation with settings/schedules, package identity, repeated installs, open-file update and rollback, unrelated app continues\n";
+ // Fully cached running applications retain state across replacement and rollback.
+ d.detachActivePackage=[&](){active.close();return true;};const auto generation=d.generation;
+ LittleFS.files["/apps/install.tmp"]="water1.0.0";d.completeInstall(code);assert(code==200&&stops==2&&d.generation==generation&&!locked);
+ LittleFS.files["/apps/install.tmp"]="water1.1.0";LittleFS.failFrom="/apps/install.tmp";LittleFS.failures=1;d.completeInstall(code);assert(code==500&&stops==2&&d.generation==generation&&!locked&&LittleFS.files[d.appPath(4)]=="water1.0.0");
+ // Settings must preserve the current condition-selected theme and rotation timer.
+ String error;DeviceService u;u.refreshApps();int locks=0,uninstallStops=0;
+ u.renderLock=[&](bool){locks++;return true;};u.stopScript=[&](){uninstallStops++;};
+ assert(u.saveConfig(4,90,0,"CST-8",error)&&u.generation==0&&u.rotateAt_==1234);
+ u.theme=51;u.windowTheme_=51;
+ assert(u.saveConfig(4,100,0,"UTC0",error)&&u.theme==51&&u.windowTheme_==51&&u.generation==0&&u.prefs_.getInt("theme",-1)==4);
+ assert(u.runApp(4,error)&&u.theme==4&&u.generation==1);
+ // Removing a nonplaying default must not stop an active conditional theme.
+ u.baseTheme_=51;assert(u.uninstallApp(51,error)&&u.baseTheme_==-1&&u.theme==4&&u.generation==1&&locks==0&&uninstallStops==0);
+ assert(u.uninstallApp(4,error)&&u.theme==-1&&u.generation==2&&locks==2&&uninstallStops==1);
+ std::cout<<"PASS: NVS reclamation, orientation, duplicate reconciliation, repeated installs, open-file rollback, cached active update continuity, settings preserve playback/timer, inactive uninstall never locks or stops rendering\n";
 }
 '''.replace('ORIENTATION', function(panel, 'inline PanelOrientation panelOrientation(')+'\n'+function(panel, 'inline bool savePanelOrientation(')).replace('NEWER', newer).replace('METHODS', methods)
 (out/'test.cpp').write_text(code, encoding='utf-8')

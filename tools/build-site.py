@@ -79,7 +79,7 @@ def main():
     (appdir / "catalog.json").write_text(encoded, encoding="utf-8")
     indexPath=output / "releases.json"
     index=json.loads(indexPath.read_text(encoding="utf-8")) if indexPath.exists() else {"schema":1,"releases":[]}
-    release={"version":version,"runtimeApi":5,"nativeAbi":1,"notes":"Clockyr 1.11.0：重力沙漏 v2.1.0 支持独立沙粒/边框颜色、1/2 像素沙粒和全屏双三角形；参数页增加颜色选择器与下拉框。目标 120 FPS，未实测设备帧率。", "catalog":"applications/"+version+"/catalog.json","targets":{}}
+    release={"version":version,"runtimeApi":5,"nativeAbi":1,"notes":"Clockyr 1.11.1：普通设置保存和卸载其它应用保留播放；S3 独立重力采样、激活时缓存素材，已缓存主题更新继续旧实例，应用写入分段让出 CPU。未实测设备帧率。", "catalog":"applications/"+version+"/catalog.json","targets":{}}
     for chip in ("esp32", "esp32s3"):
         name=chip+"-v"+version
         source=ROOT / "releases" / name

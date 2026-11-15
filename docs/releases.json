@@ -2,6 +2,39 @@
   "schema": 1,
   "releases": [
     {
+      "version": "1.11.1",
+      "runtimeApi": 5,
+      "nativeAbi": 1,
+      "notes": "Clockyr 1.11.1：普通设置保存和卸载其它应用保留播放；S3 独立重力采样、激活时缓存素材，已缓存主题更新继续旧实例，应用写入分段让出 CPU。未实测设备帧率。",
+      "catalog": "applications/1.11.1/catalog.json",
+      "targets": {
+        "esp32": {
+          "chip": "esp32",
+          "flashBytes": 4194304,
+          "psramBytes": 0,
+          "manifest": "firmware/esp32-v1.11.1/manifest.json",
+          "updateManifest": "firmware/esp32-v1.11.1/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32-v1.11.1/app.bin",
+            "bytes": 1531360,
+            "sha256": "0ba3c4c42d409fbd332b6f6dad3cb63236c16ec1dd4a0013736d202e8ff73f18"
+          }
+        },
+        "esp32s3": {
+          "chip": "esp32s3",
+          "flashBytes": 8388608,
+          "psramBytes": 8388608,
+          "manifest": "firmware/esp32s3-v1.11.1/manifest.json",
+          "updateManifest": "firmware/esp32s3-v1.11.1/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32s3-v1.11.1/app.bin",
+            "bytes": 1540928,
+            "sha256": "c4d0322a9a67183d09b1ab22b9634cbb8ce4ea7a704d7316f118557d57cf5a1f"
+          }
+        }
+      }
+    },
+    {
       "version": "1.11.0",
       "runtimeApi": 5,
       "nativeAbi": 1,
@@ -761,5 +794,5 @@
       }
     }
   ],
-  "latest": "1.11.0"
+  "latest": "1.11.1"
 }

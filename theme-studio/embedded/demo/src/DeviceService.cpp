@@ -62,7 +62,7 @@ bool DeviceService::saveOrientation(int degrees,bool automatic,int gravityDegree
 }
 String DeviceService::discoveryIdentity()const{
   char id[17];snprintf(id,sizeof(id),"%012llx",ESP.getEfuseMac()&0xffffffffffffULL);
-  return "{\"product\":\"clockwise-hub75\",\"id\":"+quote(id)+",\"chip\":"+quote(ESP.getChipModel())+",\"version\":\"1.11.0\"}";
+  return "{\"product\":\"clockwise-hub75\",\"id\":"+quote(id)+",\"chip\":"+quote(ESP.getChipModel())+",\"version\":\"1.11.1\"}";
 }
 bool DeviceService::startDiscovery(String& error){
   if(WiFi.status()!=WL_CONNECTED){error="请先让设备连接局域网 Wi-Fi";return false;}
@@ -245,8 +245,8 @@ void DeviceService::begin(int count,const char* titlesJson){
   else{startAP();networkState="setup-ap";}
   timeSync_.begin(prefs_);
   const char* headers[]={"X-SHA256","X-Firmware-Size","If-None-Match"};web_.collectHeaders(headers,3);
-  web_.on("/",HTTP_GET,[this](){const char* tag="\"clockyr-1.11.0-ui\"";web_.sendHeader("ETag",tag);web_.sendHeader("Cache-Control","no-cache");if(web_.header("If-None-Match")==tag){web_.send(304);return;}web_.sendHeader("Content-Encoding","gzip");sendFlash("text/html; charset=utf-8",(const char*)DEVICE_PAGE,sizeof(DEVICE_PAGE));});
-  web_.on("/guide",HTTP_GET,[this](){const char* tag="\"clockyr-1.11.0-guide\"";web_.sendHeader("ETag",tag);web_.sendHeader("Cache-Control","no-cache");if(web_.header("If-None-Match")==tag){web_.send(304);return;}web_.sendHeader("Content-Encoding","gzip");sendFlash("text/html; charset=utf-8",(const char*)THEME_GUIDE_PAGE,sizeof(THEME_GUIDE_PAGE));});
+  web_.on("/",HTTP_GET,[this](){const char* tag="\"clockyr-1.11.1-ui\"";web_.sendHeader("ETag",tag);web_.sendHeader("Cache-Control","no-cache");if(web_.header("If-None-Match")==tag){web_.send(304);return;}web_.sendHeader("Content-Encoding","gzip");sendFlash("text/html; charset=utf-8",(const char*)DEVICE_PAGE,sizeof(DEVICE_PAGE));});
+  web_.on("/guide",HTTP_GET,[this](){const char* tag="\"clockyr-1.11.1-guide\"";web_.sendHeader("ETag",tag);web_.sendHeader("Cache-Control","no-cache");if(web_.header("If-None-Match")==tag){web_.send(304);return;}web_.sendHeader("Content-Encoding","gzip");sendFlash("text/html; charset=utf-8",(const char*)THEME_GUIDE_PAGE,sizeof(THEME_GUIDE_PAGE));});
   web_.on("/api/status",HTTP_GET,[this](){reply(200,statusJson());});
   web_.on("/api/time",HTTP_ANY,[this](){
     if(web_.method()==HTTP_GET){reply(200,timeSync_.json());return;}
@@ -375,7 +375,10 @@ void DeviceService::begin(int count,const char* titlesJson){
   });
   web_.begin();
   Serial.printf("Provision AP: %s  Password: %s\n",apName_.c_str(),apPassword_.c_str());
-  Serial.println("CWJSON:{\"ok\":true,\"version\":\"1.11.0\",\"message\":\"串口设置已就绪，发送 {\\\"cmd\\\":\\\"help\\\"} 查看命令\"}");
+  Serial.println("CWJSON:{\"ok\":true,\"version\":\"1.11.1\",\"message\":\"串口设置已就绪，发送 {\\\"cmd\\\":\\\"help\\\"} 查看命令\"}");
+}
+bool DeviceService::writeAppData(File& file,const uint8_t* data,size_t size){
+  for(size_t at=0;at<size;){const size_t count=std::min(size_t(512),size-at);if(file.write(data+at,count)!=count)return false;at+=count;if(ioTick)ioTick();delay(1);}return true;
 }
 void DeviceService::uploadScript(){
   auto& u=web_.upload();
@@ -398,7 +401,7 @@ void DeviceService::uploadScript(){
   else if(u.status==UPLOAD_FILE_WRITE&&uploadError_.isEmpty()){
     if(scriptBytes_+u.currentSize>limits_.appBytes)uploadError_="此设备应用包上限为 "+String(limits_.appBytes/1024)+" KiB";
     else if(LittleFS.totalBytes()-LittleFS.usedBytes()<u.currentSize+8192)uploadError_="存储空间不足；更新需同时保留旧应用和新包，请先卸载其他应用";
-    else if(scriptFile_.write(u.buf,u.currentSize)!=u.currentSize)uploadError_="应用写入失败，存储空间可能不足";
+    else if(!writeAppData(scriptFile_,u.buf,u.currentSize))uploadError_="应用写入失败，存储空间可能不足";
     else scriptBytes_+=u.currentSize;
     if(ioTick)ioTick();
   }else if(u.status==UPLOAD_FILE_END)scriptFile_.close();
@@ -484,7 +487,7 @@ void DeviceService::poll(){
   pollThemeUpdates(now);
   const bool canUpdate=WiFi.status()==WL_CONNECTED&&time(nullptr)>1700000000&&!needsSetup()&&!panelTrial.active&&!ota_&&!scriptLocked_&&!serialInstall_&&!restartAt_;
   if(updater.finishCheck()&&updater.state!="up-to-date"&&updater.state!="available")eventLog.add("update-check-failed",updater.state.c_str());
-  if(!updater.busy&&updater.due(now)&&canUpdate){updater.startCheck("1.11.0");if(!updater.busy)eventLog.add("update-check-failed",updater.state.c_str());}
+  if(!updater.busy&&updater.due(now)&&canUpdate){updater.startCheck("1.11.1");if(!updater.busy)eventLog.add("update-check-failed",updater.state.c_str());}
   if(updater.enabled&&updater.available&&canUpdate&&renderLock(true)){
     scriptLocked_=true;eventLog.add("update-start",updater.targetVersion().c_str());stopScript();
     if(!updater.startInstall()){eventLog.add("update-failed",updater.state.c_str());scriptLocked_=false;generation++;renderLock(false);}
@@ -536,7 +539,7 @@ void DeviceService::themeUpdateWorker(){
       if(!package.begin(tls,url)||package.GET()!=200||package.getSize()!=int(bytes)){package.end();continue;}
       LittleFS.remove("/apps/theme-update.tmp");out=LittleFS.open("/apps/theme-update.tmp","w");if(!out){package.end();continue;}
       mbedtls_sha256_context digest;mbedtls_sha256_init(&digest);mbedtls_sha256_starts_ret(&digest,0);uint8_t buffer[1024];uint32_t got=0;auto* stream=package.getStreamPtr();bool ok=true;
-      while(got<bytes){const size_t n=stream->readBytes(buffer,std::min(sizeof(buffer),size_t(bytes-got)));if(!n){ok=false;break;}if(out.write(buffer,n)!=n){ok=false;break;}mbedtls_sha256_update_ret(&digest,buffer,n);got+=n;if(ioTick)ioTick();}
+      while(got<bytes){const size_t n=stream->readBytes(buffer,std::min(sizeof(buffer),size_t(bytes-got)));if(!n){ok=false;break;}if(!writeAppData(out,buffer,n)){ok=false;break;}mbedtls_sha256_update_ret(&digest,buffer,n);got+=n;}
       unsigned char result[32];char hex[65];mbedtls_sha256_finish_ret(&digest,result);mbedtls_sha256_free(&digest);for(int n=0;n<32;n++)snprintf(hex+n*2,3,"%02x",result[n]);out.close();package.end();
       if(ok&&got==bytes&&hash==hex){downloaded=true;break;}LittleFS.remove("/apps/theme-update.tmp");
     }
@@ -804,7 +807,7 @@ String DeviceService::statusJson(){
   const char* source=windowTheme_!=ThemeSchedule::None?"condition":schedule_.mode==1?"interval":!timeValid&&needsTime?"waiting-time":schedule_.mode==2?"daily":"fixed";
   if(windowTheme_==ThemeSchedule::None&&schedule_.mode==1){const uint32_t period=uint32_t(schedule_.interval)*60000,elapsed=uint32_t(millis()-rotateAt_);snprintf(remaining,sizeof(remaining),"%u",unsigned(elapsed>=period?0:(period-elapsed+999)/1000));}
   String ip=(WiFi.status()==WL_CONNECTED?WiFi.localIP():WiFi.softAPIP()).toString();
-  const int length=snprintf(body,sizeof(body),"{\"version\":\"1.11.0\",\"chip\":%s,\"width\":64,\"height\":64,\"ip\":%s,\"stationIP\":%s,\"apIP\":%s,\"configUrl\":%s,\"ssid\":%s,\"connected\":%s,\"networkState\":%s,\"rssi\":%d,\"uptime\":%u,\"heap\":%u,\"largestBlock\":%u,\"theme\":%d,\"generation\":%u,\"brightness\":%d,\"rotationMinutes\":%d,\"timezone\":%s,\"otaMaxBytes\":%u,\"storage\":%s,\"hasCustom\":%s,\"appSlots\":64,\"catalogCount\":%d,\"error\":%s,\"performance\":%s,\"limits\":%s,\"baseTheme\":%d,\"timeValid\":%s,\"localTime\":\"%s\",\"clock\":{\"weekday\":%d,\"hour\":%d,\"minute\":%d,\"second\":%d},\"playbackSource\":\"%s\",\"rotationRemainingSeconds\":%s}",
+  const int length=snprintf(body,sizeof(body),"{\"version\":\"1.11.1\",\"chip\":%s,\"width\":64,\"height\":64,\"ip\":%s,\"stationIP\":%s,\"apIP\":%s,\"configUrl\":%s,\"ssid\":%s,\"connected\":%s,\"networkState\":%s,\"rssi\":%d,\"uptime\":%u,\"heap\":%u,\"largestBlock\":%u,\"theme\":%d,\"generation\":%u,\"brightness\":%d,\"rotationMinutes\":%d,\"timezone\":%s,\"otaMaxBytes\":%u,\"storage\":%s,\"hasCustom\":%s,\"appSlots\":64,\"catalogCount\":%d,\"error\":%s,\"performance\":%s,\"limits\":%s,\"baseTheme\":%d,\"timeValid\":%s,\"localTime\":\"%s\",\"clock\":{\"weekday\":%d,\"hour\":%d,\"minute\":%d,\"second\":%d},\"playbackSource\":\"%s\",\"rotationRemainingSeconds\":%s}",
     quote(ESP.getChipModel()).c_str(),quote(ip).c_str(),quote(WiFi.localIP().toString()).c_str(),quote(WiFi.softAPIP().toString()).c_str(),quote("http://"+ip+"/").c_str(),quote(WiFi.SSID()).c_str(),WiFi.status()==WL_CONNECTED?"true":"false",quote(networkState).c_str(),WiFi.RSSI(),millis()/1000,
     heap_caps_get_free_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT),heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT),theme,generation,brightness,rotationMinutes,
     quote(prefs_.getString("tz","CST-8")).c_str(),unsigned(next?next->size:0),fs_?"true":"false",hasCustom?"true":"false",themeCount,quote(lastError).c_str(),metrics,limits_.json().c_str(),
@@ -946,11 +949,13 @@ bool DeviceService::saveConfig(int nextTheme,int nextBrightness,int nextRotation
   if(!appCompatible(nextTheme,error))return false;
   if(nextBrightness<1||nextBrightness>255||nextRotation<0||nextRotation>1440||tz.length()<1||tz.length()>63||strspn(tz.c_str(),"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-,:.<>/")!=tz.length()){error="配置参数无效；亮度为1–255";return false;}
   if(nextRotation>0&&!schedule_.poolCount){error="请先选择参与轮换的已安装应用";return false;}
-  theme=baseTheme_=nextTheme;windowTheme_=ThemeSchedule::None;brightness=nextBrightness;rotationMinutes=nextRotation;rotateAt_=millis();generation++;
+  const bool playbackChanged=baseTheme_!=nextTheme||rotationMinutes!=nextRotation;
+  if(playbackChanged){if(theme!=nextTheme)generation++;theme=nextTheme;windowTheme_=ThemeSchedule::None;rotateAt_=millis();}
+  baseTheme_=nextTheme;brightness=nextBrightness;rotationMinutes=nextRotation;
   schedule_.interval=nextRotation?nextRotation:1;if(schedule_.mode!=2)schedule_.mode=nextRotation?1:0;
-  prefs_.putInt("theme",theme);prefs_.putBool("custom",theme==63);prefs_.putInt("bright",brightness);prefs_.putInt("rotate",rotationMinutes);prefs_.putString("tz",tz);prefs_.putString("schedule",scheduleText());setenv("TZ",tz.c_str(),1);tzset();return true;
+  prefs_.putInt("theme",baseTheme_);prefs_.putBool("custom",baseTheme_==63);prefs_.putInt("bright",brightness);prefs_.putInt("rotate",rotationMinutes);prefs_.putString("tz",tz);prefs_.putString("schedule",scheduleText());setenv("TZ",tz.c_str(),1);tzset();return true;
 }
-bool DeviceService::runApp(int index,String& error){return saveConfig(index,brightness,rotationMinutes,prefs_.getString("tz","CST-8"),error);}
+bool DeviceService::runApp(int index,String& error){const uint32_t before=generation;if(!saveConfig(index,brightness,rotationMinutes,prefs_.getString("tz","CST-8"),error))return false;theme=index;windowTheme_=ThemeSchedule::None;if(generation==before)generation++;return true;}
 void DeviceService::pruneSchedule(){
   conditions_.reset();
   for(int i=0;i<schedule_.poolCount;){if(appInstalled(schedule_.pool[i])){i++;continue;}for(int n=i+1;n<schedule_.poolCount;n++)schedule_.pool[n-1]=schedule_.pool[n];schedule_.poolCount--;}
@@ -962,12 +967,14 @@ bool DeviceService::uninstallApp(int index,String& error){
   if(serialInstall_){error="USB 应用安装进行中";return false;}
   if(index<0||index>=64||!appInstalled(index)){error="应用未安装";return false;}
   if(ota_||scriptLocked_){error="设备正在写入，请稍后重试";return false;}
-  if(!renderLock(true)){error="渲染任务忙";return false;}stopScript();
-  if(!LittleFS.remove(appPath(index))){generation++;renderLock(false);error="无法删除应用文件";return false;}
+  const bool active=theme==index;
+  if(active){if(!renderLock(true)){error="渲染任务忙";return false;}stopScript();}
+  if(!LittleFS.remove(appPath(index))){if(active){generation++;renderLock(false);}error="无法删除应用文件";return false;}
   installed_&=~(uint64_t(1)<<index);incompatible_&=~(uint64_t(1)<<index);appBytes_[index]=appIdentityHash_[index]=0;appTargetFps_[index]=60;hasCustom=appInstalled(63);
-  if(theme==index||baseTheme_==index||windowTheme_==index){theme=baseTheme_=-1;windowTheme_=ThemeSchedule::None;}
+  if(active){theme=-1;windowTheme_=ThemeSchedule::None;}
+  if(baseTheme_==index)baseTheme_=-1;
   for(char key:{'i','t','n','c'})prefs_.remove(appKey(index,key).c_str());
-  pruneSchedule();prefs_.putInt("theme",baseTheme_);prefs_.putBool("custom",baseTheme_==63);generation++;renderLock(false);return true;
+  pruneSchedule();prefs_.putInt("theme",baseTheme_);prefs_.putBool("custom",baseTheme_==63);if(active){generation++;renderLock(false);}return true;
 }
 void DeviceService::finishInstall(){int code;const String result=completeInstall(code);reply(code,result);}
 String DeviceService::completeInstall(int& code,bool serial){
@@ -996,19 +1003,20 @@ String DeviceService::completeInstall(int& code,bool serial){
   if(uploadError_.isEmpty()&&(!validateScript||!validateScript("/apps/install.tmp",uploadError_))){if(uploadError_.isEmpty())uploadError_="应用验证失败";}
   if(!uploadError_.isEmpty()){LittleFS.remove("/apps/install.tmp");finishScript();return "{\"error\":"+quote(uploadError_)+"}";}
   const String path=appPath(installIndex_),backup=path+".bak";
-  // The ESP LittleFS VFS rejects renaming an open file. Only pause the active
-  // package for the final commit, after upload and validation have completed.
+  // A fully cached application can keep executing its old instance while the
+  // closed package is replaced. Explicit Run activates the new package later.
   const bool active=theme==installIndex_;
-  if(active){if(!renderLock(true)){LittleFS.remove("/apps/install.tmp");finishScript();code=503;return "{\"error\":\"渲染任务忙，请重试更新\"}";}stopScript();}
+  bool retained=false;
+  if(active){if(!renderLock(true)){LittleFS.remove("/apps/install.tmp");finishScript();code=503;return "{\"error\":\"渲染任务忙，请重试更新\"}";}retained=detachActivePackage&&detachActivePackage();if(retained)renderLock(false);else stopScript();}
   bool saved=true,old=LittleFS.exists(path);
   if(old){LittleFS.remove(backup);saved=LittleFS.rename(path,backup);}
   if(saved)saved=LittleFS.rename("/apps/install.tmp",path);
-  if(!saved){bool restored=true;if(old&&LittleFS.exists(backup))restored=LittleFS.rename(backup,path);LittleFS.remove("/apps/install.tmp");if(active){generation++;if(ioTick)ioTick();renderLock(false);}finishScript();code=500;return restored?"{\"error\":\"应用保存失败，原应用已保留\"}":"{\"error\":\"应用恢复失败，旧包保留在备份；请重启设备\"}";}
+  if(!saved){bool restored=true;if(old&&LittleFS.exists(backup))restored=LittleFS.rename(backup,path);LittleFS.remove("/apps/install.tmp");if(active&&!retained){generation++;if(ioTick)ioTick();renderLock(false);}finishScript();code=500;return restored?"{\"error\":\"应用保存失败，原应用已保留\"}":"{\"error\":\"应用恢复失败，旧包保留在备份；请重启设备\"}";}
   LittleFS.remove(backup);installed_|=uint64_t(1)<<installIndex_;incompatible_&=~(uint64_t(1)<<installIndex_);appBytes_[installIndex_]=scriptBytes_;appIdentityHash_[installIndex_]=appIdentityHash(installPackageName_);
   appTargetFps_[installIndex_]=candidateTargetFps_;
-  if(active){generation++;if(ioTick)ioTick();renderLock(false);}
+  if(active&&!retained){generation++;if(ioTick)ioTick();renderLock(false);}
   hasCustom=appInstalled(63);finishScript();
-  code=200;return "{\"message\":"+quote(active?"应用已更新，正在重新加载当前主题":"应用已安装，当前主题继续运行；点击运行以启用新版本")+",\"index\":"+String(installIndex_)+",\"id\":"+quote(installId_)+",\"packageName\":"+quote(appPackageName(installIndex_))+"}";
+  code=200;return "{\"message\":"+quote(active&&!retained?"应用已更新，正在重新加载当前主题":"应用已安装，当前主题继续运行；点击运行以启用新版本")+",\"index\":"+String(installIndex_)+",\"id\":"+quote(installId_)+",\"packageName\":"+quote(appPackageName(installIndex_))+"}";
 }
 void DeviceService::abortSerialInstall(){
   if(!serialInstall_)return;
@@ -1044,7 +1052,7 @@ void DeviceService::serialInstallCommand(const String& cmd,const String& line){
       ||!jsonField(line,"data",encoded,found)||!found||encoded.length()>400
       ||mbedtls_base64_decode(data,sizeof(data),&size,(const unsigned char*)encoded.c_str(),encoded.length())||!size
       ||size>serialInstallExpected_-scriptBytes_){answer(false,"应用分块顺序或内容无效");return;}
-    if(scriptFile_.write(data,size)!=size){abortSerialInstall();answer(false,"应用写入失败，原应用已保留");return;}
+    if(!writeAppData(scriptFile_,data,size)){abortSerialInstall();answer(false,"应用写入失败，原应用已保留");return;}
     mbedtls_sha256_update_ret(&serialInstallDigest_,data,size);scriptBytes_+=size;serialInstallAt_=millis();if(ioTick)ioTick();answer(true);return;
   }
   if(phase=="finish"){

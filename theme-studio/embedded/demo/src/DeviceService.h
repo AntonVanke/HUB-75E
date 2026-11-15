@@ -50,6 +50,7 @@ public:
   std::function<bool(const char*,String&)> validateScript;
   std::function<void()> ioTick;
   std::function<void()> stopScript;
+  std::function<bool()> detachActivePackage;
   std::function<void(uint32_t,uint32_t,const char*)> updateProgress;
   std::function<bool(bool)> renderLock;
   std::function<bool(uint16_t*,uint8_t&)> copyFrame;
@@ -107,6 +108,7 @@ private:
   void startAP();
   void finishOTA();
   void uploadScript();
+  bool writeAppData(File& file,const uint8_t* data,size_t size);
   void finishScript();
   void sendFrame(bool serial);
   void uploadOTA();
