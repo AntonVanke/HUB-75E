@@ -144,10 +144,12 @@ export function applicationControls($,getBase,request,upload,message,{local=fals
     apps.sort((a,b)=>Number(!!b.system)-Number(!!a.system));
     registerThemes(apps);for(const item of [...selected])if(!apps.some(app=>app.installed&&!app.system&&key(app)===item))selected.delete(item);
     render();
+    return apps.filter(app=>app.installed).map(({index,id,title})=>({index,id,title}));
   }
   onLanguageChange(()=>{setLimits(limits);render();});
   $('app-file').onchange=()=>{$('app-folder').value='';};$('app-folder').onchange=()=>{$('app-file').value='';};
-  $('app-filter').onchange=$('app-search').oninput=render;
+  $('app-filter').onchange=render;let searchTimer;
+  $('app-search').oninput=()=>{clearTimeout(searchTimer);searchTimer=setTimeout(render,100);};
   $('app-refresh').onclick=()=>perform(async()=>{if(!onlineBase)catalogAt=0;});
   $('app-check-updates').onclick=()=>perform(async()=>{
     checkState='正在检查已安装主题的更新…';$('app-update-state').textContent=checkState;
@@ -178,5 +180,5 @@ export function applicationControls($,getBase,request,upload,message,{local=fals
     const file=$('app-file').files[0];if(!file)throw new Error('请选择 CWP3 二进制应用包');const info=applicationInfo(new Uint8Array(await file.arrayBuffer()),file.name,limits);
     await install(file,info);$('app-file').value='';$('app-folder').value='';
   });
-  return {refresh,limits:setLimits,device(data){const p=data.performance;if(p&&previousPerf&&p.theme===previousPerf.theme&&p.generation===previousPerf.generation&&p.sampleMs>previousPerf.sampleMs&&p.frames>=previousPerf.frames)observedFps=(p.frames-previousPerf.frames)*1000/(p.sampleMs-previousPerf.sampleMs);else if(p&&(!previousPerf||p.theme!==previousPerf.theme||p.generation!==previousPerf.generation))observedFps=undefined;previousPerf=p;device=data;setLimits(data.limits);measurements();},current(index){active=index;for(const node of $('app-list').querySelectorAll('[data-app-state]')){const app=apps.find(app=>key(app)===node.dataset.appKey);node.textContent=app?.installed?(Number(app.index)===Number(index)?'运行中':'已安装'):'未安装';}}};
+  return {refresh,limits:setLimits,device(data){const p=data.performance;if(p&&previousPerf&&p.theme===previousPerf.theme&&p.generation===previousPerf.generation&&p.sampleMs>previousPerf.sampleMs&&p.frames>=previousPerf.frames)observedFps=(p.frames-previousPerf.frames)*1000/(p.sampleMs-previousPerf.sampleMs);else if(p&&(!previousPerf||p.theme!==previousPerf.theme||p.generation!==previousPerf.generation))observedFps=undefined;previousPerf=p;device=data;setLimits(data.limits);measurements();},current(index){if(Number(active)===Number(index))return;active=index;for(const node of $('app-list').querySelectorAll('[data-app-state]')){const app=apps.find(app=>key(app)===node.dataset.appKey);node.textContent=app?.installed?(Number(app.index)===Number(index)?'运行中':'已安装'):'未安装';}}};
 }

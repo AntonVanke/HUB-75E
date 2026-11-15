@@ -62,7 +62,7 @@ bool DeviceService::saveOrientation(int degrees,bool automatic,int gravityDegree
 }
 String DeviceService::discoveryIdentity()const{
   char id[17];snprintf(id,sizeof(id),"%012llx",ESP.getEfuseMac()&0xffffffffffffULL);
-  return "{\"product\":\"clockwise-hub75\",\"id\":"+quote(id)+",\"chip\":"+quote(ESP.getChipModel())+",\"version\":\"1.10.2\"}";
+  return "{\"product\":\"clockwise-hub75\",\"id\":"+quote(id)+",\"chip\":"+quote(ESP.getChipModel())+",\"version\":\"1.10.3\"}";
 }
 bool DeviceService::startDiscovery(String& error){
   if(WiFi.status()!=WL_CONNECTED){error="请先让设备连接局域网 Wi-Fi";return false;}
@@ -141,10 +141,11 @@ void DeviceService::sendFrame(bool serial){
   Serial.println("\"}");free(rle);free(pixels);
 }
 void DeviceService::sendFlash(const char* type,const char* data,size_t size){
+  web_.client().setNoDelay(true);
   web_.setContentLength(size);web_.send(200,type,"");
   size_t at=0;
   while(at<size&&web_.client().connected()){
-    const size_t n=std::min(size-at,size_t(512));
+    const size_t n=std::min(size-at,size_t(1460));
     const size_t sent=web_.client().write((const uint8_t*)data+at,n);
     if(!sent)break;at+=sent;if(ioTick)ioTick();delay(1);
   }
@@ -243,9 +244,9 @@ void DeviceService::begin(int count,const char* titlesJson){
   if(ssid_.length()){WiFi.begin(ssid_.c_str(),password_.c_str());retryAt_=millis();networkState="connecting";}
   else{startAP();networkState="setup-ap";}
   timeSync_.begin(prefs_);
-  const char* headers[]={"X-SHA256","X-Firmware-Size"};web_.collectHeaders(headers,2);
-  web_.on("/",HTTP_GET,[this](){web_.sendHeader("Content-Encoding","gzip");web_.sendHeader("Cache-Control","no-cache");sendFlash("text/html; charset=utf-8",(const char*)DEVICE_PAGE,sizeof(DEVICE_PAGE));});
-  web_.on("/guide",HTTP_GET,[this](){web_.sendHeader("Content-Encoding","gzip");web_.sendHeader("Cache-Control","no-cache");sendFlash("text/html; charset=utf-8",(const char*)THEME_GUIDE_PAGE,sizeof(THEME_GUIDE_PAGE));});
+  const char* headers[]={"X-SHA256","X-Firmware-Size","If-None-Match"};web_.collectHeaders(headers,3);
+  web_.on("/",HTTP_GET,[this](){const char* tag="\"clockyr-1.10.3-ui\"";web_.sendHeader("ETag",tag);web_.sendHeader("Cache-Control","no-cache");if(web_.header("If-None-Match")==tag){web_.send(304);return;}web_.sendHeader("Content-Encoding","gzip");sendFlash("text/html; charset=utf-8",(const char*)DEVICE_PAGE,sizeof(DEVICE_PAGE));});
+  web_.on("/guide",HTTP_GET,[this](){const char* tag="\"clockyr-1.10.3-guide\"";web_.sendHeader("ETag",tag);web_.sendHeader("Cache-Control","no-cache");if(web_.header("If-None-Match")==tag){web_.send(304);return;}web_.sendHeader("Content-Encoding","gzip");sendFlash("text/html; charset=utf-8",(const char*)THEME_GUIDE_PAGE,sizeof(THEME_GUIDE_PAGE));});
   web_.on("/api/status",HTTP_GET,[this](){reply(200,statusJson());});
   web_.on("/api/time",HTTP_ANY,[this](){
     if(web_.method()==HTTP_GET){reply(200,timeSync_.json());return;}
@@ -292,10 +293,7 @@ void DeviceService::begin(int count,const char* titlesJson){
   });
   web_.on("/api/setup",HTTP_POST,[this](){String error;const bool ok=setupAction(web_.arg("action"),error);reply(ok?200:400,ok?"{\"message\":\"设置已保存\"}":"{\"error\":"+quote(error)+"}");});
   web_.on("/api/factory-reset",HTTP_POST,[this](){String error;if(!factoryReset(web_.arg("confirm"),error)){reply(400,"{\"error\":"+quote(error)+"}");return;}reply(200,"{\"message\":\"出厂设置已恢复，即将重启进入配网引导；热点密码 12345678\"}");});
-  web_.on("/api/themes",HTTP_GET,[this](){
-    access();web_.setContentLength(CONTENT_LENGTH_UNKNOWN);web_.send(200,"application/json; charset=utf-8","");web_.sendContent("[{\"index\":-1,\"title\":\"基础时钟\"}");
-    for(int i=0;i<64;i++)if(appInstalled(i))web_.sendContent(",{\"index\":"+String(i)+",\"id\":"+quote(appId(i))+",\"title\":"+quote(appTitle(i))+"}");web_.sendContent("]");web_.sendContent("");
-  });
+  web_.on("/api/themes",HTTP_GET,[this](){sendThemes();});
   web_.on("/api/logs",HTTP_GET,[this](){reply(200,eventLog.json());});
   web_.on("/api/apps",HTTP_GET,[this](){sendApps();});
   web_.on("/api/apps/config",HTTP_ANY,[this](){String error;int index=requestAppIndex(error),code=400;if(index<0){reply(code,"{\"error\":"+quote(error)+"}");return;}String values=web_.arg("values");String body=appConfig(index,web_.method()==HTTP_POST?&values:nullptr,code);reply(code,body);});
@@ -377,7 +375,7 @@ void DeviceService::begin(int count,const char* titlesJson){
   });
   web_.begin();
   Serial.printf("Provision AP: %s  Password: %s\n",apName_.c_str(),apPassword_.c_str());
-  Serial.println("CWJSON:{\"ok\":true,\"version\":\"1.10.2\",\"message\":\"串口设置已就绪，发送 {\\\"cmd\\\":\\\"help\\\"} 查看命令\"}");
+  Serial.println("CWJSON:{\"ok\":true,\"version\":\"1.10.3\",\"message\":\"串口设置已就绪，发送 {\\\"cmd\\\":\\\"help\\\"} 查看命令\"}");
 }
 void DeviceService::uploadScript(){
   auto& u=web_.upload();
@@ -486,7 +484,7 @@ void DeviceService::poll(){
   pollThemeUpdates(now);
   const bool canUpdate=WiFi.status()==WL_CONNECTED&&time(nullptr)>1700000000&&!needsSetup()&&!panelTrial.active&&!ota_&&!scriptLocked_&&!serialInstall_&&!restartAt_;
   if(updater.finishCheck()&&updater.state!="up-to-date"&&updater.state!="available")eventLog.add("update-check-failed",updater.state.c_str());
-  if(!updater.busy&&updater.due(now)&&canUpdate){updater.startCheck("1.10.2");if(!updater.busy)eventLog.add("update-check-failed",updater.state.c_str());}
+  if(!updater.busy&&updater.due(now)&&canUpdate){updater.startCheck("1.10.3");if(!updater.busy)eventLog.add("update-check-failed",updater.state.c_str());}
   if(updater.enabled&&updater.available&&canUpdate&&renderLock(true)){
     scriptLocked_=true;eventLog.add("update-start",updater.targetVersion().c_str());stopScript();
     if(!updater.startInstall()){eventLog.add("update-failed",updater.state.c_str());scriptLocked_=false;generation++;renderLock(false);}
@@ -620,13 +618,14 @@ bool DeviceService::appInstalled(int index)const{return index==-1||(index>=0&&in
 String DeviceService::appPath(int index)const{return index>=0&&index<64?"/apps/"+String(index)+".pkg":String();}
 void DeviceService::indexCatalog(){
   memset(catalogRows_,0,sizeof(catalogRows_));memset(catalogLengths_,0,sizeof(catalogLengths_));
+  memset(catalogIdentityHash_,0,sizeof(catalogIdentityHash_));
   if(!titlesJson_)return;
   const char* p=titlesJson_;
   while(*p){
     if(*p++!='{')continue;const char* start=p-1;bool quoted=false,escape=false;int depth=1;
     while(*p){char c=*p++;if(escape){escape=false;continue;}if(c=='\\'&&quoted){escape=true;continue;}if(c=='"')quoted=!quoted;if(!quoted){if(c=='{')depth++;else if(c=='}'&&!--depth)break;}}
     String row;row.concat(start,p-start);String number;bool found=false;int n;
-    if(jsonField(row,"index",number,found)&&found&&integer(number,n)&&n>=0&&n<64&&p-start<=UINT16_MAX){catalogRows_[n]=start;catalogLengths_[n]=uint16_t(p-start);}
+    if(jsonField(row,"index",number,found)&&found&&integer(number,n)&&n>=0&&n<64&&p-start<=UINT16_MAX){catalogRows_[n]=start;catalogLengths_[n]=uint16_t(p-start);String name;if(jsonField(row,"packageName",name,found)&&found)catalogIdentityHash_[n]=appIdentityHash(name);}
   }
 }
 String DeviceService::catalogJson(int index)const{
@@ -634,12 +633,9 @@ String DeviceService::catalogJson(int index)const{
 }
 String DeviceService::catalogField(int index,const char* key)const{String value;bool found=false;return jsonField(catalogJson(index),key,value,found)&&found?value:String();}
 int DeviceService::catalogIndexByName(const String& name,const String& id)const{
-  if(!titlesJson_)return -1;const char* p=titlesJson_;
-  while(*p){if(*p++!='{')continue;const char* start=p-1;bool quoted=false,escape=false;int depth=1;
-    while(*p){const char c=*p++;if(escape){escape=false;continue;}if(c=='\\'&&quoted){escape=true;continue;}if(c=='"')quoted=!quoted;if(!quoted){if(c=='{')depth++;else if(c=='}'&&!--depth)break;}}
-    String row,value,identity,number;row.concat(start,p-start);bool found;int index;
-    if(jsonField(row,"packageName",value,found)&&found&&value==name&&jsonField(row,"id",identity,found)&&found&&identity==id&&jsonField(row,"index",number,found)&&found&&integer(number,index))return index;
-  }return -1;
+  if(name.isEmpty())return -1;const uint32_t hash=appIdentityHash(name);
+  for(int i=0;i<64;i++)if(catalogRows_[i]&&catalogIdentityHash_[i]==hash&&catalogField(i,"packageName")==name&&catalogField(i,"id")==id)return i;
+  return -1;
 }
 String DeviceService::appId(int index){AppManifest m;String error;if(index>=0&&appInstalled(index)&&readManifest(appPath(index).c_str(),m,error))return m.id;String id=catalogField(index,"id");return id.length()?id:"theme-"+String(index);}
 String DeviceService::appTitle(int index){AppManifest m;String error;if(index>=0&&appInstalled(index)&&readManifest(appPath(index).c_str(),m,error))return m.title;String title=catalogField(index,"title");return title.length()?title:"用户应用 "+String(index);}
@@ -666,7 +662,7 @@ bool DeviceService::readManifest(const char* path,AppManifest& manifest,String& 
   if(package.version!=3){error="此固件只运行 C/C++ 二进制主题，请重新安装 CWP3 应用";return false;}
   String json;if(!json.reserve(package.metadataSize)){error="没有足够内存读取应用清单";return false;}
   if(!file.seek(package.metadataOffset)){error="无法读取应用清单";return false;}
-  char buffer[128];size_t left=package.metadataSize;
+  char buffer[512];size_t left=package.metadataSize;
   while(left){const size_t n=file.read((uint8_t*)buffer,std::min(left,sizeof(buffer)));if(!n){error="应用清单不完整";return false;}json.concat(buffer,n);left-=n;}
   if(!manifest.parse(json,error))return false;AppParameters settings;if(!settings.parse(manifest.parameters)){error="无效的主题参数声明";return false;}return true;
 }
@@ -754,6 +750,18 @@ void DeviceService::reconcileApps(){
   }
   hasCustom=appInstalled(63);
 }
+void DeviceService::sendThemes(){
+  access();web_.setContentLength(CONTENT_LENGTH_UNKNOWN);web_.send(200,"application/json; charset=utf-8","");
+  String output="[{\"index\":-1,\"title\":\"基础时钟\"}";output.reserve(1460);
+  for(int i=0;i<64;i++)if(appInstalled(i)){
+    AppManifest manifest;String error;const bool valid=readManifest(appPath(i).c_str(),manifest,error);
+    const String id=valid?manifest.id:catalogField(i,"id"),title=valid?manifest.title:catalogField(i,"title");
+    const String row=",{\"index\":"+String(i)+",\"id\":"+quote(id.length()?id:"theme-"+String(i))+",\"title\":"+quote(title.length()?title:"用户应用 "+String(i))+"}";
+    if(output.length()+row.length()>1460){web_.sendContent(output);output="";}
+    output+=row;if(ioTick)ioTick();
+  }
+  output+=']';web_.sendContent(output);web_.sendContent("");
+}
 void DeviceService::sendApps(bool serial){
   if(serial)Serial.print("CWJSON:");else{access();web_.setContentLength(CONTENT_LENGTH_UNKNOWN);web_.send(200,"application/json; charset=utf-8","");}
   char output[1460];size_t used=0;
@@ -796,7 +804,7 @@ String DeviceService::statusJson(){
   const char* source=windowTheme_!=ThemeSchedule::None?"condition":schedule_.mode==1?"interval":!timeValid&&needsTime?"waiting-time":schedule_.mode==2?"daily":"fixed";
   if(windowTheme_==ThemeSchedule::None&&schedule_.mode==1){const uint32_t period=uint32_t(schedule_.interval)*60000,elapsed=uint32_t(millis()-rotateAt_);snprintf(remaining,sizeof(remaining),"%u",unsigned(elapsed>=period?0:(period-elapsed+999)/1000));}
   String ip=(WiFi.status()==WL_CONNECTED?WiFi.localIP():WiFi.softAPIP()).toString();
-  const int length=snprintf(body,sizeof(body),"{\"version\":\"1.10.2\",\"chip\":%s,\"width\":64,\"height\":64,\"ip\":%s,\"stationIP\":%s,\"apIP\":%s,\"configUrl\":%s,\"ssid\":%s,\"connected\":%s,\"networkState\":%s,\"rssi\":%d,\"uptime\":%u,\"heap\":%u,\"largestBlock\":%u,\"theme\":%d,\"generation\":%u,\"brightness\":%d,\"rotationMinutes\":%d,\"timezone\":%s,\"otaMaxBytes\":%u,\"storage\":%s,\"hasCustom\":%s,\"appSlots\":64,\"catalogCount\":%d,\"error\":%s,\"performance\":%s,\"limits\":%s,\"baseTheme\":%d,\"timeValid\":%s,\"localTime\":\"%s\",\"clock\":{\"weekday\":%d,\"hour\":%d,\"minute\":%d,\"second\":%d},\"playbackSource\":\"%s\",\"rotationRemainingSeconds\":%s}",
+  const int length=snprintf(body,sizeof(body),"{\"version\":\"1.10.3\",\"chip\":%s,\"width\":64,\"height\":64,\"ip\":%s,\"stationIP\":%s,\"apIP\":%s,\"configUrl\":%s,\"ssid\":%s,\"connected\":%s,\"networkState\":%s,\"rssi\":%d,\"uptime\":%u,\"heap\":%u,\"largestBlock\":%u,\"theme\":%d,\"generation\":%u,\"brightness\":%d,\"rotationMinutes\":%d,\"timezone\":%s,\"otaMaxBytes\":%u,\"storage\":%s,\"hasCustom\":%s,\"appSlots\":64,\"catalogCount\":%d,\"error\":%s,\"performance\":%s,\"limits\":%s,\"baseTheme\":%d,\"timeValid\":%s,\"localTime\":\"%s\",\"clock\":{\"weekday\":%d,\"hour\":%d,\"minute\":%d,\"second\":%d},\"playbackSource\":\"%s\",\"rotationRemainingSeconds\":%s}",
     quote(ESP.getChipModel()).c_str(),quote(ip).c_str(),quote(WiFi.localIP().toString()).c_str(),quote(WiFi.softAPIP().toString()).c_str(),quote("http://"+ip+"/").c_str(),quote(WiFi.SSID()).c_str(),WiFi.status()==WL_CONNECTED?"true":"false",quote(networkState).c_str(),WiFi.RSSI(),millis()/1000,
     heap_caps_get_free_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT),heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT),theme,generation,brightness,rotationMinutes,
     quote(prefs_.getString("tz","CST-8")).c_str(),unsigned(next?next->size:0),fs_?"true":"false",hasCustom?"true":"false",themeCount,quote(lastError).c_str(),metrics,limits_.json().c_str(),

@@ -113,7 +113,9 @@ private:
   const char* titlesJson_=nullptr;
   const char* catalogRows_[64]={};
   uint16_t catalogLengths_[64]={};
+  uint32_t catalogIdentityHash_[64]={};
   void indexCatalog();
+  void sendThemes();
   uint64_t installed_=0;
   uint64_t incompatible_=0;
   DeviceLimits limits_;

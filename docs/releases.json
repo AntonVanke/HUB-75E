@@ -2,6 +2,39 @@
   "schema": 1,
   "releases": [
     {
+      "version": "1.10.3",
+      "runtimeApi": 5,
+      "nativeAbi": 1,
+      "notes": "Clockyr 1.10.3：后台先显示状态，按页读取主题和条件控制，合并重复查询；优化固件目录查找、分块发送和页面缓存，Pages 复用版本目录并优化搜索。",
+      "catalog": "applications/1.10.3/catalog.json",
+      "targets": {
+        "esp32": {
+          "chip": "esp32",
+          "flashBytes": 4194304,
+          "psramBytes": 0,
+          "manifest": "firmware/esp32-v1.10.3/manifest.json",
+          "updateManifest": "firmware/esp32-v1.10.3/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32-v1.10.3/app.bin",
+            "bytes": 1530432,
+            "sha256": "aa7ec5b1873334ad660443c34b24d43949a9d0cd0a71cf7dd0752bbe14e8bcc6"
+          }
+        },
+        "esp32s3": {
+          "chip": "esp32s3",
+          "flashBytes": 8388608,
+          "psramBytes": 8388608,
+          "manifest": "firmware/esp32s3-v1.10.3/manifest.json",
+          "updateManifest": "firmware/esp32s3-v1.10.3/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32s3-v1.10.3/app.bin",
+            "bytes": 1537488,
+            "sha256": "1a6d49496c49975c764474434c8d0cbe13c3338b4429e695f6d7d8a681ecb6d1"
+          }
+        }
+      }
+    },
+    {
       "version": "1.10.2",
       "runtimeApi": 5,
       "nativeAbi": 1,
@@ -695,5 +728,5 @@
       }
     }
   ],
-  "latest": "1.10.2"
+  "latest": "1.10.3"
 }

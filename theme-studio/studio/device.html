@@ -90,11 +90,13 @@ import {scheduleControls} from "./device-schedule.mjs";
 import {localizeTheme,registerThemes,onLanguageChange,translate,refreshLanguage} from "./i18n.mjs";
 const $=id=>document.getElementById(id);
 let base='',connected=false,timer,failures=0,maxFirmware=0,deviceChip='ESP32',configDirty=false,panelDirty=false,panelSupported=false,panelTimingSupported=false,panelRefreshSupported=false,deviceThemes=[],latestStatus,orientationDirty=false,orientationSupported=false,discoverySupported=false,discovering=false;
+let pageData={};
 const tabs=[...document.querySelectorAll('[role="tab"][data-panel]')];
 function showPanel(name,focus=false){
  const selected=tabs.find(tab=>tab.dataset.panel===name)||tabs[0];if(!selected)return;
  for(const tab of tabs){const active=tab===selected;tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;$(tab.getAttribute('aria-controls')).hidden=!active;}
  if(focus)selected.focus();
+ if(connected)loadPanel(selected.dataset.panel).catch(error=>message(error.message,true));
 }
 for(const [index,tab] of tabs.entries()){
  tab.onclick=()=>{showPanel(tab.dataset.panel);history.replaceState(null,'','#'+tab.dataset.panel);};
@@ -113,8 +115,27 @@ function message(text,error=false){
  if(text&&!error)toastTimer=setTimeout(()=>{if(generation===toastGeneration)$('toast').hidden=true;},6000);
 }
 $('dismiss-message').onclick=()=>{++toastGeneration;clearTimeout(toastTimer);$('toast').hidden=true;};
-function enable(value){$('orientation-config').querySelector('fieldset').disabled=!value||!orientationSupported;$('discover-devices').disabled=!value||!discoverySupported||discovering;for(const f of document.querySelectorAll('fieldset'))f.disabled=!value; $('panel-config').querySelector('fieldset').disabled=!value||!panelSupported;$('panel-timing').disabled=!value||!panelTimingSupported;if(value)panelDriverFields();else $('dma-timing').disabled=true;$('orientation-config').querySelector('fieldset').disabled=!value||!orientationSupported;clockSettings.update(value?latestStatus?.timeSync:null);}
+function enable(value){$('orientation-config').querySelector('fieldset').disabled=!value||!orientationSupported;$('discover-devices').disabled=!value||!discoverySupported||discovering;for(const f of document.querySelectorAll('fieldset'))f.disabled=!value; $('panel-config').querySelector('fieldset').disabled=!value||!panelSupported;$('panel-timing').disabled=!value||!panelTimingSupported;if(value)panelDriverFields();else $('dma-timing').disabled=true;$('orientation-config').querySelector('fieldset').disabled=!value||!orientationSupported;clockSettings.update(value?latestStatus?.timeSync:null);pageControls();}
 const client=createDeviceClient(()=>base),request=client.request;
+function pageControls(){
+ $('config').querySelector('fieldset').disabled=!connected||!pageData.themes;
+ $('app-controls').disabled=!connected||!pageData.apps;
+ $('schedule-form').querySelector('fieldset').disabled=!connected||!pageData.schedule;
+}
+async function loadPanel(name){
+ const state=pageData;
+ const once=(key,work)=>{
+  if(state[key])return Promise.resolve();
+  if(!state[key+'Pending'])state[key+'Pending']=Promise.resolve().then(work).then(()=>{state[key]=true;}).finally(()=>{delete state[key+'Pending'];if(state===pageData)pageControls();});
+  return state[key+'Pending'];
+ };
+ if(name==='apps'&&(latestStatus.runtimeApi>=4||/^0\.9\./.test(latestStatus.version))){
+  await once('apps',async()=>{const list=await appManager.refresh();if(state!==pageData)return;themeOptions(list);state.themes=true;status(latestStatus);});
+ }else if(['overview','display','schedule'].includes(name)){
+  await once('themes',async()=>{const list=await request('themes');if(state!==pageData)return;themeOptions(list);status(latestStatus);});
+  if(state===pageData&&name==='schedule'&&(latestStatus.runtimeApi>=4||/^0\.[7-9]\./.test(latestStatus.version)))await once('schedule',()=>loadSchedule(deviceThemes));
+ }
+}
 imageClockControls($('image-clock-maker'),{device:()=>latestStatus||{},base:()=>base,upload,changed:async()=>{const list=await request('themes');themeOptions(list);status(await request('status'));await loadSchedule(list);await appManager.refresh();},message});
 $('credits').innerHTML=creditsHTML;
 const releasesUI=releaseControls($('online-updates'),{device:()=>latestStatus||{},request,upload,sha256,message,changed:async()=>{await appManager.refresh();status(await request('status'));}});
@@ -176,13 +197,13 @@ async function poll(){
  timer=setTimeout(poll,5000);
 }
 $('connect').onclick=async()=>{
- clearTimeout(timer);connected=false;enable(false);configDraft(false);panelDirty=false;orientationDirty=false;$('discovery-list').replaceChildren();
+ clearTimeout(timer);connected=false;pageData={};enable(false);configDraft(false);panelDirty=false;orientationDirty=false;$('discovery-list').replaceChildren();
  try{
   const url=new URL(onDevice?location.origin:$('address').value);if(!['http:','https:'].includes(url.protocol)||url.username||url.password||url.search||url.hash)throw new Error('请输入 HTTP / HTTPS 设备地址');
   base=url.origin;
-  const list=await request('themes');themeOptions(list);
-  const data=await request('status');status(data,true);connected=true;enable(true);if(data.runtimeApi>=4||/^0\.9\./.test(data.version))await appManager.refresh();else $('app-controls').disabled=true;if(data.runtimeApi>=4||/^0\.[7-9]\./.test(data.version))await loadSchedule(list);else $('schedule-form').querySelector('fieldset').disabled=true;$('init-storage').disabled=data.storage;$('connection-state').textContent='已连接';if(!data.error)message('已连接 '+base+'，设备状态已更新。');
+  const data=await request('status');status(data,true);connected=true;enable(true);pageControls();$('init-storage').disabled=data.storage;$('connection-state').textContent='已连接';if(!data.error)message('已连接 '+base+'，设备状态已更新。');
   if(!onDevice){try{localStorage.setItem('clockwise-device-address',base);}catch{}}timer=setTimeout(poll,5000);
+  loadPanel(tabs.find(tab=>tab.getAttribute('aria-selected')==='true')?.dataset.panel).catch(error=>message(error.message,true));
  }catch(e){message(e.message,true);$('connection-state').textContent='连接失败';}
 };
 $('orientation-config').addEventListener('change',()=>{orientationDirty=true;$('orientation-dirty').textContent='方向设置有未保存的修改';});

@@ -31,3 +31,35 @@ test('schedule text and HTTP errors are read without resubmitting requests',asyn
  assert.equal(await client.request('schedule',{responseType:'text'}),'1,10,0\n1,2\n');
  await assert.rejects(client.request('config',{method:'POST'}),/invalid/);assert.equal(calls,2);
 });
+
+test('overlapping identical reads share a response, but completed reads stay fresh',async t=>{
+ let calls=0;
+ t.mock.method(globalThis,'fetch',async()=>new Response(JSON.stringify({sequence:++calls})));
+ const client=createDeviceClient(()=> 'http://device');
+ const [a,b]=await Promise.all([client.request('status'),client.request('status')]);
+ assert.equal(a.sequence,1);assert.equal(b.sequence,1);assert.equal(calls,1);
+ assert.equal((await client.request('status')).sequence,2);
+});
+
+test('writes and uploads prevent reads on either side from being merged',async t=>{
+ const order=[];
+ t.mock.method(globalThis,'fetch',async(url,options)=>{order.push(options.method||'GET');return new Response('{"ok":true}');});
+ const client=createDeviceClient(()=> 'http://device');
+ await Promise.all([client.request('status'),client.request('config',{method:'POST'}),client.request('status'),client.enqueue(()=>order.push('upload')),client.request('status')]);
+ assert.deepEqual(order,['GET','POST','GET','upload','GET']);
+});
+
+test('saving a panel without reboot does not impose the reboot delay',async t=>{
+ t.mock.method(globalThis,'fetch',async()=>new Response('{"ok":true,"reboot":false}'));
+ const client=createDeviceClient(()=> 'http://device');
+ await client.request('panel',{method:'POST'});
+ assert.equal(client.busy,false);
+});
+
+test('switching devices during a response rejects the stale read without retrying',async t=>{
+ let base='http://old',calls=0;
+ t.mock.method(globalThis,'fetch',async()=>{calls++;return {ok:true,arrayBuffer:async()=>{base='http://new';return new ArrayBuffer(1);}};});
+ const client=createDeviceClient(()=>base);
+ await assert.rejects(client.request('frame',{responseType:'arrayBuffer'}),/设备地址已切换/);
+ assert.equal(calls,1);
+});

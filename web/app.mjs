@@ -171,7 +171,8 @@ function updateInstaller(){
 }
 for(const radio of document.querySelectorAll('input[name="board"]'))radio.onchange=updateInstaller;
 $('release-version').onchange=$('flash-mode').onchange=updateInstaller;
-fetch('releases.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('版本目录读取失败');return r.json();}).then(data=>{releases=data;$('release-version').replaceChildren(...data.releases.map(r=>new Option(r.version,r.version)));$('release-version').value=data.latest;updateInstaller();}).catch(e=>{$('board-note').textContent=e.message;});
+const releaseList=fetch('releases.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('版本目录读取失败');return r.json();});
+releaseList.then(data=>{releases=data;$('release-version').replaceChildren(...data.releases.map(r=>new Option(r.version,r.version)));$('release-version').value=data.latest;updateInstaller();}).catch(e=>{$('board-note').textContent=e.message;});
 document.getElementById('credits').innerHTML=creditsHTML;
 $('install-button').addEventListener('click', (event) => {
   if (port || reader || closing || connecting) {
@@ -296,28 +297,33 @@ function renderThemes() {
   $('theme-result').textContent = visibleCount ? t('显示 {0} / {1} 款主题', [visibleCount, groupThemes(themes).length+1]) : t('没有匹配的主题，请调整搜索或筛选条件。');
 }
 
+let catalogRequest=0;
 async function loadThemes() {
+  const generation=++catalogRequest;
   themeCatalogBase='';
   try {
     const version=$('app-release')?.value;const response = await fetch(version?'applications/'+version+'/catalog.json':'theme-catalog.json');
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
+    if(generation!==catalogRequest)return;
     themes = Array.isArray(data) ? data : data.apps;
     if (!Array.isArray(themes)) throw new Error(t('目录格式无效'));
     $('theme-count').textContent = t('{0} 款', [groupThemes(themes).length+1]);
     $('theme-tab-count').textContent = groupThemes(themes).length+1;
     renderThemes();
   } catch (error) {
+    if(generation!==catalogRequest)return;
     $('theme-result').textContent = t('主题目录暂时无法读取：{0}。可前往 GitHub 查看应用文件。', [error.message]);
   }
 }
-['theme-search', 'theme-chip', 'theme-memory'].forEach((id) => $(id).addEventListener('input', renderThemes));
-loadThemes();
+['theme-chip', 'theme-memory'].forEach((id) => $(id).addEventListener('input', renderThemes));
+let themeSearchTimer;
+$('theme-search').addEventListener('input',()=>{clearTimeout(themeSearchTimer);themeSearchTimer=setTimeout(renderThemes,100);});
 $('theme-check-updates').onclick=()=>action(async()=>{
   message(t('正在检查主题更新…'));
   await requestSerial({cmd:'apps'},data=>Array.isArray(data.apps));
   const result=await fetchUpdateJson('theme-catalog.json',{mirror:device?.updateSource?.base,validate:v=>v.format===3&&Array.isArray(v.apps)&&v.apps.length>0});
-  themes=result.value.apps;themeCatalogBase=result.base;
+  ++catalogRequest;themes=result.value.apps;themeCatalogBase=result.base;
   let latest=$('app-release').querySelector('option[value=""]');if(!latest){latest=new Option(t('最新发布'),'');$('app-release').prepend(latest);}$('app-release').value='';
   const chip=/S3/i.test(device?.chip)?'esp32s3':'esp32';
   const count=installedApps.filter(app=>themes.some(next=>next.packageName===app.packageName&&next.requirements.chips.includes(chip)&&compareVersions(next.appVersion,app.appVersion)>0&&!themeCompatibility(next))).length;
@@ -776,7 +782,8 @@ window.addEventListener('clockwise:languagechange', refreshLanguage);
 document.querySelectorAll('form').forEach((form) => { form.noValidate = true; });
 refreshLanguage();
 
-fetch('releases.json',{cache:'no-store'}).then(r=>r.json()).then(data=>{$('app-release').replaceChildren(...data.releases.map(r=>new Option(r.version,r.version)));$('app-release').value=data.latest;$('app-release').onchange=loadThemes;}).catch(()=>{});
+releaseList.then(data=>{$('app-release').replaceChildren(...data.releases.map(r=>new Option(r.version,r.version)));$('app-release').value=data.latest;},()=>{}).then(loadThemes);
+$('app-release').onchange=loadThemes;
 
 $('wifi-networks').onchange=()=>{if($('wifi-networks').value)$('wifi-ssid').value=$('wifi-networks').value;};
 
