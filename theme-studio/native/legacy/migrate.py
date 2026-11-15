@@ -280,6 +280,12 @@ def generate(only=None):
             manifest["appVersion"] = "1.1.0"
             manifest["description"] = "时钟数字随机散成粒子，再沿曲线聚合成当前时间"
             manifest["requirements"]["stateBytes"] = 8192
+        if project["id"] == "gravity-hourglass":
+            manifest["appVersion"] = "2.0.0"
+            manifest["description"] = "双菱形 LED 重力沙漏，64 粒白色光点随倾斜堆积、翻转回流；A 复位、B 暂停，流沙时长可调。目标 120 FPS，非校准计时器。"
+            manifest["requirements"].update(stateBytes=512, targetFps=120)
+            manifest["parameters"] = {"seconds": {"label": "流沙时长 / Duration (s)",
+                "min": 5, "max": 600, "step": 5, "default": 60}}
         (folder / "theme.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         folders.append(folder)
     return folders

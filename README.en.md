@@ -6,11 +6,13 @@ A 64 × 64 HUB75 clock for ESP32 / ESP32-S3. Themes are C/C++ compiled to chip-s
 
 **Current release: 1.10.1** · [Flash firmware](https://antonvanke.github.io/HUB-75E/#flash) · [Applications](https://antonvanke.github.io/HUB-75E/#themes) · [USB settings](https://antonvanke.github.io/HUB-75E/#config) · [Image clock workshop](https://antonvanke.github.io/HUB-75E/studio/index.html)
 
-![Ferrofluid computer preview](web/previews/ferrofluid-clock.gif)
+![Gravity Hourglass computer preview](web/previews/gravity-hourglass.gif)
 
 Rendered by the theme's C++ code on a computer, not panel footage or a device FPS measurement.
 
 ## Current features
+
+- **Gravity Hourglass v2.0.0:** recreates the reference video with two diamond LED grids and 64 white grains, tilt, reverse flow and completion rings. The vessel stays attached to the board during automatic screen rotation. A resets; B pauses. Flow duration is configurable from 5–600 seconds (default 60; not a calibrated timer). Occupancy lookup replaces pairwise collisions; fixed 40 Hz physics and subpixel interpolation raise the render target from 60 to 120 FPS. Actual state is 292 bytes within a 512-byte budget, with no per-frame allocation. Requires ESP32-S3 + IMU; update the existing app without reflashing firmware. Host checks cover conservation, reversal, tilt, four rotations, pause and missing IMU. Host update + draw averaged 2.39 microseconds per frame, not a device FPS measurement.
 
 - **1.10.1 app and settings storage fixes:** package manifests are authoritative; redundant titles, IDs and package names no longer fill the 20 KiB NVS partition. Boot migration releases old metadata and merges duplicate packages while preserving newer versions, parameters and playback references. Orientation saves in one atomic write. Downloads and validation keep the active theme running; only the final replacement closes the file and reloads it, fixing LittleFS open-file rename failures. Regression coverage includes 14 duplicate copies, full settings storage and failed-update rollback. Verified on an ESP32-S3: OTA, reconciliation of 14 copies, orientation save/restore, active-app replacement and repeat installation. A short ferrofluid v1.5.0 sample with automatic theme updates enabled measured about 10.4 FPS, below its 120 FPS target; this storage fix does not claim that performance target.
 - **1.10.0 theme checks and mirrors:** device apps and Pages USB apps now have an explicit Check theme updates action; the device page also supports Update all. Compare live catalog package names, chips and versions rather than the firmware's embedded catalog. Maintenance can persist a trusted HTTPS mirror for firmware and themes; additional CA roots and hash-preserving download failover are included. See [mirror deployment](UPDATE_MIRROR.md) and the [mirror archive](https://antonvanke.github.io/HUB-75E/update-mirror.zip). No mainland hosting endpoint or physical validation is provided by this release.

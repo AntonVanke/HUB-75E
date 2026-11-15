@@ -2115,8 +2115,8 @@
       "id": "gravity-hourglass",
       "packageName": "org.clockwise.gravity-hourglass",
       "title": "重力沙漏",
-      "appVersion": "1.0.0",
-      "description": "28粒金砂随屏幕重力滑动，A键复位；固定预算的视觉玩具，不是校准计时器。",
+      "appVersion": "2.0.0",
+      "description": "双菱形 LED 重力沙漏，64 粒白色光点随倾斜堆积、翻转回流；A 复位、B 暂停，流沙时长可调。目标 120 FPS，非校准计时器。",
       "author": "AntonVanke / HUB-75E",
       "category": "重力互动",
       "width": 64,
@@ -2126,24 +2126,33 @@
           "esp32s3"
         ],
         "psramBytes": 0,
-        "stateBytes": 49152,
+        "stateBytes": 512,
         "graphicsBytes": 8192,
-        "targetFps": 60,
+        "targetFps": 120,
         "sensors": [
           "imu"
         ],
-        "codeBytes": 2324,
-        "dataBytes": 156
+        "codeBytes": 2252,
+        "dataBytes": 132
       },
       "verification": {
         "status": "unverified"
       },
+      "parameters": {
+        "seconds": {
+          "label": "流沙时长 / Duration (s)",
+          "min": 5,
+          "max": 600,
+          "step": 5,
+          "default": 60
+        }
+      },
       "runtime": "native",
       "nativeAbi": 1,
-      "runtimeApi": 4,
+      "runtimeApi": 5,
       "file": "gravity-hourglass-esp32s3.cwp",
-      "bytes": 3243,
-      "sha256": "4f2b71fd1cdac1c7082e0ccf2418254609b7c94817e3adb2d1639456d168f2a4"
+      "bytes": 3302,
+      "sha256": "f3d948ba1f2f619e62de7cc61a1cb57e62fda0cb6b4b32fe5563f09b49eef255"
     },
     {
       "id": "gravity-level",
