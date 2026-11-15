@@ -2,6 +2,7 @@
 """Package the current compiled firmware separately from preserved historical releases."""
 import argparse
 import hashlib
+import gzip
 import importlib.util
 import json
 import re
@@ -36,6 +37,7 @@ def main():
         assert struct.unpack_from("<I", app, 32)[0] == 0xABCD5432
         out.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(built / "firmware.bin", out / "app.bin")
+        (out / "firmware.elf.gz").write_bytes(gzip.compress((built / "firmware.elf").read_bytes(), mtime=0))
         helpers.run(tool, "--chip", chip, "merge_bin", "--output", out / "bootloader.bin",
                     "--flash_mode", "dio", "--flash_freq", "40m", "--flash_size", size,
                     "0x0", built / "bootloader.bin")
@@ -65,6 +67,7 @@ Runtime API 5 / native ABI 1: C/C++ binary applications, slideshow image clocks,
 ESP32 uses 4 MB Flash. The ESP32-S3 package requires 8 MB Flash and OPI PSRAM; S3 N4 is not supported.
 
 - `app.bin`: 相同芯片、兼容分区的 OTA 更新，保留 NVS 和已安装主题。
+- `firmware.elf.gz`: 本次构建的调试符号；解压后配合日志中的 ELF SHA-256 和 Backtrace 定位故障，不烧录到设备。 Matching debug symbols; do not flash this file.
 - `merged.bin`: USB 初始安装，从 0x0 写入，会初始化 NVS/Wi-Fi；不包含主题文件系统。
 - 在线主题库：https://antonvanke.github.io/HUB-75E/#themes
 - 硬件工程：https://oshwhub.com/team_rzwlbjjl/project_tfevmhyp
@@ -73,7 +76,7 @@ USB: `powershell -File ./flash.ps1 -Port COM28` or `sh ./flash.sh /dev/ttyUSB0`.
 No device was modified while generating this package. Historical v0.9.3/v0.9.7 packages are unchanged.
 """)
         names = ["app.bin", "merged.bin", "bootloader.bin", "partitions.bin", "partitions.csv",
-                 "boot_app0.bin", "manifest.json", "update-manifest.json", "flash.ps1", "flash.sh", "README.md"]
+                 "boot_app0.bin", "manifest.json", "update-manifest.json", "flash.ps1", "flash.sh", "README.md", "firmware.elf.gz"]
         helpers.write(out / "SHA256SUMS", "".join(f"{helpers.sha(out / n)}  {n}\n" for n in sorted(names)))
         with zipfile.ZipFile(ROOT / "releases" / (name + ".zip"), "w", compression=zipfile.ZIP_DEFLATED) as archive:
             for filename in sorted(names + ["SHA256SUMS"]):

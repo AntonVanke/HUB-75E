@@ -366,6 +366,7 @@ static void renderTask(void*){
     const int64_t start=esp_timer_get_time();
     if(snapshot.theme!=current||snapshot.generation!=generation){
       current=snapshot.theme;generation=snapshot.generation;
+      CrashLog::renderSample(current,generation);
       healthy=loadTheme(current);
       esp_timer_stop(frameTimer);esp_timer_start_periodic(frameTimer,framePeriodUs);
       metrics={};
@@ -389,6 +390,7 @@ static void renderTask(void*){
       if(!healthy){snprintf(metrics.error,sizeof(metrics.error),"%s",runtime.error());runtime.stop();}
     }
     if(esp_timer_get_time()-reportAt>=1000000){
+      CrashLog::renderSample(current,generation);
 #ifdef HUB75_S3_BOARD
       metrics.scans+=protomatterProbe.takeScanCount();
 #endif
@@ -401,7 +403,7 @@ static void renderTask(void*){
   }
 }
 void setup(){
-  Serial.begin(115200);setCpuFrequencyMhz(240);service.eventLog.begin("1.10.1");
+  Serial.begin(115200);setCpuFrequencyMhz(240);service.eventLog.begin("1.10.2");
   service.panelTrial.begin();
   orientation.configure(panelOrientation());
 #ifdef HUB75_S3_BOARD
@@ -536,6 +538,8 @@ static void publishInputs(){
   xQueueOverwrite(snapshotQueue,&next);
 }
 void loop(){
+  static uint32_t crashSampleAt=0;const uint32_t now=millis();
+  if(now-crashSampleAt>=1000){crashSampleAt=now;CrashLog::sample(service.theme,service.generation);}
   publishInputs();
   if(!snapshotQueue||!metricsQueue){delay(100);return;}
   service.poll();

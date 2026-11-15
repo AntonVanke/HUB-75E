@@ -4,6 +4,7 @@
 #include <esp_system.h>
 #include <time.h>
 #include <algorithm>
+#include "CrashLog.h"
 
 class EventLog {
   struct Record {uint32_t sequence,boot,uptime,epoch,heap;char code[24],detail[72];};
@@ -21,7 +22,7 @@ public:
   void begin(const char* version){
     ready_=prefs_.begin("events",false);if(!ready_)return;
     sequence_=prefs_.getUInt("seq",0);boot_=prefs_.getUInt("boot",0)+1;prefs_.putUInt("boot",boot_);
-    const auto reset=esp_reset_reason();String reason=resetName(reset);
+    const auto reset=esp_reset_reason();healthy_=CrashLog::begin(prefs_,reset,version);String reason=resetName(reset);
     if(reset==ESP_RST_SW&&prefs_.isKey("intent"))reason+=" / "+prefs_.getString("intent","");
     if(prefs_.isKey("intent"))prefs_.remove("intent");
     reason+=" / v";reason+=version;add("boot",reason.c_str());
@@ -48,6 +49,6 @@ public:
       if(comma)out+=',';comma=true;
       out+="{\"boot\":"+String(r.boot)+",\"uptime\":"+String(r.uptime)+",\"epoch\":"+String(r.epoch)+",\"heap\":"+String(r.heap)+",\"code\":"+quoted(r.code)+",\"detail\":"+quoted(r.detail)+"}";
     }
-    return out+"]}";
+    return out+"],\"crash\":"+CrashLog::json(prefs_)+"}";
   }
 };

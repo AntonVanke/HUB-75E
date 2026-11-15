@@ -4,7 +4,7 @@
 
 A 64 × 64 HUB75 clock for ESP32 / ESP32-S3. Themes are C/C++ compiled to chip-specific Xtensa machine code in CWP3 packages. Current firmware does not run Lua. Runtime API 5, native ABI 1.
 
-**Current release: 1.10.1** · [Flash firmware](https://antonvanke.github.io/HUB-75E/#flash) · [Applications](https://antonvanke.github.io/HUB-75E/#themes) · [USB settings](https://antonvanke.github.io/HUB-75E/#config) · [Image clock workshop](https://antonvanke.github.io/HUB-75E/studio/index.html)
+**Current release: 1.10.2** · [Flash firmware](https://antonvanke.github.io/HUB-75E/#flash) · [Applications](https://antonvanke.github.io/HUB-75E/#themes) · [USB settings](https://antonvanke.github.io/HUB-75E/#config) · [Image clock workshop](https://antonvanke.github.io/HUB-75E/studio/index.html)
 
 ![Gravity Hourglass computer preview](web/previews/gravity-hourglass.gif)
 
@@ -14,6 +14,7 @@ Rendered by the theme's C++ code on a computer, not panel footage or a device FP
 
 - **Gravity Hourglass v2.0.0:** recreates the reference video with two diamond LED grids and 64 white grains, tilt, reverse flow and completion rings. The vessel stays attached to the board during automatic screen rotation. A resets; B pauses. Flow duration is configurable from 5–600 seconds (default 60; not a calibrated timer). Occupancy lookup replaces pairwise collisions; fixed 40 Hz physics and subpixel interpolation raise the render target from 60 to 120 FPS. Actual state is 292 bytes within a 512-byte budget, with no per-frame allocation. Requires ESP32-S3 + IMU; update the existing app without reflashing firmware. Host checks cover conservation, reversal, tilt, four rotations, pause and missing IMU. Host update + draw averaged 2.39 microseconds per frame, not a device FPS measurement.
 
+- **1.10.2 crash records:** panic capture retains PC/SP, exception codes and up to 10 backtrace addresses in RTC memory, then persists the most recent record in NVS after reboot. Maintenance → Read logs / Export logs works over IP. It includes the last registered HTTP route (no query/body/password), theme, one-second memory samples and firmware ELF SHA-256; a recent route is a clue, not proof of cause. The release includes `firmware.elf.gz` for symbolication. Hard power loss or panic before capture can leave no detailed record; no partition changes are required. Firmware builds and panic-hook linkage checks are local only; no device was flashed or deliberately crashed for this release.
 - **1.10.1 app and settings storage fixes:** package manifests are authoritative; redundant titles, IDs and package names no longer fill the 20 KiB NVS partition. Boot migration releases old metadata and merges duplicate packages while preserving newer versions, parameters and playback references. Orientation saves in one atomic write. Downloads and validation keep the active theme running; only the final replacement closes the file and reloads it, fixing LittleFS open-file rename failures. Regression coverage includes 14 duplicate copies, full settings storage and failed-update rollback. Verified on an ESP32-S3: OTA, reconciliation of 14 copies, orientation save/restore, active-app replacement and repeat installation. A short ferrofluid v1.5.0 sample with automatic theme updates enabled measured about 10.4 FPS, below its 120 FPS target; this storage fix does not claim that performance target.
 - **1.10.0 theme checks and mirrors:** device apps and Pages USB apps now have an explicit Check theme updates action; the device page also supports Update all. Compare live catalog package names, chips and versions rather than the firmware's embedded catalog. Maintenance can persist a trusted HTTPS mirror for firmware and themes; additional CA roots and hash-preserving download failover are included. See [mirror deployment](UPDATE_MIRROR.md) and the [mirror archive](https://antonvanke.github.io/HUB-75E/update-mirror.zip). No mainland hosting endpoint or physical validation is provided by this release.
 - **1.9.3 empty HTTP response fix:** automatic OTA runs in a separate background task while HTTP requests remain serviced. Receive waits yield the CPU; failed updates restore the theme instead of blocking the service loop or starving the watchdog.
@@ -37,8 +38,8 @@ Both chips compile. Setup refresh recovery, interrupted saves, unsupported senso
 
 | Chip | Firmware | Applications | Requirements |
 | --- | --- | --- | --- |
-| ESP32 | [v1.10.1 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.10.1.zip) | [5 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | Classic ESP32, 4 MB Flash |
-| ESP32-S3 | [v1.10.1 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.10.1.zip) | [59 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | Project board, at least 8 MB Flash + 8 MB OPI PSRAM |
+| ESP32 | [v1.10.2 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.10.2.zip) | [5 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | Classic ESP32, 4 MB Flash |
+| ESP32-S3 | [v1.10.2 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.10.2.zip) | [59 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | Project board, at least 8 MB Flash + 8 MB OPI PSRAM |
 
 S3 N4 is unsupported. Other boards require matching memory settings and wiring.
 

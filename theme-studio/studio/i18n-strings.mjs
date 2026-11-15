@@ -1227,5 +1227,13 @@ Object.assign(strings,{
  "引导进度保存失败":"Could not save setup progress",
  "应用已更新，正在重新加载当前主题":"App updated. Reloading the current theme.",
  "应用恢复失败，旧包保留在备份；请重启设备":"App recovery failed. The previous package remains in backup; restart the device.",
- "渲染任务忙，请重试更新":"The renderer is busy. Retry the update."
+ "渲染任务忙，请重试更新":"The renderer is busy. Retry the update.",
+ "最近一次崩溃详情":"Most recent crash details",
+ "回溯可能不完整":"Backtrace may be incomplete",
+ "最近接口：":"Last endpoint: ",
+ "处理中":"In progress",
+ "已返回":"Returned",
+ "崩溃前采样：":"Last sample before crash: ",
+ "内存和主题为最近一次采样；最近接口不一定是崩溃原因。":"Memory and theme describe the last sample; the last endpoint is not necessarily the cause.",
+ "部分上下文尚未采样或采样被打断，请结合回溯判断。":"Some context was not sampled or was interrupted; interpret it together with the backtrace."
 });

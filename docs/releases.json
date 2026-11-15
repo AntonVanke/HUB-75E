@@ -2,6 +2,39 @@
   "schema": 1,
   "releases": [
     {
+      "version": "1.10.2",
+      "runtimeApi": 5,
+      "nativeAbi": 1,
+      "notes": "Clockyr 1.10.2：异常重启保留 PC、有限调用栈、最近接口、主题及内存采样；维护页通过 IP 查看并导出，发布包包含对应 ELF 调试符号。",
+      "catalog": "applications/1.10.2/catalog.json",
+      "targets": {
+        "esp32": {
+          "chip": "esp32",
+          "flashBytes": 4194304,
+          "psramBytes": 0,
+          "manifest": "firmware/esp32-v1.10.2/manifest.json",
+          "updateManifest": "firmware/esp32-v1.10.2/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32-v1.10.2/app.bin",
+            "bytes": 1525792,
+            "sha256": "5388eba64f6472b5cb41ffd5fe8446f34175635b712a62b0f9f27e47d4e992c3"
+          }
+        },
+        "esp32s3": {
+          "chip": "esp32s3",
+          "flashBytes": 8388608,
+          "psramBytes": 8388608,
+          "manifest": "firmware/esp32s3-v1.10.2/manifest.json",
+          "updateManifest": "firmware/esp32s3-v1.10.2/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32s3-v1.10.2/app.bin",
+            "bytes": 1533552,
+            "sha256": "3a208db394677a0002b7c46eddf48e11a99ab6b10d4b74d725c60984aa40b356"
+          }
+        }
+      }
+    },
+    {
       "version": "1.10.1",
       "runtimeApi": 5,
       "nativeAbi": 1,
@@ -662,5 +695,5 @@
       }
     }
   ],
-  "latest": "1.10.1"
+  "latest": "1.10.2"
 }

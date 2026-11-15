@@ -23,6 +23,13 @@ class DeviceService {
   public:
     explicit UploadServer(int port):WebServer(port){}
     void releaseParsedUpload(){_currentUpload.reset();_currentRaw.reset();}
+    void on(const char* route,HTTPMethod method,THandlerFunction handler){
+      WebServer::on(route,method,[this,route,handler](){CrashLog::requestBegin(route,this->method());handler();CrashLog::requestEnd();});
+    }
+    void on(const char* route,HTTPMethod method,THandlerFunction handler,THandlerFunction upload){
+      WebServer::on(route,method,[this,route,handler](){CrashLog::requestBegin(route,this->method());handler();CrashLog::requestEnd();},
+        [this,route,upload](){CrashLog::requestBegin(route,this->method());upload();CrashLog::requestEnd();});
+    }
   };
 public:
   int theme=0,brightness=80,rotationMinutes=0,themeCount=0;
