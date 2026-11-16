@@ -101,7 +101,14 @@ private:
   uint32_t connectAt_=0,retryAt_=0,restartAt_=0,rotateAt_=0,otaAt_=0;
   uint32_t apConnectedAt_=0,apRetryAt_=0;
   std::atomic<uint16_t> wifiDisconnectReason_{0};
-  uint16_t reportedWifiReason_=0;
+  std::atomic<uint32_t> wifiFailureEvent_{0};
+  bool wifiCoreFirstFailure_=true;
+  bool wifiAttemptActive_=false,wifiHadIP_=false;
+  bool wifiPeerAllowed_=true,wifiFastAttempt_=false;
+  uint8_t wifiPeer_[7]={};
+  uint8_t wifiFailures_=0;
+  uint32_t wifiAttemptAt_=0,wifiConnectMs_=0,wifiAttempts_=0;
+  void pollWifiConnection(uint32_t now);
   const char* restartReason_="unspecified";
   void scheduleRestart(uint32_t delay,const char* reason){restartAt_=millis()+delay;restartReason_=reason;}
   mbedtls_sha256_context hash_;

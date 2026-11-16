@@ -61,7 +61,7 @@ bool DeviceService::saveOrientation(int degrees,bool automatic,int gravityDegree
 }
 String DeviceService::discoveryIdentity()const{
   char id[17];snprintf(id,sizeof(id),"%012llx",ESP.getEfuseMac()&0xffffffffffffULL);
-  return "{\"product\":\"clockwise-hub75\",\"id\":"+quote(id)+",\"chip\":"+quote(ESP.getChipModel())+",\"version\":\"1.11.3\"}";
+  return "{\"product\":\"clockwise-hub75\",\"id\":"+quote(id)+",\"chip\":"+quote(ESP.getChipModel())+",\"version\":\"1.11.4\"}";
 }
 bool DeviceService::startDiscovery(String& error){
   if(WiFi.status()!=WL_CONNECTED){error="请先让设备连接局域网 Wi-Fi";return false;}
@@ -241,17 +241,26 @@ void DeviceService::begin(int count,const char* titlesJson){
   reconcileApps();
   rotationMinutes=schedule_.mode==1?schedule_.interval:0;
   ssid_=(prefs_.isKey("ssid")?prefs_.getString("ssid",""):String());password_=(prefs_.isKey("wifiPass")?prefs_.getString("wifiPass",""):String());
+  if(prefs_.isKey("wifiPeer")&&prefs_.getBytesLength("wifiPeer")==sizeof(wifiPeer_))prefs_.getBytes("wifiPeer",wifiPeer_,sizeof(wifiPeer_));
   WiFi.onEvent([this](WiFiEvent_t event,WiFiEventInfo_t info){
-    if(event==ARDUINO_EVENT_WIFI_STA_DISCONNECTED)wifiDisconnectReason_.store(info.wifi_sta_disconnected.reason);
+    if(event==ARDUINO_EVENT_WIFI_STA_DISCONNECTED){
+      const uint16_t reason=info.wifi_sta_disconnected.reason;wifiDisconnectReason_.store(reason);
+      if(reason!=WIFI_REASON_ASSOC_LEAVE){
+        // Arduino 2.0.17 retries the first failure even with auto reconnect disabled.
+        wifiFailureEvent_.store(uint32_t(reason)|(wifiCoreFirstFailure_?0x10000u:0));wifiCoreFirstFailure_=false;
+      }
+    }
     else if(event==ARDUINO_EVENT_WIFI_STA_GOT_IP)wifiDisconnectReason_.store(0);
   });
-  WiFi.persistent(false);WiFi.setAutoReconnect(false);WiFi.mode(WIFI_AP_STA);WiFi.setSleep(false);startAP();
-  if(ssid_.length()){WiFi.begin(ssid_.c_str(),password_.c_str());retryAt_=millis();networkState="connecting";}
+  WiFi.persistent(false);WiFi.setAutoReconnect(false);
+  WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);WiFi.setSortMethod(WIFI_CONNECT_AP_BY_SIGNAL);
+  WiFi.mode(WIFI_AP_STA);WiFi.setSleep(false);startAP();
+  if(ssid_.length()){networkState="connecting";pollWifiConnection(millis());}
   else{startAP();networkState="setup-ap";}
   timeSync_.begin(prefs_);
   const char* headers[]={"X-SHA256","X-Firmware-Size","If-None-Match"};web_.collectHeaders(headers,3);
-  web_.on("/",HTTP_GET,[this](){const char* tag="\"clockyr-1.11.3-ui\"";web_.sendHeader("ETag",tag);web_.sendHeader("Cache-Control","no-cache");if(web_.header("If-None-Match")==tag){web_.send(304);return;}web_.sendHeader("Content-Encoding","gzip");sendFlash("text/html; charset=utf-8",(const char*)DEVICE_PAGE,sizeof(DEVICE_PAGE));});
-  web_.on("/guide",HTTP_GET,[this](){const char* tag="\"clockyr-1.11.3-guide\"";web_.sendHeader("ETag",tag);web_.sendHeader("Cache-Control","no-cache");if(web_.header("If-None-Match")==tag){web_.send(304);return;}web_.sendHeader("Content-Encoding","gzip");sendFlash("text/html; charset=utf-8",(const char*)THEME_GUIDE_PAGE,sizeof(THEME_GUIDE_PAGE));});
+  web_.on("/",HTTP_GET,[this](){const char* tag="\"clockyr-1.11.4-ui\"";web_.sendHeader("ETag",tag);web_.sendHeader("Cache-Control","no-cache");if(web_.header("If-None-Match")==tag){web_.send(304);return;}web_.sendHeader("Content-Encoding","gzip");sendFlash("text/html; charset=utf-8",(const char*)DEVICE_PAGE,sizeof(DEVICE_PAGE));});
+  web_.on("/guide",HTTP_GET,[this](){const char* tag="\"clockyr-1.11.4-guide\"";web_.sendHeader("ETag",tag);web_.sendHeader("Cache-Control","no-cache");if(web_.header("If-None-Match")==tag){web_.send(304);return;}web_.sendHeader("Content-Encoding","gzip");sendFlash("text/html; charset=utf-8",(const char*)THEME_GUIDE_PAGE,sizeof(THEME_GUIDE_PAGE));});
   web_.on("/api/status",HTTP_GET,[this](){reply(200,statusJson());});
   web_.on("/api/time",HTTP_ANY,[this](){
     if(web_.method()==HTTP_GET){reply(200,timeSync_.json());return;}
@@ -380,7 +389,7 @@ void DeviceService::begin(int count,const char* titlesJson){
   });
   web_.begin();
   Serial.printf("Provision AP: %s  Password: %s\n",apName_.c_str(),apPassword_.c_str());
-  Serial.println("CWJSON:{\"ok\":true,\"version\":\"1.11.3\",\"message\":\"串口设置已就绪，发送 {\\\"cmd\\\":\\\"help\\\"} 查看命令\"}");
+  Serial.println("CWJSON:{\"ok\":true,\"version\":\"1.11.4\",\"message\":\"串口设置已就绪，发送 {\\\"cmd\\\":\\\"help\\\"} 查看命令\"}");
 }
 bool DeviceService::writeAppData(File& file,const uint8_t* data,size_t size){
   for(size_t at=0;at<size;){const size_t count=std::min(size_t(512),size-at);if(file.write(data+at,count)!=count)return false;at+=count;if(ioTick)ioTick();delay(1);}return true;
@@ -460,23 +469,8 @@ void DeviceService::poll(){
   if(ota_&&now-otaAt_>60000){uploadError_="固件上传超时";finishOTA();}
   if(restartAt_&&int32_t(now-restartAt_)>=0){eventLog.expectRestart(restartReason_);if(factoryResetting_)WiFi.disconnect(true,true);ESP.restart();}
   if(factoryResetting_)return;
-  const uint16_t wifiReason=wifiDisconnectReason_.load();
-  if(wifiReason!=reportedWifiReason_){reportedWifiReason_=wifiReason;if(wifiReason&&wifiReason!=WIFI_REASON_ASSOC_LEAVE){char detail[80];snprintf(detail,sizeof(detail),"%u: %s",wifiReason,WiFi.disconnectReasonName(wifi_err_reason_t(wifiReason)));eventLog.add("wifi-disconnected",detail);}}
   pollWifiScan(now);
-  if(!scanPending_){
-  if(connecting_){
-    if(wifiStartPending_){
-      if(now-connectAt_>=1000){wifiStartPending_=false;startAP();WiFi.disconnect(false,false);WiFi.begin(pendingSsid_.c_str(),pendingPassword_.c_str());connectAt_=millis();}
-    }else if(WiFi.status()==WL_CONNECTED&&WiFi.SSID()==pendingSsid_){
-      ssid_=pendingSsid_;password_=pendingPassword_;prefs_.putString("ssid",ssid_);prefs_.putString("wifiPass",password_);
-      pendingPassword_="";connecting_=false;networkState="connected";retryAt_=now;autoSetupAttempted_=false;
-    }else if(now-connectAt_>30000){
-      connecting_=false;pendingPassword_="";networkState="failed";
-      WiFi.disconnect(false,false);if(ssid_.length())WiFi.begin(ssid_.c_str(),password_.c_str());retryAt_=now;
-    }
-  }else if(WiFi.status()!=WL_CONNECTED&&now-retryAt_>30000){startAP();networkState=ssid_.length()?"disconnected":"setup-ap";if(ssid_.length()){WiFi.disconnect(false,false);WiFi.begin(ssid_.c_str(),password_.c_str());}retryAt_=now;}
-  else if(!connecting_&&WiFi.status()==WL_CONNECTED)networkState="connected";
-  }
+  pollWifiConnection(now);
   finishSetupAfterWifi();
   if(panelTrial.active&&!restartAt_&&!ota_&&!serialInstall_){
     if(panelTrial.mode==2&&!panelTrial.paused&&ap_&&WiFi.softAPgetStationNum()>0)panelTrial.pause(true);
@@ -498,7 +492,7 @@ void DeviceService::poll(){
   pollThemeUpdates(now);
   const bool canUpdate=WiFi.status()==WL_CONNECTED&&time(nullptr)>1700000000&&!needsSetup()&&!panelTrial.active&&!ota_&&!scriptLocked_&&!serialInstall_&&!restartAt_;
   if(updater.finishCheck()&&updater.state!="up-to-date"&&updater.state!="available")eventLog.add("update-check-failed",updater.state.c_str());
-  if(!updater.busy&&updater.due(now)&&canUpdate){updater.startCheck("1.11.3");if(!updater.busy)eventLog.add("update-check-failed",updater.state.c_str());}
+  if(!updater.busy&&updater.due(now)&&canUpdate){updater.startCheck("1.11.4");if(!updater.busy)eventLog.add("update-check-failed",updater.state.c_str());}
   if(updater.enabled&&updater.available&&canUpdate&&renderLock(true)){
     scriptLocked_=true;eventLog.add("update-start",updater.targetVersion().c_str());stopScript();
     if(!updater.startInstall()){eventLog.add("update-failed",updater.state.c_str());scriptLocked_=false;generation++;renderLock(false);}
@@ -822,7 +816,7 @@ String DeviceService::statusJson(){
   if(windowTheme_==ThemeSchedule::None&&schedule_.mode==1){const uint32_t period=uint32_t(schedule_.interval)*60000,elapsed=uint32_t(millis()-rotateAt_);snprintf(remaining,sizeof(remaining),"%u",unsigned(elapsed>=period?0:(period-elapsed+999)/1000));}
   const bool apActive=(WiFi.getMode()&WIFI_AP)&&(WiFi.getStatusBits()&AP_STARTED_BIT);
   String ip=(WiFi.status()==WL_CONNECTED?WiFi.localIP():WiFi.softAPIP()).toString();
-  const int length=snprintf(body.get(),BodyBytes,"{\"version\":\"1.11.3\",\"chip\":%s,\"width\":64,\"height\":64,\"ip\":%s,\"stationIP\":%s,\"apIP\":%s,\"configUrl\":%s,\"ssid\":%s,\"connected\":%s,\"networkState\":%s,\"rssi\":%d,\"uptime\":%u,\"heap\":%u,\"largestBlock\":%u,\"theme\":%d,\"generation\":%u,\"brightness\":%d,\"rotationMinutes\":%d,\"timezone\":%s,\"otaMaxBytes\":%u,\"storage\":%s,\"hasCustom\":%s,\"appSlots\":64,\"catalogCount\":%d,\"error\":%s,\"performance\":%s,\"limits\":%s,\"baseTheme\":%d,\"timeValid\":%s,\"localTime\":\"%s\",\"clock\":{\"weekday\":%d,\"hour\":%d,\"minute\":%d,\"second\":%d},\"playbackSource\":\"%s\",\"rotationRemainingSeconds\":%s}",
+  const int length=snprintf(body.get(),BodyBytes,"{\"version\":\"1.11.4\",\"chip\":%s,\"width\":64,\"height\":64,\"ip\":%s,\"stationIP\":%s,\"apIP\":%s,\"configUrl\":%s,\"ssid\":%s,\"connected\":%s,\"networkState\":%s,\"rssi\":%d,\"uptime\":%u,\"heap\":%u,\"largestBlock\":%u,\"theme\":%d,\"generation\":%u,\"brightness\":%d,\"rotationMinutes\":%d,\"timezone\":%s,\"otaMaxBytes\":%u,\"storage\":%s,\"hasCustom\":%s,\"appSlots\":64,\"catalogCount\":%d,\"error\":%s,\"performance\":%s,\"limits\":%s,\"baseTheme\":%d,\"timeValid\":%s,\"localTime\":\"%s\",\"clock\":{\"weekday\":%d,\"hour\":%d,\"minute\":%d,\"second\":%d},\"playbackSource\":\"%s\",\"rotationRemainingSeconds\":%s}",
     quote(ESP.getChipModel()).c_str(),quote(ip).c_str(),quote(WiFi.localIP().toString()).c_str(),quote(apActive?WiFi.softAPIP().toString():String("0.0.0.0")).c_str(),quote("http://"+ip+"/").c_str(),quote(WiFi.SSID()).c_str(),WiFi.status()==WL_CONNECTED?"true":"false",quote(networkState).c_str(),WiFi.RSSI(),millis()/1000,
     heap_caps_get_free_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT),heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT),theme,generation,brightness,rotationMinutes,
     quote(prefs_.getString("tz","CST-8")).c_str(),unsigned(next?next->size:0),fs_?"true":"false",hasCustom?"true":"false",themeCount,quote(lastError).c_str(),metrics,limits_.json().c_str(),
@@ -836,6 +830,7 @@ String DeviceService::statusJson(){
   result+=",\"serviceStackFree\":"+String(uxTaskGetStackHighWaterMark(nullptr));
   result+=",\"apActive\":"+String(apActive?"true":"false");
   result+=",\"wifiDisconnectReason\":"+String(wifiDisconnectReason_.load());
+  result+=",\"wifiConnection\":{\"bssid\":"+quote(WiFi.status()==WL_CONNECTED?WiFi.BSSIDstr():String())+",\"channel\":"+String(WiFi.channel())+",\"connectMs\":"+String(wifiConnectMs_)+",\"attempts\":"+String(wifiAttempts_)+",\"consecutiveFailures\":"+String(wifiFailures_)+"}";
   result+=",\"timeSync\":"+timeSync_.json();
   result+=",\"panelTrial\":"+trialJson()+",\"setup\":{\"required\":"+(needsSetup()?String("true"):String("false"))+",\"ssid\":"+quote(apName_)+",\"password\":"+(needsSetup()?quote(apPassword_):String("null"))+",\"url\":\"http://192.168.4.1/\",\"wizard\":true,\"step\":"+String(setupStep_)+",\"panelChosen\":"+String(prefs_.getBool("panelChosen",false)?"true":"false")+"}}";
   return result;
@@ -957,12 +952,67 @@ bool DeviceService::savePanel(const String& order,PanelTiming timing,String& err
   }
   if(reboot)scheduleRestart(1500,"display-settings");return true;
 }
+void DeviceService::pollWifiConnection(uint32_t now){
+  const uint32_t failure=wifiFailureEvent_.exchange(0);
+  if(failure){
+    const uint16_t reason=failure&0xffffu;
+    char detail[96];snprintf(detail,sizeof(detail),"%u: %s, attempt %lu, +%lums",reason,WiFi.disconnectReasonName(wifi_err_reason_t(reason)),(unsigned long)wifiAttempts_,(unsigned long)(now-wifiAttemptAt_));eventLog.add("wifi-disconnected",detail);
+    wifiHadIP_=false;if(wifiFailures_<6)wifiFailures_++;
+    if(wifiFastAttempt_){
+      wifiFastAttempt_=wifiPeerAllowed_=false;WiFi.disconnect(false,false);wifiAttemptActive_=false;retryAt_=now+250;
+    }else if(failure&0x10000u){
+      if(scanPending_){WiFi.disconnect(false,false);wifiAttemptActive_=false;}
+      else if(!wifiStartPending_){wifiAttemptActive_=true;wifiAttemptAt_=now;wifiAttempts_++;}
+    }else if(!wifiStartPending_){
+      wifiAttemptActive_=false;
+      uint32_t delay=1000u<<(wifiFailures_>4?4:wifiFailures_-1);
+      if(reason==WIFI_REASON_NO_AP_FOUND||reason==WIFI_REASON_AUTH_FAIL)delay=wifiFailures_>2?30000:10000;
+      retryAt_=now+delay;
+    }
+  }
+  if(scanPending_)return;
+  const bool online=WiFi.status()==WL_CONNECTED&&(WiFi.getStatusBits()&STA_HAS_IP_BIT)&&WiFi.localIP()!=IPAddress(0,0,0,0);
+  if(online&&!wifiStartPending_&&(!connecting_||WiFi.SSID()==pendingSsid_)){
+    if(connecting_){
+      ssid_=pendingSsid_;password_=pendingPassword_;prefs_.putString("ssid",ssid_);prefs_.putString("wifiPass",password_);
+      pendingPassword_="";connecting_=false;autoSetupAttempted_=false;
+    }
+    if(!wifiHadIP_){
+      wifiConnectMs_=now-wifiAttemptAt_;
+      char detail[96];snprintf(detail,sizeof(detail),"%lums ch%d %ddBm %s",(unsigned long)wifiConnectMs_,WiFi.channel(),WiFi.RSSI(),WiFi.BSSIDstr().c_str());eventLog.add("wifi-connected",detail);
+      uint8_t peer[7];memcpy(peer,WiFi.BSSID(),6);peer[6]=WiFi.channel();
+      if(memcmp(peer,wifiPeer_,sizeof(peer))){memcpy(wifiPeer_,peer,sizeof(peer));prefs_.putBytes("wifiPeer",peer,sizeof(peer));}
+    }
+    wifiHadIP_=wifiPeerAllowed_=true;wifiAttemptActive_=wifiFastAttempt_=false;wifiFailures_=0;retryAt_=0;networkState="connected";return;
+  }
+  if(connecting_){
+    if(wifiStartPending_){if(now-connectAt_<250)return;wifiStartPending_=false;retryAt_=now;}
+    else if(now-connectAt_>=45000){
+      connecting_=false;pendingPassword_="";networkState="failed";wifiFailures_=0;wifiPeerAllowed_=true;
+      WiFi.disconnect(false,false);wifiAttemptActive_=false;retryAt_=now+250;return;
+    }
+  }
+  if(wifiAttemptActive_){
+    if(now-wifiAttemptAt_<45000)return;
+    eventLog.add("wifi-connect-timeout","No IP after 45s; reconnecting");
+    if(wifiFastAttempt_)wifiFastAttempt_=wifiPeerAllowed_=false;
+    WiFi.disconnect(false,false);wifiAttemptActive_=false;retryAt_=now+1000;return;
+  }
+  const String& target=connecting_?pendingSsid_:ssid_;
+  if(!target.length()){networkState="setup-ap";return;}
+  if(retryAt_&&int32_t(now-retryAt_)<0)return;
+  startAP();wifiAttemptActive_=true;wifiHadIP_=false;wifiAttemptAt_=now;wifiAttempts_++;networkState="connecting";
+  wifiFastAttempt_=wifiPeerAllowed_&&wifiPeer_[6]>=1&&wifiPeer_[6]<=14&&target==ssid_&&(!connecting_||pendingPassword_==password_);
+  WiFi.setScanMethod(wifiFastAttempt_?WIFI_FAST_SCAN:WIFI_ALL_CHANNEL_SCAN);
+  WiFi.begin(target.c_str(),(connecting_?pendingPassword_:password_).c_str(),wifiFastAttempt_?wifiPeer_[6]:0,wifiFastAttempt_?wifiPeer_:nullptr);
+}
 bool DeviceService::connectWifi(const String& ssid,const String& password,String& error){
   if(ssid.length()<1||ssid.length()>32||password.length()>63||(password.length()>0&&password.length()<8)){error="SSID 或密码长度无效";return false;}
   for(size_t i=0;i<ssid.length();i++)if((unsigned char)ssid[i]<32){error="SSID 包含无效控制字符";return false;}
   if(scanPending_){if(!scanStarting_)esp_wifi_scan_stop();endWifiScan();}
   WiFi.scanDelete();scanError_=0;
-  pendingSsid_=ssid;pendingPassword_=password;connectAt_=millis();connecting_=true;wifiStartPending_=true;networkState="connecting";return true;
+  startAP();WiFi.disconnect(false,false);wifiFailureEvent_.store(0);wifiAttemptActive_=wifiHadIP_=wifiFastAttempt_=false;wifiPeerAllowed_=true;wifiFailures_=0;
+  pendingSsid_=ssid;pendingPassword_=password;connectAt_=millis();connecting_=true;wifiStartPending_=true;retryAt_=connectAt_+250;networkState="connecting";return true;
 }
 bool DeviceService::saveConfig(int nextTheme,int nextBrightness,int nextRotation,const String& tz,String& error){
   if(!appInstalled(nextTheme)){error="主题应用未安装";return false;}
@@ -1201,7 +1251,7 @@ void DeviceService::serialCommand(const String& line){
 }
 
 void DeviceService::endWifiScan(int error){
-  scanPending_=scanStarting_=false;scanError_=error;retryAt_=millis();
+  scanPending_=scanStarting_=false;scanError_=error;retryAt_=millis()+250;
   if(connecting_){wifiStartPending_=true;connectAt_=millis();}
   if(error){WiFi.scanDelete();eventLog.add("wifi-scan-failed",esp_err_to_name(error));}
 }
@@ -1226,7 +1276,7 @@ String DeviceService::networksJson(int& code){
   const int count=(WiFi.getStatusBits()&WIFI_SCAN_DONE_BIT)?WiFi.scanComplete():WIFI_SCAN_FAILED;
   if(count<0){
     WiFi.setAutoReconnect(false);
-    if(WiFi.status()!=WL_CONNECTED){startAP();WiFi.disconnect(false,false);if(connecting_)wifiStartPending_=true;}
+    if(WiFi.status()!=WL_CONNECTED){startAP();WiFi.disconnect(false,false);wifiAttemptActive_=false;if(connecting_)wifiStartPending_=true;}
     if(!WiFi.enableSTA(true)){eventLog.add("wifi-scan-failed","STA enable failed");code=503;return "{\"error\":\"Wi-Fi 暂时无法启动扫描，请稍后重试或手动输入网络名称\",\"code\":\"STA_ENABLE_FAILED\"}";}
     WiFi.scanDelete();scanPending_=scanStarting_=true;scanStartedAt_=scanAttemptAt_=millis();
     code=202;return "{\"state\":\"scanning\"}";

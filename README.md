@@ -4,13 +4,15 @@
 
 基于 ESP32 / ESP32-S3 和 HUB75 面板的 64×64 时钟。主题使用 C/C++ 编译为芯片对应的 Xtensa 机器码，打包为 CWP3；当前固件不运行 Lua。Runtime API 5，native ABI 1。
 
-**当前版本：1.11.3** · [在线烧录](https://antonvanke.github.io/HUB-75E/#flash) · [主题应用](https://antonvanke.github.io/HUB-75E/#themes) · [USB 配置](https://antonvanke.github.io/HUB-75E/#config) · [图片时钟工坊](https://antonvanke.github.io/HUB-75E/studio/index.html)
+**当前版本：1.11.4** · [在线烧录](https://antonvanke.github.io/HUB-75E/#flash) · [主题应用](https://antonvanke.github.io/HUB-75E/#themes) · [USB 配置](https://antonvanke.github.io/HUB-75E/#config) · [图片时钟工坊](https://antonvanke.github.io/HUB-75E/studio/index.html)
 
 ![重力沙漏电脑模拟](web/previews/gravity-hourglass.gif)
 
 动画由主题 C++ 代码在电脑上生成，不代表实屏录像或设备帧率测量。
 
 ## 当前功能
+
+- **1.11.4 Wi-Fi 连接优化**：缓存成功热点的 BSSID/信道，优先快速连接；缓存失效立即解除绑定并全信道按信号择优，不持续锁定旧热点。认证/握手失败按事件退避重试，不再固定空等 30 秒；缺失网络/认证拒绝延长间隔，配网失败保留并回退原凭据。协调 Arduino 2.0.17 的隐式首次重试，切网先断开并异步等待，扫描与重连继续互斥。日志新增尝试耗时、成功 BSSID/信道/RSSI，状态新增 `wifiConnection`。离线保持热点，稳定联网 30 秒后关闭。COM28 的 S3 实测 3 次重启、2 次重新配网均恢复联网；成功缓存的连接阶段约 0.58–1.14 秒，两次缓存连接失败也自行退回全信道成功。离线 USB 扫描 13 个网络，电脑实际连接热点后 HTTP 扫描 10 个网络，失败配网回退、热点关闭及 17 次连续局域网状态请求通过（中位 47 ms）。本轮未复现 AUTH_EXPIRE/HANDSHAKE_TIMEOUT，没有新 panic；不是对所有路由器或长期射频环境的保证。ESP32 仅编译验证。
 
 - **1.11.3 Wi-Fi 扫描与重连修复**：固件统一管理重连；离线扫描暂停 STA 连接，等待断开完成再异步扫描，完成、失败或无人继续查询时超时释放，恢复配网/重连。新的配网操作可取消扫描，失败不覆盖原凭据。离线热点核对实际模式和启动状态并重试；拿到 IP 稳定联网 30 秒后关闭热点。扫描失败保留 SDK 错误码，断线原因写入重要日志；状态提供实际 `apActive`，关闭热点后不再报告旧 AP IP。ESP32/S3 编译及状态机检查通过。已通过 COM28 烧录自制 S3，实测热点关联与后台访问、离线/联网 USB 扫描、热点 HTTP 扫描、配网、联网 30 秒后关闭热点、错误配网时恢复热点并自动回退保存网络。测试曾出现认证过期/握手超时，已记录且重试恢复；ESP32 未实机测试。
 - **1.11.2 状态接口栈空间修复**：服务任务栈由 8 KiB 调整为 16 KiB；状态 JSON 的 2560 字节临时缓冲改为堆分配并及时释放；查询传感器能力直接读取存在标记，避免生成和解析包含浮点数据的完整诊断 JSON。状态接口增加 `serviceStackFree`（该服务任务运行以来的栈余量低水位，单位字节）。v1.11.1 的匹配 ELF 将故障地址定位到任务切换路径，现场多次崩溃发生于 `/api/status`，最低栈余量仅 60 B；支持栈耗尽判断，但残缺回溯无法证明完整破坏链。ESP32/S3 均编译通过，ELF 核对状态函数栈帧由 3808 B 降至 1248 B、服务栈为 16384 B。修复版未烧录，设备连续运行仍待验证。
@@ -38,14 +40,14 @@
 - 配网引导、屏幕驱动轮测、平滑自动亮度、方向校正、定时轮换和应用参数。可选固件自动更新每 6 小时检查一次，默认关闭，与每日 NTP 校时独立。
 - 图片时钟：32 张幻灯片、拖动定位、八层文字、19 款字体、Unifont Unicode、装饰元素、渐变、日期和秒进度。完整字体留在电脑，仅打包所需字形和图片。
 
-本版通过双芯片编译、应用生命周期和后台阻塞模拟检查，本次发布未烧录或验收实屏。重力水、滚珠迷宫的 120 FPS 是目标，安装和网络访问期间的实际帧率仍需设备测量。
+本版通过 ESP32/S3 编译与 Wi-Fi 状态机检查，S3 已通过 COM28 烧录并实测网络功能；ESP32 未实机验证。重力水、滚珠迷宫的 120 FPS 是目标，安装和网络访问期间的实际帧率仍需设备测量。
 
 ## 下载
 
 | 芯片 | 固件 | 应用整包 | 硬件要求 |
 | --- | --- | --- | --- |
-| ESP32 | [v1.11.3 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.11.3.zip) | [5 款应用](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | 经典 ESP32，4 MB Flash |
-| ESP32-S3 | [v1.11.3 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.11.3.zip) | [59 款应用](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | 本项目板型，至少 8 MB Flash + 8 MB OPI PSRAM |
+| ESP32 | [v1.11.4 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.11.4.zip) | [5 款应用](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | 经典 ESP32，4 MB Flash |
+| ESP32-S3 | [v1.11.4 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.11.4.zip) | [59 款应用](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | 本项目板型，至少 8 MB Flash + 8 MB OPI PSRAM |
 
 S3 N4 不适用此固件。其它板型须核对 Flash、PSRAM 和接线。
 

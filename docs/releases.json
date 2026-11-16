@@ -2,6 +2,39 @@
   "schema": 1,
   "releases": [
     {
+      "version": "1.11.4",
+      "runtimeApi": 5,
+      "nativeAbi": 1,
+      "notes": "Clockyr 1.11.4：成功热点快速连接，失败解除 BSSID 绑定并全信道择优；按断线事件退避重连，协调底层隐式重试，保持离线热点和扫描可用。连接耗时、信道和原因可通过日志/API 查询。ESP32/S3 编译通过，S3 经 COM28 烧录实测。",
+      "catalog": "applications/1.11.4/catalog.json",
+      "targets": {
+        "esp32": {
+          "chip": "esp32",
+          "flashBytes": 4194304,
+          "psramBytes": 0,
+          "manifest": "firmware/esp32-v1.11.4/manifest.json",
+          "updateManifest": "firmware/esp32-v1.11.4/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32-v1.11.4/app.bin",
+            "bytes": 1538672,
+            "sha256": "bdd5bae1d6128fe5201292c49f2356b62b9bf3dba4c8d4f8e9256d91dcc041b3"
+          }
+        },
+        "esp32s3": {
+          "chip": "esp32s3",
+          "flashBytes": 8388608,
+          "psramBytes": 8388608,
+          "manifest": "firmware/esp32s3-v1.11.4/manifest.json",
+          "updateManifest": "firmware/esp32s3-v1.11.4/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32s3-v1.11.4/app.bin",
+            "bytes": 1548592,
+            "sha256": "0f43c596fd5500086a91805cd3d7998d8f86444b61d13bc8c34e97dcd9f75243"
+          }
+        }
+      }
+    },
+    {
       "version": "1.11.3",
       "runtimeApi": 5,
       "nativeAbi": 1,
@@ -860,5 +893,5 @@
       }
     }
   ],
-  "latest": "1.11.3"
+  "latest": "1.11.4"
 }
