@@ -4,7 +4,7 @@
 
 A 64 × 64 HUB75 clock for ESP32 / ESP32-S3. Themes are C/C++ compiled to chip-specific Xtensa machine code in CWP3 packages. Current firmware does not run Lua. Runtime API 5, native ABI 1.
 
-**Current release: 1.11.2** · [Flash firmware](https://antonvanke.github.io/HUB-75E/#flash) · [Applications](https://antonvanke.github.io/HUB-75E/#themes) · [USB settings](https://antonvanke.github.io/HUB-75E/#config) · [Image clock workshop](https://antonvanke.github.io/HUB-75E/studio/index.html)
+**Current release: 1.11.3** · [Flash firmware](https://antonvanke.github.io/HUB-75E/#flash) · [Applications](https://antonvanke.github.io/HUB-75E/#themes) · [USB settings](https://antonvanke.github.io/HUB-75E/#config) · [Image clock workshop](https://antonvanke.github.io/HUB-75E/studio/index.html)
 
 ![Gravity Hourglass computer preview](web/previews/gravity-hourglass.gif)
 
@@ -12,6 +12,7 @@ Rendered by the theme's C++ code on a computer, not panel footage or a device FP
 
 ## Current features
 
+- **1.11.3 Wi-Fi scan/reconnect fix:** firmware owns retries; offline scans pause STA connection attempts and start asynchronously after disconnect settles. Completion, failure and timeout release the scan even if the client leaves. Provisioning can cancel a scan; failed credentials never replace saved credentials. Offline AP recovery checks the actual Wi-Fi mode/start state. The AP closes only after 30 seconds with a valid station IP; scan failures expose SDK error codes and disconnect reasons are logged. Status reports actual `apActive` and clears the stale AP IP when stopped. Both chip builds and state-machine checks pass. The custom S3 was flashed via COM28 and tested for AP association/HTTP, offline/online serial scans, AP HTTP scans, provisioning, the 30-second AP grace period and fallback to saved credentials after failed provisioning with AP recovery. Authentication expiry/handshake timeout occurred during testing and recovered on retry; ESP32 was not hardware-tested.
 - **1.11.2 status stack fix:** increase the service task stack from 8 to 16 KiB, move the 2560-byte status buffer to bounded heap storage and release it promptly, and read sensor presence flags without formatting/parsing floating-point diagnostics. Status exposes `serviceStackFree`, the service task stack low-water mark in bytes. The matching v1.11.1 ELF resolves the reported fault to task switching; repeated device faults occurred during `/api/status`, with a reported stack margin of only 60 B. This supports stack exhaustion, but incomplete traces do not prove the full corruption chain. Both ESP32/S3 builds pass; ELF checks confirm a 1248-byte status frame (formerly 3808 bytes) and a 16384-byte service stack. The fix has not been flashed or validated in a sustained device run.
 - **1.11.1 background/playback isolation:** brightness/timezone saves preserve theme state, conditional playback and rotation timers. Removing another app never locks or stops rendering. S3 samples sensors in a separate task; the renderer consumes fresh queued IMU data and calculates orientation even while HTTP is blocked. Sampling no longer emits large periodic serial logs. Resources are prefetched at activation within the existing PSRAM quota. A fully cached active app continues its old instance after replacement; Run or the next activation loads the update. HTTP, USB and automatic app downloads use bounded yielding writes. Host checks cover continuity, rollback, fresh inputs during service stalls and write failures. No device FPS measurement or flashing was performed; uncached active updates still reload, and flash writes, intrusive tests, restart and explicit switching cannot promise zero dropped frames.
 
@@ -43,8 +44,8 @@ Both chips compile; application lifecycle and simulated service-stall checks pas
 
 | Chip | Firmware | Applications | Requirements |
 | --- | --- | --- | --- |
-| ESP32 | [v1.11.2 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.11.2.zip) | [5 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | Classic ESP32, 4 MB Flash |
-| ESP32-S3 | [v1.11.2 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.11.2.zip) | [59 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | Project board, at least 8 MB Flash + 8 MB OPI PSRAM |
+| ESP32 | [v1.11.3 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32-v1.11.3.zip) | [5 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32.zip) | Classic ESP32, 4 MB Flash |
+| ESP32-S3 | [v1.11.3 ZIP](https://antonvanke.github.io/HUB-75E/firmware/esp32s3-v1.11.3.zip) | [59 apps](https://antonvanke.github.io/HUB-75E/native/dist/all-themes-esp32s3.zip) | Project board, at least 8 MB Flash + 8 MB OPI PSRAM |
 
 S3 N4 is unsupported. Other boards require matching memory settings and wiring.
 

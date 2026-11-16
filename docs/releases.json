@@ -2,6 +2,39 @@
   "schema": 1,
   "releases": [
     {
+      "version": "1.11.3",
+      "runtimeApi": 5,
+      "nativeAbi": 1,
+      "notes": "Clockyr 1.11.3：修复 Wi-Fi 扫描与自动重连冲突；离线持续提供热点，扫描超时自动释放，新配网可取消扫描；联网 30 秒后关闭热点，扫描失败和断线记录底层原因。S3 已实测热点、扫描、配网和失败回退；ESP32 编译通过。",
+      "catalog": "applications/1.11.3/catalog.json",
+      "targets": {
+        "esp32": {
+          "chip": "esp32",
+          "flashBytes": 4194304,
+          "psramBytes": 0,
+          "manifest": "firmware/esp32-v1.11.3/manifest.json",
+          "updateManifest": "firmware/esp32-v1.11.3/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32-v1.11.3/app.bin",
+            "bytes": 1536640,
+            "sha256": "4cd6b33c5eb5f30f4fbd2fd4e9378088fead716042c915f9a219042e1909fad4"
+          }
+        },
+        "esp32s3": {
+          "chip": "esp32s3",
+          "flashBytes": 8388608,
+          "psramBytes": 8388608,
+          "manifest": "firmware/esp32s3-v1.11.3/manifest.json",
+          "updateManifest": "firmware/esp32s3-v1.11.3/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32s3-v1.11.3/app.bin",
+            "bytes": 1546384,
+            "sha256": "935f2098dc77486eb69b7424e5abcc1c2c779f40e9b6f6964665a49d55f09be3"
+          }
+        }
+      }
+    },
+    {
       "version": "1.11.2",
       "runtimeApi": 5,
       "nativeAbi": 1,
@@ -827,5 +860,5 @@
       }
     }
   ],
-  "latest": "1.11.2"
+  "latest": "1.11.3"
 }

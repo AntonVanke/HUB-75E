@@ -99,7 +99,9 @@ private:
   String apName_,apPassword_;
   bool ap_=false,connecting_=false,wifiStartPending_=false,ota_=false,locked_=false,fs_=false,scriptLocked_=false;
   uint32_t connectAt_=0,retryAt_=0,restartAt_=0,rotateAt_=0,otaAt_=0;
-  uint32_t apConnectedAt_=0;
+  uint32_t apConnectedAt_=0,apRetryAt_=0;
+  std::atomic<uint16_t> wifiDisconnectReason_{0};
+  uint16_t reportedWifiReason_=0;
   const char* restartReason_="unspecified";
   void scheduleRestart(uint32_t delay,const char* reason){restartAt_=millis()+delay;restartReason_=reason;}
   mbedtls_sha256_context hash_;
@@ -131,8 +133,11 @@ private:
   uint16_t serialLength_=0;
   bool serialOverflow_=false;
   String networksJson(int& code);
-  bool scanPending_=false;
-  uint32_t scanStartedAt_=0;
+  void pollWifiScan(uint32_t now);
+  void endWifiScan(int error=0);
+  bool scanPending_=false,scanStarting_=false;
+  int scanError_=0;
+  uint32_t scanStartedAt_=0,scanAttemptAt_=0;
   int installIndex_=-1;
   String installId_,installTitle_,installPackageName_;
   bool legacyUpload_=false;
