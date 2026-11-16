@@ -459,7 +459,7 @@ static void renderTask(void*){
 }
 void setup(){
   serviceHandle=xTaskGetCurrentTaskHandle();
-  Serial.begin(115200);setCpuFrequencyMhz(240);service.eventLog.begin("1.11.1");
+  Serial.begin(115200);setCpuFrequencyMhz(240);service.eventLog.begin("1.11.2");
   service.panelTrial.begin();
   orientation.configure(panelOrientation());
 #ifdef HUB75_S3_BOARD
@@ -473,6 +473,7 @@ void setup(){
   service.hardwareStatus=[](){return diagnostics.json();};
   service.hardwareTest=[](const String& test,String& error){if(test=="buzzer"){diagnostics.beep();return true;}if(test=="imu"){xSemaphoreTake(sensorGate,portMAX_DELAY);const bool ok=sensors.testImu();xSemaphoreGive(sensorGate);if(ok)return true;error="IMU 自检失败或未检测到";return false;}error="未知测试项目";return false;};
   service.sensorStatus=[](){return sensorCopy().json();};
+  service.sensorAvailability=[](){const auto value=sensorCopy();return uint8_t((value.ahtPresent?3:0)|(value.imuPresent?4:0));};
 #else
   service.sensorStatus=[](){return String("{\"ahtPresent\":false,\"imuPresent\":false,\"imuSupported\":false,\"temperatureValid\":false,\"humidityValid\":false,\"imuValid\":false,\"ahtHealthy\":false,\"imuHealthy\":false,\"temperature\":null,\"humidity\":null,\"accelG\":null,\"gyroDps\":null}");};
 #endif

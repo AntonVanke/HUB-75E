@@ -55,6 +55,7 @@ public:
   std::function<bool(bool)> renderLock;
   std::function<bool(uint16_t*,uint8_t&)> copyFrame;
   std::function<String()> sensorStatus;
+  std::function<uint8_t()> sensorAvailability;
   std::function<String()> hardwareStatus;
   std::function<bool(const String&,String&)> hardwareTest;
   std::function<String()> panelStatus;

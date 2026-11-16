@@ -20,6 +20,8 @@
 #include <ctype.h>
 #include <limits.h>
 #include <utility>
+#include <memory>
+#include <new>
 #include <mbedtls/base64.h>
 static String quote(const String& s){
   String out="\"";for(size_t i=0;i<s.length();i++){unsigned char c=s[i];if(c=='"'||c=='\\'){out+='\\';out+=(char)c;}else if(c<32){char b[7];snprintf(b,sizeof(b),"\\u%04x",c);out+=b;}else out+=(char)c;}return out+"\"";
@@ -35,10 +37,7 @@ static bool safeTitle(const String& title){if(title.isEmpty()||title.length()>96
 static String appKey(int index,char suffix){return "a"+String(index)+suffix;}
 static uint32_t appIdentityHash(const String& name){uint32_t hash=2166136261u;for(size_t i=0;i<name.length();i++)hash=(hash^(uint8_t)name[i])*16777619u;return hash;}
 uint8_t DeviceService::sensorCapabilities()const{
-  const String status=sensorStatus?sensorStatus():"{}";String value;bool found;uint8_t result=0;
-  if(jsonField(status,"ahtPresent",value,found)&&found&&value=="true")result|=3;
-  if(jsonField(status,"imuPresent",value,found)&&found&&value=="true")result|=4;
-  return result;
+  return sensorAvailability?sensorAvailability():0;
 }
 String DeviceService::sensorCapabilitiesJson()const{
   const uint8_t caps=sensorCapabilities();String result="[";
@@ -62,7 +61,7 @@ bool DeviceService::saveOrientation(int degrees,bool automatic,int gravityDegree
 }
 String DeviceService::discoveryIdentity()const{
   char id[17];snprintf(id,sizeof(id),"%012llx",ESP.getEfuseMac()&0xffffffffffffULL);
-  return "{\"product\":\"clockwise-hub75\",\"id\":"+quote(id)+",\"chip\":"+quote(ESP.getChipModel())+",\"version\":\"1.11.1\"}";
+  return "{\"product\":\"clockwise-hub75\",\"id\":"+quote(id)+",\"chip\":"+quote(ESP.getChipModel())+",\"version\":\"1.11.2\"}";
 }
 bool DeviceService::startDiscovery(String& error){
   if(WiFi.status()!=WL_CONNECTED){error="请先让设备连接局域网 Wi-Fi";return false;}
@@ -245,8 +244,8 @@ void DeviceService::begin(int count,const char* titlesJson){
   else{startAP();networkState="setup-ap";}
   timeSync_.begin(prefs_);
   const char* headers[]={"X-SHA256","X-Firmware-Size","If-None-Match"};web_.collectHeaders(headers,3);
-  web_.on("/",HTTP_GET,[this](){const char* tag="\"clockyr-1.11.1-ui\"";web_.sendHeader("ETag",tag);web_.sendHeader("Cache-Control","no-cache");if(web_.header("If-None-Match")==tag){web_.send(304);return;}web_.sendHeader("Content-Encoding","gzip");sendFlash("text/html; charset=utf-8",(const char*)DEVICE_PAGE,sizeof(DEVICE_PAGE));});
-  web_.on("/guide",HTTP_GET,[this](){const char* tag="\"clockyr-1.11.1-guide\"";web_.sendHeader("ETag",tag);web_.sendHeader("Cache-Control","no-cache");if(web_.header("If-None-Match")==tag){web_.send(304);return;}web_.sendHeader("Content-Encoding","gzip");sendFlash("text/html; charset=utf-8",(const char*)THEME_GUIDE_PAGE,sizeof(THEME_GUIDE_PAGE));});
+  web_.on("/",HTTP_GET,[this](){const char* tag="\"clockyr-1.11.2-ui\"";web_.sendHeader("ETag",tag);web_.sendHeader("Cache-Control","no-cache");if(web_.header("If-None-Match")==tag){web_.send(304);return;}web_.sendHeader("Content-Encoding","gzip");sendFlash("text/html; charset=utf-8",(const char*)DEVICE_PAGE,sizeof(DEVICE_PAGE));});
+  web_.on("/guide",HTTP_GET,[this](){const char* tag="\"clockyr-1.11.2-guide\"";web_.sendHeader("ETag",tag);web_.sendHeader("Cache-Control","no-cache");if(web_.header("If-None-Match")==tag){web_.send(304);return;}web_.sendHeader("Content-Encoding","gzip");sendFlash("text/html; charset=utf-8",(const char*)THEME_GUIDE_PAGE,sizeof(THEME_GUIDE_PAGE));});
   web_.on("/api/status",HTTP_GET,[this](){reply(200,statusJson());});
   web_.on("/api/time",HTTP_ANY,[this](){
     if(web_.method()==HTTP_GET){reply(200,timeSync_.json());return;}
@@ -375,7 +374,7 @@ void DeviceService::begin(int count,const char* titlesJson){
   });
   web_.begin();
   Serial.printf("Provision AP: %s  Password: %s\n",apName_.c_str(),apPassword_.c_str());
-  Serial.println("CWJSON:{\"ok\":true,\"version\":\"1.11.1\",\"message\":\"串口设置已就绪，发送 {\\\"cmd\\\":\\\"help\\\"} 查看命令\"}");
+  Serial.println("CWJSON:{\"ok\":true,\"version\":\"1.11.2\",\"message\":\"串口设置已就绪，发送 {\\\"cmd\\\":\\\"help\\\"} 查看命令\"}");
 }
 bool DeviceService::writeAppData(File& file,const uint8_t* data,size_t size){
   for(size_t at=0;at<size;){const size_t count=std::min(size_t(512),size-at);if(file.write(data+at,count)!=count)return false;at+=count;if(ioTick)ioTick();delay(1);}return true;
@@ -487,7 +486,7 @@ void DeviceService::poll(){
   pollThemeUpdates(now);
   const bool canUpdate=WiFi.status()==WL_CONNECTED&&time(nullptr)>1700000000&&!needsSetup()&&!panelTrial.active&&!ota_&&!scriptLocked_&&!serialInstall_&&!restartAt_;
   if(updater.finishCheck()&&updater.state!="up-to-date"&&updater.state!="available")eventLog.add("update-check-failed",updater.state.c_str());
-  if(!updater.busy&&updater.due(now)&&canUpdate){updater.startCheck("1.11.1");if(!updater.busy)eventLog.add("update-check-failed",updater.state.c_str());}
+  if(!updater.busy&&updater.due(now)&&canUpdate){updater.startCheck("1.11.2");if(!updater.busy)eventLog.add("update-check-failed",updater.state.c_str());}
   if(updater.enabled&&updater.available&&canUpdate&&renderLock(true)){
     scriptLocked_=true;eventLog.add("update-start",updater.targetVersion().c_str());stopScript();
     if(!updater.startInstall()){eventLog.add("update-failed",updater.state.c_str());scriptLocked_=false;generation++;renderLock(false);}
@@ -800,24 +799,28 @@ String DeviceService::brightnessJson()const{
   snprintf(body,sizeof(body),"{\"supported\":%s,\"present\":%s,\"enabled\":%s,\"active\":%s,\"raw\":%d,\"millivolts\":%d,\"filtered\":%d,\"actual\":%d,\"minimum\":%d,\"maximum\":%d,\"dark\":%d,\"bright\":%d,\"obstruction\":{\"enabled\":%s,\"calibrated\":%s,\"imuValid\":%s,\"held\":%s,\"state\":\"%s\"}}",ambient.supported?"true":"false",ambient.present?"true":"false",s.enabled?"true":"false",ambient.active(now)?"true":"false",ambient.raw,ambient.millivolts,ambient.filtered(),ambient.actual,s.minimum,s.maximum,s.dark,s.bright,s.coverProtection?"true":"false",s.coverCalibrated?"true":"false",ambient.imuReady(now)?"true":"false",ambient.coverHeld(now)?"true":"false",ambient.coverState(now));String result(body);result.remove(result.length()-1);return result+",\"lightPercent\":"+String(ambient.lightPercent())+",\"sensorKnown\":"+(ambient.sensorKnown?"true":"false")+"}";
 }
 String DeviceService::statusJson(){
-  const esp_partition_t* next=esp_ota_get_next_update_partition(nullptr);char body[2560];
+  constexpr size_t BodyBytes=2560;
+  std::unique_ptr<char[]> body(new(std::nothrow) char[BodyBytes]);
+  if(!body)return "{\"error\":\"状态缓冲区内存不足\"}";
+  const esp_partition_t* next=esp_ota_get_next_update_partition(nullptr);
   const time_t epoch=time(nullptr);tm local;localtime_r(&epoch,&local);const bool timeValid=local.tm_year>=124;
   char localTime[20]={},remaining[16]="null";if(timeValid)strftime(localTime,sizeof(localTime),"%Y-%m-%d %H:%M:%S",&local);
   bool needsTime=schedule_.mode==2;for(int i=0;i<schedule_.windowCount;i++)if(schedule_.windows[i].enabled&&!schedule_.windows[i].kind)needsTime=true;
   const char* source=windowTheme_!=ThemeSchedule::None?"condition":schedule_.mode==1?"interval":!timeValid&&needsTime?"waiting-time":schedule_.mode==2?"daily":"fixed";
   if(windowTheme_==ThemeSchedule::None&&schedule_.mode==1){const uint32_t period=uint32_t(schedule_.interval)*60000,elapsed=uint32_t(millis()-rotateAt_);snprintf(remaining,sizeof(remaining),"%u",unsigned(elapsed>=period?0:(period-elapsed+999)/1000));}
   String ip=(WiFi.status()==WL_CONNECTED?WiFi.localIP():WiFi.softAPIP()).toString();
-  const int length=snprintf(body,sizeof(body),"{\"version\":\"1.11.1\",\"chip\":%s,\"width\":64,\"height\":64,\"ip\":%s,\"stationIP\":%s,\"apIP\":%s,\"configUrl\":%s,\"ssid\":%s,\"connected\":%s,\"networkState\":%s,\"rssi\":%d,\"uptime\":%u,\"heap\":%u,\"largestBlock\":%u,\"theme\":%d,\"generation\":%u,\"brightness\":%d,\"rotationMinutes\":%d,\"timezone\":%s,\"otaMaxBytes\":%u,\"storage\":%s,\"hasCustom\":%s,\"appSlots\":64,\"catalogCount\":%d,\"error\":%s,\"performance\":%s,\"limits\":%s,\"baseTheme\":%d,\"timeValid\":%s,\"localTime\":\"%s\",\"clock\":{\"weekday\":%d,\"hour\":%d,\"minute\":%d,\"second\":%d},\"playbackSource\":\"%s\",\"rotationRemainingSeconds\":%s}",
+  const int length=snprintf(body.get(),BodyBytes,"{\"version\":\"1.11.2\",\"chip\":%s,\"width\":64,\"height\":64,\"ip\":%s,\"stationIP\":%s,\"apIP\":%s,\"configUrl\":%s,\"ssid\":%s,\"connected\":%s,\"networkState\":%s,\"rssi\":%d,\"uptime\":%u,\"heap\":%u,\"largestBlock\":%u,\"theme\":%d,\"generation\":%u,\"brightness\":%d,\"rotationMinutes\":%d,\"timezone\":%s,\"otaMaxBytes\":%u,\"storage\":%s,\"hasCustom\":%s,\"appSlots\":64,\"catalogCount\":%d,\"error\":%s,\"performance\":%s,\"limits\":%s,\"baseTheme\":%d,\"timeValid\":%s,\"localTime\":\"%s\",\"clock\":{\"weekday\":%d,\"hour\":%d,\"minute\":%d,\"second\":%d},\"playbackSource\":\"%s\",\"rotationRemainingSeconds\":%s}",
     quote(ESP.getChipModel()).c_str(),quote(ip).c_str(),quote(WiFi.localIP().toString()).c_str(),quote(WiFi.softAPIP().toString()).c_str(),quote("http://"+ip+"/").c_str(),quote(WiFi.SSID()).c_str(),WiFi.status()==WL_CONNECTED?"true":"false",quote(networkState).c_str(),WiFi.RSSI(),millis()/1000,
     heap_caps_get_free_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT),heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT),theme,generation,brightness,rotationMinutes,
     quote(prefs_.getString("tz","CST-8")).c_str(),unsigned(next?next->size:0),fs_?"true":"false",hasCustom?"true":"false",themeCount,quote(lastError).c_str(),metrics,limits_.json().c_str(),
     baseTheme_,timeValid?"true":"false",localTime,local.tm_wday,local.tm_hour,local.tm_min,local.tm_sec,source,remaining);
-  if(length<0||length>=int(sizeof(body))-128)return "{\"error\":\"状态信息过长\"}";
-  String result(body);result.remove(result.length()-1);result+=",\"updates\":{\"enabled\":"+String(updater.enabled?"true":"false")+",\"state\":"+quote(updater.state)+",\"intervalHours\":6}";result+=",\"themeUpdates\":"+themeUpdateJson();result+=",\"updateSource\":{\"base\":"+quote(updater.mirror)+"}";result+=",\"brightnessControl\":"+brightnessJson();result+=",\"packageVersion\":3,\"runtimeApi\":5,\"internalHeapBytes\":"+String(heap_caps_get_total_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT))+",\"panel\":{\"colorOrder\":"+quote(panelOrder_)+",\"scan\":32,\"clockMHz\":"+String(panelTiming_.clockMHz)+",\"clockPhase\":"+String(panelTiming_.clockPhase)+",\"latchBlanking\":"+String(panelTiming_.latchBlanking)+",\"driver\":"+String(panelTiming_.driver)+",\"refreshHz\":"+String(panelTiming_.refreshHz)+",\"driverName\":"+quote(panelDriverName(panelTiming_.driver))+",\"active\":"+(panelStatus?panelStatus():String("{}"))+",\"testing\":"+(panelTestUntil&&int32_t(panelTestUntil-millis())>0?"true":"false")+"}}";
+  if(length<0||length>=int(BodyBytes)-128)return "{\"error\":\"状态信息过长\"}";
+  String result(body.get());body.reset();result.remove(result.length()-1);result+=",\"updates\":{\"enabled\":"+String(updater.enabled?"true":"false")+",\"state\":"+quote(updater.state)+",\"intervalHours\":6}";result+=",\"themeUpdates\":"+themeUpdateJson();result+=",\"updateSource\":{\"base\":"+quote(updater.mirror)+"}";result+=",\"brightnessControl\":"+brightnessJson();result+=",\"packageVersion\":3,\"runtimeApi\":5,\"internalHeapBytes\":"+String(heap_caps_get_total_size(MALLOC_CAP_INTERNAL|MALLOC_CAP_8BIT))+",\"panel\":{\"colorOrder\":"+quote(panelOrder_)+",\"scan\":32,\"clockMHz\":"+String(panelTiming_.clockMHz)+",\"clockPhase\":"+String(panelTiming_.clockPhase)+",\"latchBlanking\":"+String(panelTiming_.latchBlanking)+",\"driver\":"+String(panelTiming_.driver)+",\"refreshHz\":"+String(panelTiming_.refreshHz)+",\"driverName\":"+quote(panelDriverName(panelTiming_.driver))+",\"active\":"+(panelStatus?panelStatus():String("{}"))+",\"testing\":"+(panelTestUntil&&int32_t(panelTestUntil-millis())>0?"true":"false")+"}}";
   result.remove(result.length()-1);
   result+=",\"features\":{\"diagnostics\":1,\"serialDiagnostics\":1,\"serialAppInstall\":1,\"backgroundInstall\":1,\"wifiScan\":1,\"discovery\":1,\"panelTrial\":1,\"factoryReset\":1,\"conditionControl\":1,\"orientation\":"+String(orientationStatus?1:0)+",\"screenPreview\":"+String(copyFrame?1:0)+"}";
   result+=",\"orientation\":"+(orientationStatus?orientationStatus():String("null"))+",\"sensorCapabilities\":"+sensorCapabilitiesJson()+",\"flashBytes\":"+String(ESP.getFlashChipSize());
   result+=",\"conditionControl\":{\"activeRule\":"+String(conditions_.active+1)+",\"lightValid\":"+String(ambient.lightValid(millis())?"true":"false")+",\"lightPercent\":"+String(ambient.lightPercent())+",\"ruleCount\":"+String(schedule_.windowCount)+"}";
+  result+=",\"serviceStackFree\":"+String(uxTaskGetStackHighWaterMark(nullptr));
   result+=",\"timeSync\":"+timeSync_.json();
   result+=",\"panelTrial\":"+trialJson()+",\"setup\":{\"required\":"+(needsSetup()?String("true"):String("false"))+",\"ssid\":"+quote(apName_)+",\"password\":"+(needsSetup()?quote(apPassword_):String("null"))+",\"url\":\"http://192.168.4.1/\",\"wizard\":true,\"step\":"+String(setupStep_)+",\"panelChosen\":"+String(prefs_.getBool("panelChosen",false)?"true":"false")+"}}";
   return result;

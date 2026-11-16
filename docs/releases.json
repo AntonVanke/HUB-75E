@@ -2,6 +2,39 @@
   "schema": 1,
   "releases": [
     {
+      "version": "1.11.2",
+      "runtimeApi": 5,
+      "nativeAbi": 1,
+      "notes": "Clockyr 1.11.2：修复状态查询栈空间风险，服务栈增至 16 KiB，大缓冲移出栈，直接读取传感器能力，增加服务栈低水位。已编译；未烧录及实机长测。",
+      "catalog": "applications/1.11.2/catalog.json",
+      "targets": {
+        "esp32": {
+          "chip": "esp32",
+          "flashBytes": 4194304,
+          "psramBytes": 0,
+          "manifest": "firmware/esp32-v1.11.2/manifest.json",
+          "updateManifest": "firmware/esp32-v1.11.2/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32-v1.11.2/app.bin",
+            "bytes": 1531488,
+            "sha256": "1b079d09e9f716c44a4be1173ee1ba5c49c754b8b2c5163a5311df84760bc53f"
+          }
+        },
+        "esp32s3": {
+          "chip": "esp32s3",
+          "flashBytes": 8388608,
+          "psramBytes": 8388608,
+          "manifest": "firmware/esp32s3-v1.11.2/manifest.json",
+          "updateManifest": "firmware/esp32s3-v1.11.2/update-manifest.json",
+          "app": {
+            "path": "firmware/esp32s3-v1.11.2/app.bin",
+            "bytes": 1541264,
+            "sha256": "53b1a1f6948d68259e6aded7b123755411a30f40d3c86d91280dc7ab2142c255"
+          }
+        }
+      }
+    },
+    {
       "version": "1.11.1",
       "runtimeApi": 5,
       "nativeAbi": 1,
@@ -794,5 +827,5 @@
       }
     }
   ],
-  "latest": "1.11.1"
+  "latest": "1.11.2"
 }

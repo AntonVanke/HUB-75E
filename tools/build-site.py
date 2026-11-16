@@ -79,7 +79,7 @@ def main():
     (appdir / "catalog.json").write_text(encoded, encoding="utf-8")
     indexPath=output / "releases.json"
     index=json.loads(indexPath.read_text(encoding="utf-8")) if indexPath.exists() else {"schema":1,"releases":[]}
-    release={"version":version,"runtimeApi":5,"nativeAbi":1,"notes":"Clockyr 1.11.1：普通设置保存和卸载其它应用保留播放；S3 独立重力采样、激活时缓存素材，已缓存主题更新继续旧实例，应用写入分段让出 CPU。未实测设备帧率。", "catalog":"applications/"+version+"/catalog.json","targets":{}}
+    release={"version":version,"runtimeApi":5,"nativeAbi":1,"notes":"Clockyr 1.11.2：修复状态查询栈空间风险，服务栈增至 16 KiB，大缓冲移出栈，直接读取传感器能力，增加服务栈低水位。已编译；未烧录及实机长测。", "catalog":"applications/"+version+"/catalog.json","targets":{}}
     for chip in ("esp32", "esp32s3"):
         name=chip+"-v"+version
         source=ROOT / "releases" / name
